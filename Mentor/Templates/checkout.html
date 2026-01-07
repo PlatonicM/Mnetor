@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Provisioning Access | Command Center{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- 1. Industrial Design Tokens --- */
+:root {
+    --figma-bg: #F0F4F8;
+    --figma-primary: #4F46E5; 
+    --figma-success: #059669; 
+    --figma-error: #F43F5E;
+    --figma-border: #E2E8F0;
+    --clr-slate-900: #0f172a;
+    --radius-figma: 28px;
+    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background: radial-gradient(circle at top right, #f0fdf4, #f1f5f9); font-family: 'Inter', sans-serif; color: var(--clr-slate-900); }
+
+/* --- 2. Architecture Calibration --- */
+.checkout-grid {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 40px;
+    align-items: start;
+    padding-bottom: 50px;
+}
+
+/* --- 3. Checkout Nodes --- */
+.checkout-node {
+    background: rgba(255, 255, 255, 0.9); 
+    backdrop-filter: blur(20px);
+    border: 2px solid #ffffff;
+    border-radius: var(--radius-figma); 
+    padding: 40px;
+    transition: all 0.4s var(--spring-easing);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+}
+
+/* --- 4. Terminal Console (Live Feedback) --- */
+.terminal-node {
+    display: none; background: #0f172a; color: #10b981; 
+    padding: 24px; border-radius: 20px; margin-bottom: 30px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    border-left: 5px solid var(--figma-primary);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    position: relative; overflow: hidden;
+}
+
+/* --- 5. Summary Profile Pod --- */
+.avatar-handshake-wrapper {
+    width: 70px; height: 70px; padding: 4px;
+    background: white; border: 2px solid var(--figma-primary);
+    border-radius: 18px; transition: 0.6s var(--spring-easing);
+}
+.avatar-handshake-wrapper:hover { transform: rotate(-5deg) scale(1.1); border-color: var(--figma-success); }
+
+/* --- 6. Pricing Logic --- */
+.meta-card { 
+    background: rgba(255, 255, 255, 0.5); 
+    border-radius: 22px; padding: 28px; margin-bottom: 30px; 
+    border: 1px solid var(--figma-border); 
+}
+
+.price-row { 
+    display: flex; justify-content: space-between; padding: 15px 0; 
+    border-bottom: 1px dashed var(--figma-border); 
+    font-size: 14px;
+}
+
+.grand-total-box { 
+    background: linear-gradient(135deg, #1e293b, #0f172a); 
+    color: white; padding: 32px; border-radius: 24px; margin-top: 35px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.4);
+}
+
+/* --- 7. Industrial Forms --- */
+.form-label-tech { font-size: 10px; font-weight: 900; color: var(--figma-primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; display: block; }
+.form-control-tech { 
+    border: 2px solid var(--figma-border); padding: 18px; border-radius: 16px; font-weight: 700; 
+    transition: 0.3s; background: #ffffff; font-family: 'Inter', sans-serif;
+}
+.form-control-tech:focus { border-color: var(--figma-primary); box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.1); outline: none; }
+
+.fw-black { font-weight: 900 !important; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+@media (max-width: 1100px) { .checkout-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 container-fluid px-lg-5">
+    
+    <div class="mb-5 reveal">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill font-mono fw-black mb-3" style="font-size: 10px; letter-spacing: 1px;">
+                    <i class="bi bi-shield-lock-fill me-1"></i> SSL_SECURE_VAULT_ACTIVE
+                </span>
+                <h1 class="fw-black m-0 tracking-tighter" style="font-size: 3.5rem;">FINAL <span class="text-primary">HANDSHAKE</span></h1>
+            </div>
+            <div class="text-end d-none d-lg-block bg-white p-3 rounded-4 border shadow-sm">
+                <small class="form-label-tech mb-1">ORDER_ID</small>
+                <div class="h5 fw-black font-mono text-dark mb-0" id="orderIDDisplay">ORD-SYNCING...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="checkout-grid">
+        <div class="reveal">
+            <div id="statusTerminal" class="terminal-node mb-4">
+                <div id="terminalLog">> READY FOR IDENTITY VERIFICATION...</div>
+            </div>
+
+            <div class="checkout-node border-primary border-top-0" style="border-top: 6px solid var(--figma-primary) !important;">
+                <h5 class="fw-black mb-5 tracking-tight"><i class="bi bi-credit-card-2-front me-2 text-primary"></i>PAYMENT GATEWAY (CC)</h5>
+                
+                <form id="payment-handshake-form">
+                    {% csrf_token %}
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label-tech">CARDHOLDER NAME</label>
+                            <input type="text" name="card_name" required class="form-control-tech w-100 font-mono" value="{{ user.get_full_name|upper }}" placeholder="VERIFIED NAME REQUIRED">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label-tech">ACCOUNT NUMBER</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-2 border-end-0 px-3 text-primary"><i class="bi bi-lock"></i></span>
+                                <input type="text" id="cardNum" required class="form-control-tech border-start-0 flex-grow-1 font-mono" placeholder="0000 0000 0000 0000" maxlength="19">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label-tech">VALIDATION EXPIRY</label>
+                            <input type="text" id="cardExp" required class="form-control-tech w-100 font-mono" placeholder="MM / YY" maxlength="7">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-tech">SECURITY TOKEN (CVV)</label>
+                            <input type="password" maxlength="3" required class="form-control-tech w-100 font-mono" placeholder="•••">
+                        </div>
+                    </div>
+
+                    <div class="mt-5">
+                        <button type="submit" class="btn btn-primary w-100 py-4 rounded-pill fw-black shadow-lg" id="procBtn" style="font-size: 16px; letter-spacing: 2px;">
+                            PAY AMOUNT <i class="bi bi-lightning-charge-fill ms-2"></i>
+                        </button>
+                        <div class="d-flex align-items-center justify-content-center gap-3 mt-4">
+                            <i class="bi bi-shield-check text-success fs-5"></i>
+                            <p class="text-muted extra-small mb-0 font-mono">ENCRYPTED VIA HIGH-SECURITY HSM MODULE</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <aside class="reveal" style="animation-delay: 0.15s;">
+            <div class="checkout-node">
+                <h6 class="fw-black mb-4 font-mono text-primary tracking-widest" style="font-size: 12px;">ORDER SUMMARY</h6>
+                
+                <div class="meta-card shadow-sm">
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="avatar-handshake-wrapper shadow-sm">
+                            <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=4F46E5&color=fff&size=128" class="w-100 h-100 rounded-3">
+                        </div>
+                        <div class="overflow-hidden">
+                            <span class="form-label-tech mb-1" style="color: var(--clr-slate-600);">AUTHORIZED STUDENT </span>
+                            <h5 class="fw-black text-dark mb-0 text-truncate">{{ user.username|upper }}</h5>
+                            <span class="badge bg-primary bg-opacity-10 text-primary font-mono" style="font-size: 8px;">COURSE_ID: #{{ user.id|add:1092 }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-top">
+                        <div class="mb-3 d-flex justify-content-between">
+                            <span class="form-label-tech" style="color: var(--clr-slate-600);">SYCN TIMESTAMP</span>
+                            <span class="fw-black font-mono small" id="nodeDate">--/--/--</span>
+                        </div>
+                       <!--  <div class="d-flex justify-content-between">
+                            <span class="form-label-tech" style="color: var(--clr-slate-600);">NETWORK STATUS</span>
+                            <span class="text-success small fw-black font-mono">LINK_STABLE</span>
+                        </div> -->
+                    </div>
+                </div>
+
+                <div class="px-2">
+                    <div class="price-row font-mono">
+                        <span class="text-muted">BASE AMOUNT</span>
+                        <span class="fw-black text-dark">₹{{ total }}</span>
+                    </div>
+                    <div class="price-row font-mono">
+                        <span class="text-muted">GST(18%)</span>
+                        <span class="fw-black text-dark">₹{{ gst }}</span>
+                    </div>
+                    <div class="price-row font-mono border-0">
+                        <span class="text-muted">PLATFORM Fee</span>
+                        <span class="fw-black text-primary">+ ₹3.00</span>
+                    </div>
+                </div>
+
+                <div class="grand-total-box">
+                    <div class="d-flex justify-content-between align-items-end">
+                        <div>
+                            <small class="form-label-tech text-white-50 opacity-50 font-mono">TOTAL AMOUNT</small>
+                            <div class="display-5 fw-black m-0 font-mono" id="finalTotalDisplay" style="letter-spacing: -3px;">₹{{ final_total }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="spinner-grow text-success" style="width: 15px; height: 15px;" role="status"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-4 text-center">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" height="20" class="opacity-25 grayscale px-2">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" height="20" class="opacity-25 grayscale px-2">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" height="20" class="opacity-25 grayscale px-2">
+                </div>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Telemetry Generation Protocol
+    const orderID = "ORD-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+    const authID = "AUTH-" + Math.random().toString(36).substr(2, 12).toUpperCase();
+    
+    document.getElementById('orderIDDisplay').innerText = orderID;
+    document.getElementById('nodeDate').innerText = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+
+    // 2. Input Masking Protocol
+    document.getElementById('cardNum').addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^\d]/g, '').replace(/(.{4})/g, '$1 ').trim();
+    });
+    document.getElementById('cardExp').addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^\d]/g, '').replace(/(.{2})/g, '$1 / ').replace(/\s\/\s$/, '').trim();
+    });
+
+    // 3. Secure Handshake Form Protocol
+    document.getElementById('payment-handshake-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('procBtn');
+        const term = document.getElementById('statusTerminal');
+        const log = document.getElementById('terminalLog');
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> INITIALIZING_SYNC...';
+        term.style.display = 'block';
+
+        // Simulated Sequential Console Handshake
+        const steps = [
+            '> ESTABLISHING SECURE TUNNEL...',
+            '> RSA_4096 HANDSHAKE VERIFIED',
+            '> INJECTING NODE_AUTH: ' + authID,
+            '> ALLOCATING CLOUD ASSETS...',
+            '> FINALIZING TRANSACTION...',
+            '> SYNC_SUCCESSFUL: REDIRECTING...'
+        ];
+
+        steps.forEach((msg, i) => {
+            setTimeout(() => {
+                log.innerHTML = msg;
+                if (i === steps.length - 1) {
+                    executeActualCheckout(btn, log);
+                }
+            }, i * 600);
+        });
+    });
+
+    function executeActualCheckout(btn, log) {
+        fetch("{% url 'checkout_process' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                log.innerHTML = '> CRITICAL_ERROR: ' + data.message;
+                log.style.color = '#F43F5E';
+                btn.disabled = false;
+                btn.innerText = 'RE-INITIALIZE PROTOCOL';
+            }
+        });
+    }
+
+    // Entrance reveal
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+});
+</script>
+{% endblock %}

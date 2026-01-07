@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Mentor Lab Review | Command Center{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Design Tokens --- */
+:root {
+    --adm-glass: rgba(255, 255, 255, 0.7);
+    --adm-border: rgba(226, 232, 240, 0.8);
+    --adm-primary: #6366F1;
+}
+
+body { 
+    background: radial-gradient(circle at top right, #F8FAFC, #EEF2FF);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* --- Table Node Engine --- */
+.audit-card {
+    background: var(--adm-glass);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--adm-border);
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.table thead th {
+    background: rgba(0,0,0,0.02);
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #64748B;
+    padding: 20px;
+}
+
+.sub-row { transition: 0.3s var(--spring-easing); border-bottom: 1px solid rgba(0,0,0,0.03); }
+.sub-row:hover { background: rgba(255,255,255,0.8); }
+
+/* --- Status Pulsing --- */
+.pulse-count {
+    background: var(--adm-primary);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+}
+
+/* --- Custom Scroll Node --- */
+.audit-scroll { max-height: 70vh; overflow-y: auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <header class="d-flex justify-content-between align-items-end mb-5 reveal">
+        <div>
+            <h2 class="fw-black text-slate-900 mb-1" style="letter-spacing: -1px;">MENTOR_AUDIT_TERMINAL.</h2>
+            <p class="text-muted mb-0 extra-small fw-bold">PROTOCOL: <span class="text-primary">VAL_SYNC_04</span> • HANDSHAKE: ACTIVE</p>
+        </div>
+        <div class="text-end">
+            <span class="badge pulse-count rounded-pill px-4 py-2 fw-black" id="pending-counter">
+                {{ submissions|length }} PENDING_NODES
+            </span>
+        </div>
+    </header>
+
+    <div class="audit-card overflow-hidden reveal" style="animation-delay: 0.1s;">
+        <div class="audit-scroll">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Candidate_Identity</th>
+                        <th>Payload_Title</th>
+                        <th>Sync_Timestamp</th>
+                        <th class="text-end pe-4">Verification_Action</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-body">
+                    {% for sub in submissions %}
+                    <tr id="sub-row-{{ sub.id }}" class="align-middle sub-row">
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 35px; height: 35px; font-size: 12px;">
+                                    {{ sub.user.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-slate-900">{{ sub.user.get_full_name|default:sub.user.username }}</div>
+                                    <div class="extra-small text-muted font-monospace">UUID_{{ sub.user.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-black text-primary small">{{ sub.title|upper }}</div>
+                            <div class="extra-small text-muted fw-bold">{{ sub.course.name }}</div>
+                        </td>
+                        <td class="extra-small fw-bold text-muted">
+                            <i class="bi bi-clock-history me-1"></i>{{ sub.created_at|timesince }}
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="btn-group shadow-sm rounded-pill overflow-hidden">
+                                <button onclick="gradeLab({{ sub.id }}, 'PASSED')" class="btn btn-success btn-sm px-3 border-0 fw-black">PASS</button>
+                                <button onclick="gradeLab({{ sub.id }}, 'FAILED')" class="btn btn-dark btn-sm px-3 border-0 fw-black">FAIL</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr id="empty-state">
+                        <td colspan="4" class="text-center py-5">
+                            <div class="opacity-20 mb-3"><i class="bi bi-shield-check display-1"></i></div>
+                            <h5 class="fw-black text-muted">BUFFER_EMPTY</h5>
+                            <p class="small text-muted mb-0">All system payloads have been synchronized.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function gradeLab(id, status) {
+    // Immediate Visual Handshake
+    const row = document.getElementById(`sub-row-${id}`);
+    row.style.pointerEvents = 'none';
+    row.style.opacity = '0.5';
+
+    fetch(`/mentor/review/update/${id}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Success Transition
+            row.style.transition = '0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+            row.style.transform = 'scale(0.9) translateX(50px)';
+            row.style.opacity = '0';
+            
+            setTimeout(() => {
+                row.remove();
+                updateCounter();
+                checkEmptyState();
+            }, 500);
+        } else {
+            row.style.opacity = '1';
+            row.style.pointerEvents = 'all';
+            alert("Handshake Error: Sync Failed.");
+        }
+    });
+}
+
+function updateCounter() {
+    const counter = document.getElementById('pending-counter');
+    let currentCount = parseInt(counter.innerText);
+    if (currentCount > 0) {
+        counter.innerText = `${currentCount - 1} PENDING_NODES`;
+    }
+}
+
+function checkEmptyState() {
+    const tbody = document.getElementById('audit-body');
+    if (tbody.children.length === 0) {
+        location.reload(); // Refresh to show the official empty state block
+    }
+}
+</script>
+{% endblock %}

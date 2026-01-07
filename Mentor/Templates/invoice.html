@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Invoice #{{ order.id }}{% endblock %}
+
+{% block style %}
+<style>
+
+/* ============================================================
+   GLOBAL REVEAL ANIMATION
+============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: .8s ease-out;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   BLACK BORDER GLASS CARD (Unified Theme)
+============================================================ */
+.black-box {
+  border: 2px solid #000;
+  border-radius: 16px;
+  background: #ffffffee;
+  backdrop-filter: blur(6px);
+  padding: 30px;
+  transition: .35s ease;
+}
+.black-box:hover {
+  transform: translateY(-8px);
+  border-color: #48b46a;
+  box-shadow: 0 20px 45px rgba(0,0,0,.15);
+}
+
+/* Invoice Title */
+.invoice-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+
+/* Meta */
+.invoice-meta small {
+  font-size: 14px;
+  color: #555;
+}
+
+/* Table */
+.invoice-table th {
+  background: #f3f7f3;
+  padding: 12px;
+  font-size: 13px;
+  text-transform: uppercase;
+  border-bottom: 2px solid #000;
+}
+.invoice-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+/* Total Box */
+.total-box {
+  border: 2px solid #000;
+  background: #f8fff8;
+  padding: 18px;
+  border-radius: 10px;
+  font-size: 20px;
+}
+
+/* QR Box */
+.qr-box {
+  text-align: center;
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 18px;
+  background: #fafafa;
+}
+
+/* Download Button */
+.download-btn {
+  background: #48b46a;
+  border: 2px solid #000;
+  color: #fff;
+  padding: 12px 30px;
+  border-radius: 12px;
+  font-size: 17px;
+  transition: .35s ease;
+}
+.download-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px rgba(72,180,106,.35);
+}
+
+</style>
+{% endblock style %}
+
+
+
+{% block content %}
+
+<div class="container my-5">
+
+  <div class="black-box reveal">
+
+    <!-- ================= HEADER ================= -->
+    <div class="d-flex justify-content-between align-items-start border-bottom pb-3">
+
+      <div>
+        <h2 class="invoice-title">INVOICE</h2>
+
+        <div class="invoice-meta mt-2">
+          <small><strong>Invoice #:</strong> {{ order.id }}</small><br>
+          <small><strong>Date:</strong> {{ order.created_at|date:"d M Y" }}</small>
+        </div>
+      </div>
+
+      <div>
+        <img src="{% static 'assets/img/logo.png' %}" width="85">
+      </div>
+
+    </div>
+
+
+    <!-- ================= BILLING DETAILS ================= -->
+    <div class="row mt-4">
+
+      <div class="col-sm-6">
+        <h6 class="fw-bold">Billed To:</h6>
+        <p class="mb-0">{{ order.user.get_full_name }}</p>
+        <small>{{ order.user.email }}</small>
+      </div>
+
+      <div class="col-sm-6 text-end">
+        <h6 class="fw-bold">Payment Method:</h6>
+        <p class="mb-0">Online Payment</p>
+        <small>Transaction ID: {{ order.transaction_id }}</small>
+      </div>
+
+    </div>
+
+
+
+    <!-- ================= ITEM TABLE ================= -->
+    <div class="table-responsive mt-4">
+
+      <table class="table invoice-table">
+        <thead>
+          <tr>
+            <th>COURSE NAME</th>
+            <th class="text-end">PRICE</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order.items.all %}
+          <tr>
+            <td>{{ item.course.name }}</td>
+            <td class="text-end">₹{{ item.course.price }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+
+
+
+    <!-- ================= TOTAL ================= -->
+    <div class="total-box text-end mt-3">
+      <strong>Total Paid: ₹{{ order.total }}</strong>
+    </div>
+
+
+
+    <!-- ================= QR CODE ================= -->
+    <div class="qr-box mt-4">
+      <img src="{{ qr_code_url }}" width="130">
+      <p class="small text-muted mt-2">Scan to verify invoice</p>
+    </div>
+
+
+
+    <!-- ================= DOWNLOAD BUTTON ================= -->
+    <div class="text-center mt-4">
+      <button id="downloadInvoiceBtn"
+              data-id="{{ order.id }}"
+              class="download-btn">
+        <i class="bi bi-download"></i> Download Invoice
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+<script>
+// Reveal Scroll Animation
+document.addEventListener("scroll", () => {
+  document.querySelectorAll(".reveal").forEach(el => {
+    if (el.getBoundingClientRect().top < window.innerHeight - 70) {
+      el.classList.add("visible");
+    }
+  });
+});
+
+
+// Download Button
+document.getElementById("downloadInvoiceBtn").addEventListener("click", function() {
+    let id = this.dataset.id;
+
+    showSnack("Preparing Invoice... ⏳");
+
+    fetch(`/invoice/download/${id}/`, {
+        method: "GET",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(res => res.blob())
+    .then(file => {
+        const url = window.URL.createObjectURL(file);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `invoice_${id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        showSnack("📄 Invoice Downloaded");
+    });
+});
+</script>
+{% endblock %}

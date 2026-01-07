@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Academic Catalog | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Engineering Design Tokens --- */
+:root {
+  --clr-primary: #6366f1;
+  --clr-primary-dark: #4f46e5;
+  --clr-success: #10b981;
+  --clr-slate-50: #f8fafc;
+  --clr-slate-200: #e2e8f0;
+  --clr-slate-600: #475569;
+  --clr-slate-900: #0f172a;
+  --radius-figma: 28px;
+  --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background-color: var(--clr-slate-50); font-family: 'Plus Jakarta Sans', sans-serif; color: var(--clr-slate-900); }
+
+.reveal { opacity: 0; transform: translateY(40px); transition: 1s var(--spring-easing); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* --- Catalog Grid --- */
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+}
+
+@media (max-width: 1100px) { .catalog-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .catalog-grid { grid-template-columns: 1fr; } }
+
+/* --- Course Card Node --- */
+.course-card-premium {
+    background: #ffffff;
+    border: 1px solid var(--clr-slate-200);
+    border-radius: var(--radius-figma);
+    overflow: hidden;
+    transition: all 0.5s var(--spring-easing);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.course-card-premium:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 40px 80px -15px rgba(99, 102, 241, 0.15);
+    border-color: var(--clr-primary);
+}
+
+.course-img-wrapper { 
+    height: 180px; 
+    position: relative; 
+    overflow: hidden; 
+    background: var(--clr-slate-900); 
+}
+.course-img-wrapper img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; transition: 0.8s var(--spring-easing); }
+.course-card-premium:hover .course-img-wrapper img { transform: scale(1.1); opacity: 1; }
+
+/* --- Mentor Identity Node --- */
+.mentor-id-card {
+    background: var(--clr-slate-50); 
+    border-radius: 20px;
+    padding: 16px; 
+    margin-bottom: 20px; 
+    border: 1px solid var(--clr-slate-200);
+    transition: 0.3s ease;
+}
+.course-card-premium:hover .mentor-id-card { background: #fff; border-color: var(--clr-primary-soft); }
+
+.mentor-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.mentor-avatar { width: 44px; height: 44px; border-radius: 12px; border: 2px solid white; object-fit: cover; transition: 0.4s var(--spring-easing); }
+.course-card-premium:hover .mentor-avatar { transform: rotate(-6deg) scale(1.1); }
+
+.mentor-name-text { font-size: 13px; font-weight: 800; color: var(--clr-slate-900); line-height: 1.2; }
+.mentor-id-badge { font-size: 9px; color: var(--clr-primary); font-weight: 700; text-transform: uppercase; }
+
+/* --- Stats and Prices --- */
+.stats-grid {
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 12px;
+    padding: 16px 0; 
+    border-top: 1px dashed var(--clr-slate-200);
+}
+.stat-node { font-size: 11px; font-weight: 700; color: var(--clr-slate-600); display: flex; align-items: center; gap: 8px; }
+.stat-node i { color: var(--clr-primary); transition: 0.3s; }
+.course-card-premium:hover .stat-node i { transform: scale(1.2); }
+
+.price-box { 
+    font-size: 1.7rem; 
+    font-weight: 900; 
+    color: var(--clr-success); /* Amount Green Color */
+    letter-spacing: -1.5px; 
+    text-shadow: 0 10px 20px rgba(16, 185, 129, 0.1);
+}
+
+/* --- Premium Buttons (Fix size/hover) --- */
+.btn-group-sync { 
+    display: flex; 
+    gap: 2px; 
+    border-radius: 16px; 
+    overflow: hidden; 
+    height: 52px; /* Fixed height */
+}
+
+.btn-primary-tech { 
+    background: var(--clr-slate-900); 
+    color: #fff; 
+    padding: 0 25px; 
+    font-weight: 800; 
+    text-decoration: none; 
+    font-size: 11px; 
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    flex-grow: 1; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s var(--spring-easing); 
+}
+.btn-primary-tech:hover { background: var(--clr-primary); color: white; padding-right: 35px; }
+
+.btn-cart-tech { 
+    background: var(--clr-slate-900); 
+    color: #fff; 
+    width: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid rgba(255,255,255,0.1); 
+    transition: all 0.4s var(--spring-easing); 
+}
+.btn-cart-tech:hover { background: var(--clr-success); color: white; transform: scale(1.1); }
+.btn-cart-tech.bg-success { background: var(--clr-success) !important; }
+
+.course-body { padding: 28px; flex-grow: 1; display: flex; flex-direction: column; }
+.course-title {
+    font-size: 1.25rem; font-weight: 800; line-height: 1.3;
+    margin-bottom: 15px; color: var(--clr-slate-900);
+    height: 2.6em; overflow: hidden;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-5 bg-white border-bottom">
+    <div class="container text-center reveal">
+        <h1 class="display-3 fw-black text-slate-900" style="letter-spacing: -4px;">Courses <span class="text-primary">Catalog</span></h1>
+        <p class="text-muted">Engineering protocols and industrial-grade software modules.</p>
+    </div>
+</div>
+
+<section class="py-5">
+  <div class="container">
+    
+    <div class="control-panel reveal mb-5 p-3 bg-white border rounded-4 d-flex justify-content-between align-items-center">
+        <!-- <div class="d-flex align-items-center gap-3">
+            <div class="bg-primary text-white p-2 rounded-3 shadow-sm"><i class="bi bi-filter-right fs-5"></i></div>
+            <select class="form-select border-0 bg-light extra-small fw-bold" style="width: 200px; font-size: 11px;">
+                <option>ALL PROTOCOLS</option>
+                <option>SYSTEM ARCHITECTURE</option>
+                <option>BACKEND LOGIC</option>
+            </select>
+        </div> -->
+        <div class="badge bg-primary text-white px-4 py-2 rounded-pill fw-black" style="font-size: 10px;">
+            {{ courses|length }} ACTIVE COURSES 
+        </div>
+    </div>
+
+    <div class="catalog-grid">
+      {% for course in courses %}
+        <div class="reveal">
+          <article class="course-card-premium">
+            <div class="course-img-wrapper">
+                <span class="level-badge" style="position: absolute; top: 15px; left: 15px; z-index: 5; background: #fff; padding: 5px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    {{ course.level|default:"ELITE" }}
+                </span>
+                <img src="{% if course.image %}{{ course.image.url }}{% else %}{% static 'assets/img/default.jpg' %}{% endif %}" alt="{{ course.name }}">
+            </div>
+
+            <div class="course-body">
+                <span class="course-category">{{ course.category|upper }}</span>
+                <h5 class="course-title fw-black"><a href="{% url 'course_detail' course.id %}" class="text-decoration-none text-dark">{{ course.name }}</a></h5>
+                
+                <div class="mentor-id-card">
+                    <div class="mentor-meta">
+                        <img src="https://ui-avatars.com/api/?name={{ course.instructor }}&background=6366f1&color=fff" class="mentor-avatar">
+                        <div class="d-flex flex-column">
+                            <span class="mentor-name-text">{{ course.instructor }}</span>
+                            <span class="mentor-id-badge">ID: #ARC-{{ forloop.counter|add:100 }}</span>
+                        </div>
+                    </div>
+                    <div class="skill-cluster d-flex gap-1">
+                        <span class="skill-tag">Expertise: 8+ Yrs</span>
+                        <span class="skill-tag">Cloud Native</span>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-node"><i class="bi bi-hdd-network"></i> {{ course.lessons.count }} Units</div>
+                    <div class="stat-node"><i class="bi bi-clock-history"></i> 14.5 Hours</div>
+                    <div class="stat-node"><i class="bi bi-star-fill text-warning"></i> 4.9 Rating</div>
+                    <div class="stat-node"><i class="bi bi-patch-check-fill text-success"></i> VERIFIED</div>
+                </div>
+
+                <div class="action-footer mt-auto pt-4 d-flex align-items-center justify-content-between">
+                    <div class="price-box">₹{{ course.price }}</div>
+                    <div class="btn-group-sync">
+                        <a href="{% url 'course_detail' course.id %}" class="btn-primary-tech">Enroll Now</a>
+                        <button class="btn-cart-tech add-to-cart-btn {% if course.id in cart_course_ids %}bg-success{% endif %}" data-id="{{ course.id }}">
+                            <i class="bi {% if course.id in cart_course_ids %}bi-bag-check-fill{% else %}bi-cart-plus{% endif %}"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+          </article>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Reveal Sequence Protocol
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // 2. Ultra-Fast Add to Cart Handshake
+    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const self = this;
+            const courseId = self.dataset.id;
+            const icon = self.querySelector('i');
+            const originalClass = icon.className;
+            const navCounter = document.getElementById('cart-count-nav');
+
+            // Block multiple hits while syncing
+            if (self.classList.contains('bg-success')) return;
+
+            /* --- STEP 1: INSTANT SUCCESS (OPTIMISTIC) --- */
+            // This happens in ~10ms
+            self.classList.add('bg-success', 'active-sync');
+            icon.className = 'bi bi-bag-check-fill';
+            
+            if (navCounter) {
+                const currentCount = parseInt(navCounter.innerText) || 0;
+                navCounter.innerText = currentCount + 1;
+                navCounter.classList.add('pulse-sync');
+                setTimeout(() => navCounter.classList.remove('pulse-sync'), 400);
+            }
+
+            /* --- STEP 2: BACKGROUND SERVER SYNC --- */
+            fetch(`/cart/add/${courseId}/`, {
+                method: "POST",
+                headers: { 
+                    "X-CSRFToken": "{{ csrf_token }}", 
+                    "X-Requested-With": "XMLHttpRequest" 
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== "success") {
+                    // Fail-Safe: Quietly revert if the server specifically rejects it
+                    quietRollback(self, icon, originalClass, navCounter);
+                }
+            })
+            .catch(err => {
+                // Fail-Safe: Quietly revert on network timeout
+                quietRollback(self, icon, originalClass, navCounter);
+            });
+        });
+    });
+
+    // Quiet Rollback Helper (No annoying alerts)
+    function quietRollback(btn, icon, oldClass, counter) {
+        btn.classList.remove('bg-success', 'active-sync');
+        icon.className = oldClass;
+        if (counter) {
+            const val = parseInt(counter.innerText) || 1;
+            counter.innerText = Math.max(0, val - 1);
+        }
+    }
+});
+</script>
+
+<style>
+/* Instant Feedback Physics */
+.active-sync {
+    transform: scale(1.15);
+    transition: 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes cartPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.6); color: #10b981; filter: brightness(1.2); }
+    100% { transform: scale(1); }
+}
+
+.pulse-sync {
+    display: inline-block;
+    animation: cartPulse 0.4s ease-out;
+}
+
+/* Ensure the success state stays high contrast */
+.bg-success {
+    background-color: #10b981 !important;
+    border-color: #059669 !important;
+}
+</style>
+{% endblock %}

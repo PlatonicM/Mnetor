@@ -1,0 +1,410 @@
+{% comment %} {% extends "base.html" %}
+{% load static %}
+{% block title %}Home | Mentor{% endblock title %}
+
+{% block extra_css %}
+<style>
+/* ---------- Global improvements (keep theme colors) ---------- */
+.hero-cta { background: linear-gradient(90deg, rgba(95,207,128,0.12), rgba(75,179,108,0.06)); padding: 28px; border-radius: 12px; }
+.section-title p { font-weight: 600; letter-spacing: .2px; color: #222; }
+.course-item, .member, .icon-box {
+  transition: transform .35s ease, box-shadow .35s ease;
+  will-change: transform;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Course card */
+.course-item { box-shadow: 0 6px 18px rgba(15,20,30,0.06); display:flex; flex-direction:column; }
+.course-item img { width:100%; height:210px; object-fit:cover; transition: transform .45s ease; }
+.course-item:hover { transform: translateY(-12px); box-shadow: 0 22px 50px rgba(8,12,20,0.12); }
+.course-item:hover img { transform: scale(1.06); }
+.course-content { padding: 18px; flex:1; display:flex; flex-direction:column; }
+
+/* Enroll / CTA */
+.enroll-btn, .buy-now-btn {
+  padding: .5rem 1rem;
+  border-radius: 8px;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-weight:600;
+  transition: transform .22s ease, box-shadow .22s ease;
+}
+.enroll-btn { background:#5fcf80; color:#fff; }
+.enroll-btn:hover { transform: translateY(-3px); box-shadow:0 10px 30px rgba(75,179,108,0.12); }
+
+/* Trainer cards */
+.member { background:transparent; border-radius:10px; overflow:hidden; }
+.member .img-wrapper { height:220px; overflow:hidden; }
+.member img { width:100%; height:100%; object-fit:cover; transition: transform .45s ease; border-bottom-left-radius:0; border-bottom-right-radius:0; }
+.member:hover { transform: translateY(-10px); box-shadow: 0 20px 45px rgba(6,10,20,0.12); }
+.member:hover img { transform: scale(1.07); }
+.member-content { padding: 16px; background: #fff; }
+
+/* Icon boxes / features */
+.icon-box { padding: 18px; border-radius:10px; background:#fff; box-shadow: 0 6px 18px rgba(8,12,20,0.04); }
+
+/* Counts */
+.counts .purecounter { font-weight:700; font-size:24px; color:#222; }
+
+/* Utilities */
+.small-muted { font-size:.9rem; color:#666; }
+.badge-category { background: rgba(95,207,128,0.12); color:#2b6b3a; font-weight:600; padding:.25rem .5rem; border-radius:999px; }
+
+/* Responsive tweak */
+@media (max-width: 767px) {
+  .course-item img { height:170px; }
+  .member .img-wrapper { height:170px; }
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<!-- ======= HERO ======= -->
+<section id="hero" class="d-flex align-items-center" style="padding:64px 0;">
+  <div class="container" data-aos="fade-up">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <h1 class="mb-3">Learning Today,<br>Leading Tomorrow</h1>
+        <p class="lead mb-4">Upskill with practical, project-based courses taught by industry professionals. Lifetime access & certificates.</p>
+
+        <div class="d-flex gap-2 align-items-center hero-cta">
+          <a href="{% url 'courses' %}" class="btn btn-primary btn-lg">Browse Courses</a>
+          <a href="{% url 'about' %}" class="btn btn-outline-secondary btn-lg">Why Mentor?</a>
+          <small class="ms-3 small-muted">Black Friday sale — courses from <strong>₹399</strong> — Ends Nov 28</small>
+        </div>
+
+        <div class="mt-4 d-flex gap-3">
+          <div>
+            <div class="fw-bold">{{ stats.students|default:0 }}</div>
+            <div class="small-muted">Learners</div>
+          </div>
+          <div>
+            <div class="fw-bold">{{ stats.courses|default:0 }}</div>
+            <div class="small-muted">Courses</div>
+          </div>
+          <div>
+            <div class="fw-bold">{{ stats.trainers|default:0 }}</div>
+            <div class="small-muted">Trainers</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5 d-none d-lg-block" data-aos="zoom-in" data-aos-delay="150">
+        <div class="card shadow-lg">
+          <img src="{% static 'assets/img/hero-side.jpg' %}" alt="hero" class="img-fluid" style="object-fit:cover; height:380px;">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main id="main">
+
+  <!-- ======= ABOUT ======= -->
+  <section id="about" class="about py-5">
+    <div class="container" data-aos="fade-up">
+      <div class="row align-items-center">
+        <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+          <img src="{% static 'assets/img/about.jpg' %}" class="img-fluid rounded shadow-sm" alt="About">
+        </div>
+        <div class="col-lg-6 order-lg-1">
+          <h3>Learn real-world skills with industry-grade courses.</h3>
+          <p class="fst-italic">Programs crafted with hands-on projects, mentor feedback and real assessments.</p>
+          <ul>
+            <li><i class="bi bi-check-circle"></i> Structured curriculums with projects</li>
+            <li><i class="bi bi-check-circle"></i> Live doubt sessions & community support</li>
+            <li><i class="bi bi-check-circle"></i> Lifetime access, certificates & career resources</li>
+          </ul>
+          <a href="{% url 'about' %}" class="more-btn mt-2 d-inline-block">Read more <i class="bx bx-chevron-right"></i></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= COUNTS ======= -->
+  <section id="counts" class="counts section-bg py-4">
+    <div class="container">
+      <div class="row text-center">
+        <div class="col-6 col-md-3 mb-3">
+          <span data-purecounter-start="0" data-purecounter-end="{{ stats.students|default:1200 }}" data-purecounter-duration="1" class="purecounter"></span>
+          <p>Learners</p>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+          <span data-purecounter-start="0" data-purecounter-end="{{ stats.courses|default:95 }}" data-purecounter-duration="1" class="purecounter"></span>
+          <p>Courses</p>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+          <span data-purecounter-start="0" data-purecounter-end="{{ stats.workshops|default:35 }}" data-purecounter-duration="1" class="purecounter"></span>
+          <p>Workshops</p>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+          <span data-purecounter-start="0" data-purecounter-end="{{ stats.trainers|default:25 }}" data-purecounter-duration="1" class="purecounter"></span>
+          <p>Trainers</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= WHY US ======= -->
+  <section id="why-us" class="why-us py-5">
+    <div class="container" data-aos="fade-up">
+      <div class="section-title">
+        <p>Why Choose Mentor?</p>
+      </div>
+      <div class="row gy-4">
+        <div class="col-lg-4">
+          <div class="content icon-box shadow-sm p-4">
+            <h3>We help you grow, step by step.</h3>
+            <p>Practical learning paths with guided projects, mentor reviews and career guidance.</p>
+            <a href="{% url 'about' %}" class="more-btn">Learn More <i class="bx bx-chevron-right"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="icon-box p-4">
+                <i class="bx bx-receipt fs-3" style="color:#5fcf80;"></i>
+                <h4>Organized Learning</h4>
+                <p class="small-muted">Clear modules and milestones for steady progress.</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="icon-box p-4">
+                <i class="bx bx-cube-alt fs-3" style="color:#5578ff;"></i>
+                <h4>Hands-on Projects</h4>
+                <p class="small-muted">Portfolio-ready projects to show employers.</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="icon-box p-4">
+                <i class="bx bx-images fs-3" style="color:#e80368;"></i>
+                <h4>Expert Mentors</h4>
+                <p class="small-muted">Learn from people working in the field today.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= FEATURES (keep original boxes but dynamic if provided) ======= -->
+  <section id="features" class="features py-5">
+    <div class="container" data-aos="fade-up">
+      <div class="section-title"><p>Platform Features</p></div>
+
+      <div class="row gy-4">
+        {% comment %} If you have a 'features' context variable it will render; otherwise show default 4. {% endcomment %}
+        {% if features %}
+          {% for f in features %}
+            <div class="col-lg-3 col-md-6">
+              <div class="icon-box p-4">
+                <i class="{{ f.icon }} fs-3" style="color: {{ f.color|default:'#5fcf80' }};"></i>
+                <h4>{{ f.title }}</h4>
+                <p class="small-muted">{{ f.description }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="col-lg-3 col-md-6"><div class="icon-box p-4"><i class="ri-book-open-line fs-3" style="color:#ffbb2c;"></i><h4>Lifetime Access</h4></div></div>
+          <div class="col-lg-3 col-md-6"><div class="icon-box p-4"><i class="ri-live-line fs-3" style="color:#5578ff;"></i><h4>Live Doubt Support</h4></div></div>
+          <div class="col-lg-3 col-md-6"><div class="icon-box p-4"><i class="ri-award-line fs-3" style="color:#e80368;"></i><h4>Completion Certificate</h4></div></div>
+          <div class="col-lg-3 col-md-6"><div class="icon-box p-4"><i class="ri-briefcase-line fs-3" style="color:#29cc61;"></i><h4>Internship Guidance</h4></div></div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= POPULAR COURSES ======= -->
+  <section id="popular-courses" class="courses py-5">
+    <div class="container" data-aos="fade-up">
+      <div class="section-title"><p>Trending Courses</p></div>
+
+      <div class="row g-4" data-aos="zoom-in" data-aos-delay="100">
+        {% for course in courses %}
+        <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+          <div class="course-item">
+            {% if course.image %}
+              <img src="{{ course.image.url }}" alt="{{ course.name }}">
+            {% else %}
+              <img src="{% static 'assets/img/course-placeholder.png' %}" alt="{{ course.name }}">
+            {% endif %}
+
+            <div class="course-content">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex gap-2 align-items-center">
+                  <span class="badge-category">{{ course.category|default:"General" }}</span>
+                </div>
+                <div><strong class="text-success">₹{{ course.price }}</strong></div>
+              </div>
+
+              <h3 class="mb-1"><a href="{% url 'course_detail' course.id %}">{{ course.name|truncatechars:60 }}</a></h3>
+              <p class="small-muted mb-3">{{ course.description|truncatechars:110 }}</p>
+
+              <div class="mt-auto d-flex gap-2">
+                <a href="{% url 'course_detail' course.id %}" class="btn btn-outline-primary btn-sm flex-grow-1">View Details</a>
+
+                {% if user.is_authenticated %}
+                  <button class="enroll-btn btn-sm" data-course-id="{{ course.id }}" onclick="addToCart(this)">
+                    <i class="bi bi-cart-plus"></i> Add
+                  </button>
+                  <button class="buy-now-btn btn-sm btn-success text-white" data-course-id="{{ course.id }}" onclick="buyNow(this)">
+                    Buy
+                  </button>
+                {% else %}
+                  <a href="{% url 'login' %}?next={% url 'course_detail' course.id %}" class="btn btn-warning btn-sm text-dark">Login to Buy</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+          <div class="alert alert-info">No courses available yet.</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if courses|length > 0 %}
+      <div class="text-center mt-4">
+        <a href="{% url 'courses' %}" class="btn btn-outline-secondary">See all courses</a>
+      </div>
+      {% endif %}
+
+    </div>
+  </section>
+
+  <!-- ======= TRAINERS (original style preserved + animated) ======= -->
+  <section id="trainers" class="trainers py-5">
+    <div class="container" data-aos="fade-up">
+      <div class="section-title"><p>Our Trainers</p></div>
+
+      <div class="row g-4" data-aos="zoom-in" data-aos-delay="100">
+        {% for t in trainers %}
+        <div class="col-lg-4 col-md-6 d-flex align-items-stretch">
+          <div class="member">
+            <div class="img-wrapper">
+              {% if t.user.profile_image %}
+                <img src="{{ t.user.profile_image.url }}" alt="{{ t.user.get_full_name }}">
+              {% else %}
+                <img src="{% static 'assets/img/trainers/default.jpg' %}" alt="{{ t.user.get_full_name }}">
+              {% endif %}
+            </div>
+            <div class="member-content">
+              <h4>{{ t.user.get_full_name }}</h4>
+              <span class="small-muted">{{ t.expertise|default:"Instructor" }}</span>
+              <p class="mt-2 small-muted">{{ t.bio|truncatechars:110 }}</p>
+              <div class="social mt-2">
+                {% if t.twitter %}<a href="{{ t.twitter }}" target="_blank"><i class="bi bi-twitter me-2"></i></a>{% endif %}
+                {% if t.facebook %}<a href="{{ t.facebook }}" target="_blank"><i class="bi bi-facebook me-2"></i></a>{% endif %}
+                {% if t.instagram %}<a href="{{ t.instagram }}" target="_blank"><i class="bi bi-instagram me-2"></i></a>{% endif %}
+                {% if t.linkedin %}<a href="{{ t.linkedin }}" target="_blank"><i class="bi bi-linkedin"></i></a>{% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="col-12"><div class="alert alert-secondary">No trainers found.</div></div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= CTA ======= -->
+  <section class="cta text-center py-5">
+    <div class="container" data-aos="fade-up">
+      <h3 class="fw-bold text-white mb-2">Start learning today</h3>
+      <p class="text-white mb-3">Join thousands who upskilled with Mentor.</p>
+      <a href="{% url 'courses' %}" class="btn btn-dark btn-lg">Browse Courses</a>
+    </div>
+  </section>
+
+</main>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+// helper to get CSRF token from cookie (Django default)
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+// Add to cart (AJAX)
+function addToCart(el) {
+  const courseId = el.dataset.courseId;
+  fetch(`/cart/add/${courseId}/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrftoken,
+      'X-Requested-With': 'XMLHttpRequest',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ qty: 1 })
+  })
+  .then(r => r.json())
+  .then(js => {
+    if (js.success) {
+      // update cart count if present
+      const cartBadge = document.getElementById('cart-count');
+      if (cartBadge) cartBadge.innerText = js.count;
+      showToast && showToast("Added to cart");
+    } else {
+      showToast && showToast(js.error || "Failed to add");
+    }
+  })
+  .catch(()=> showToast && showToast("Network error"));
+}
+
+// Buy now — add & redirect to checkout
+function buyNow(el) {
+  const courseId = el.dataset.courseId;
+  fetch(`/cart/add/${courseId}/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrftoken,
+      'X-Requested-With': 'XMLHttpRequest',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ qty: 1 })
+  })
+  .then(r => r.json())
+  .then(() => window.location.href = '/checkout/')
+  .catch(()=> showToast && showToast("Network error"));
+}
+
+// Notification dropdown toggle
+document.addEventListener('click', function(e){
+  const togg = e.target.closest('#notif-toggle');
+  if (togg) {
+    e.preventDefault();
+    document.getElementById('notif-dropdown')?.classList.toggle('show');
+  } else {
+    const nd = document.getElementById('notif-dropdown');
+    if (nd && !nd.contains(e.target)) nd.classList.remove('show');
+  }
+});
+
+// Mobile nav toggle minimal (if you use base.js, it may handle)
+document.querySelectorAll('.mobile-nav-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('navbar')?.classList.toggle('navbar-mobile');
+  });
+});
+</script>
+{% endblock extra_js %} {% endcomment %}

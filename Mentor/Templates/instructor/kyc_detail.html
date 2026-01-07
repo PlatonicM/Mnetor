@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}KYC Detail{% endblock %}
+
+{% block content %}
+
+<style>
+/* ============================
+   PREMIUM KYC PAGE STYLING
+============================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: .8s cubic-bezier(.19,1,.22,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.black-box {
+  border: 2px solid #000;
+  background: rgba(255, 240, 240, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  padding: 24px;
+  transition: .35s ease;
+}
+.black-box:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 45px rgba(0,0,0,.22);
+}
+
+.label-title {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  color: #fff;
+  display: inline-block;
+}
+
+/* Colors for statuses */
+.status-PENDING   { background: #facc15; color: #000; }
+.status-APPROVED  { background: #22c55e; }
+.status-REJECTED  { background: #ef4444; }
+</style>
+
+
+<div class="container my-5" style="max-width:800px;">
+
+  <div class="black-box reveal">
+
+    <!-- Heading -->
+    <h3 class="fw-bold mb-1">{{ doc.get_doc_type_display }}</h3>
+
+    <!-- Status -->
+    <span class="status-badge status-{{ doc.status }}">
+      {{ doc.status }}
+    </span>
+
+    <p class="text-muted mt-2">
+      <strong>Submitted:</strong> {{ doc.submitted_at }}
+    </p>
+
+    <hr>
+
+    <!-- FILE PREVIEW -->
+    {% if doc.file.url %}
+      <p class="mb-2 fw-bold">Uploaded Document:</p>
+
+      <a href="{{ doc.file.url }}" 
+         target="_blank"
+         class="btn btn-dark px-4 py-2"
+         style="border:2px solid #000; font-weight:700;">
+        <i class="bi bi-box-arrow-up-right"></i> View File
+      </a>
+    {% else %}
+      <p class="text-danger fw-bold">No file uploaded</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- FOOTER NOTES -->
+    {% if doc.notes %}
+      <p class="mt-2">
+        <strong>Admin Notes:</strong>  
+        <span class="text-muted">{{ doc.notes }}</span>
+      </p>
+    {% endif %}
+
+    <!-- Back button -->
+    <a href="{% url 'kyc_upload' %}" 
+       class="btn btn-outline-secondary mt-3"
+       style="border:2px solid #000; font-weight:700;">
+      ← Back
+    </a>
+
+  </div>
+
+</div>
+
+
+<!-- Reveal Animation -->
+<script>
+document.addEventListener("scroll", () => {
+  document.querySelectorAll(".reveal").forEach(el => {
+    if (el.getBoundingClientRect().top < window.innerHeight - 80) {
+      el.classList.add("visible");
+    }
+  });
+});
+</script>
+
+{% endblock %}

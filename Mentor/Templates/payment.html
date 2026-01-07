@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}My Learning Node | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Engineering Theme Tokens --- */
+:root {
+  --clr-primary: #6366f1;
+  --clr-primary-soft: #eef2ff;
+  --clr-success: #10b981;
+  --clr-bg-main: #f8fafc;
+  --clr-bg-dark: #0f172a;
+  --clr-surface: #ffffff;
+  --clr-border: #e2e8f0;
+  --radius-xl: 24px;
+  --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background-color: var(--clr-bg-main); font-family: 'Plus Jakarta Sans', sans-serif; color: var(--clr-bg-dark); }
+
+/* --- Reveal Entrance Animation --- */
+.reveal { opacity: 0; transform: translateY(30px); transition: 1s var(--spring-easing); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* --- Dashboard Header --- */
+.dashboard-header {
+  padding: 80px 0 60px;
+  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 40%), #ffffff;
+  border-bottom: 1px solid var(--clr-border);
+}
+.header-badge {
+  background: var(--clr-primary-soft); color: var(--clr-primary);
+  font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
+  padding: 6px 16px; border-radius: 99px; margin-bottom: 15px; display: inline-block;
+}
+.dashboard-header h2 { font-weight: 900; font-size: 3.5rem; letter-spacing: -3px; }
+
+/* --- Course Card Node --- */
+.course-node-card {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: all 0.5s var(--spring-easing);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.course-node-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 40px 80px -15px rgba(99, 102, 241, 0.15);
+  border-color: var(--clr-primary);
+}
+
+.img-container {
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+  background: var(--clr-bg-dark);
+}
+.img-container img {
+  width: 100%; height: 100%; object-fit: cover; opacity: 0.9;
+  transition: 0.8s ease;
+}
+.course-node-card:hover .img-container img { transform: scale(1.1); opacity: 1; }
+
+/* --- Completion Badges --- */
+.status-pill {
+  position: absolute; top: 15px; left: 15px; z-index: 5;
+  background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px);
+  padding: 6px 12px; border-radius: 10px; font-size: 10px; font-weight: 800;
+}
+.xp-badge {
+  position: absolute; top: 15px; right: 15px; z-index: 5;
+  background: var(--clr-bg-dark); color: white;
+  padding: 6px 12px; border-radius: 10px; font-size: 10px; font-weight: 800;
+}
+
+/* --- Node Content --- */
+.node-body { padding: 28px; flex-grow: 1; display: flex; flex-direction: column; }
+
+.node-category {
+  color: var(--clr-primary); font-size: 10px; font-weight: 900;
+  letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 8px;
+}
+
+/* --- Progress Engine --- */
+.node-progress-wrapper { margin: 25px 0; }
+.progress-meta { display: flex; justify-content: space-between; font-weight: 800; font-size: 12px; margin-bottom: 8px; }
+.progress-shell { height: 6px; background: var(--clr-slate-200); border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--clr-primary); border-radius: 10px; transition: width 1.5s var(--spring-easing); }
+
+/* --- Buttons --- */
+.btn-action {
+  height: 52px; border-radius: 14px; font-weight: 800; font-size: 13px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: 0.3s; text-decoration: none; border: none;
+}
+.btn-resume { background: var(--clr-bg-dark); color: white; flex-grow: 1; }
+.btn-resume:hover { background: var(--clr-primary); transform: scale(1.05); color: white; }
+
+.btn-trash { background: #fef2f2; color: #ef4444; width: 52px; }
+.btn-trash:hover { background: #fee2e2; transform: rotate(8deg); }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+
+<header class="dashboard-header reveal">
+  <div class="container">
+    <span class="header-badge">ACADEMIC SYSTEM v2.0</span>
+    <h2>My Learning <span class="text-primary">Hub.</span></h2>
+    <p class="text-muted fs-5">Active curriculum nodes provisioned for your identity.</p>
+  </div>
+</header>
+
+<div class="container py-5">
+
+{% if courses %}
+  <div class="row g-4">
+    {% for mc in courses %}
+    {% with course=mc.course %}
+    <div class="col-lg-4 col-md-6 reveal">
+      <div class="course-node-card">
+        
+        <div class="img-container">
+          <div class="status-pill shadow-sm">
+            {% if mc.progress == 100 %}
+              <span class="text-success"><i class="bi bi-patch-check-fill"></i> COMPLETED</span>
+            {% else %}
+              <span class="text-primary"><i class="bi bi-cpu-fill"></i> ACTIVE NODE</span>
+            {% endif %}
+          </div>
+          <div class="xp-badge">+{{ course.xp|default:"500" }} XP</div>
+          <img src="{{ course.image.url }}" alt="{{ course.name }}">
+        </div>
+
+        <div class="node-body">
+          <span class="node-category">{{ course.category }}</span>
+          <h4 class="fw-black text-slate-900 mb-2" style="letter-spacing: -0.5px;">{{ course.name }}</h4>
+          <p class="text-muted small">{{ course.description|truncatechars:85 }}</p>
+
+          <div class="node-progress-wrapper mt-auto">
+            <div class="progress-meta">
+              <span class="text-muted">Mastery Progression</span>
+              <span class="text-primary">{{ mc.progress }}%</span>
+            </div>
+            <div class="progress-shell">
+              <div class="progress-fill" style="width: {{ mc.progress }}%"></div>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between extra-small fw-bold text-muted mb-4">
+             <span><i class="bi bi-hdd-stack me-1"></i> {{ mc.lesson_count }} UNITS</span>
+             <span><i class="bi bi-shield-lock me-1"></i> ENCRYPTED SYNC</span>
+          </div>
+
+          <div class="d-flex gap-2">
+            <a href="/course/{{ course.id }}/" class="btn-action btn-resume">
+              <i class="bi bi-play-circle-fill fs-5"></i> RESUME TRACK
+            </a>
+
+            <a href="/mycourse/remove/{{ mc.id }}/"
+               class="btn-action btn-trash"
+               onclick="return confirm('De-provision node from library?');">
+              <i class="bi bi-trash3-fill"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+
+{% else %}
+  <div class="text-center py-5 reveal">
+    <div class="mb-4">
+        <i class="bi bi-cloud-slash display-1 text-muted opacity-25"></i>
+    </div>
+    <h3 class="fw-black">No Active Nodes Detected.</h3>
+    <p class="text-muted mb-5">Initialize your first curriculum handshake by browsing the catalog.</p>
+    <a href="/courses/" class="btn-action btn-resume d-inline-flex px-5 shadow-lg">
+      PROVISION NEW COURSE--> <i class="bi bi-arrow-right-short fs-4"></i>
+    </a>
+  </div>
+{% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Staggered reveal protocol
+    const observerOptions = { threshold: 0.1 };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                // Stagger logic
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, index * 100);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+});
+</script>
+{% endblock %}

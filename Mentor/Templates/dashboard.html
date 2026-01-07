@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Command Center | Analytical Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Design Tokens --- */
+:root {
+    --figma-bg: #F8FAFC;
+    --figma-card: #FFFFFF;
+    --figma-primary: #6366F1;
+    --figma-primary-soft: #EEF2FF;
+    --figma-text-main: #0F172A;
+    --figma-text-muted: #64748B;
+    --figma-border: #E2E8F0;
+    --radius-figma: 16px;
+}
+
+body { background-color: var(--figma-bg); font-family: 'Plus Jakarta Sans', sans-serif; }
+
+/* --- Layout Architecture --- */
+.dashboard-wrapper { max-width: 1600px; margin: 0 auto; padding: 0 24px; }
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 260px 1fr 340px;
+    gap: 24px; 
+    padding-top: 24px;
+    padding-bottom: 40px;
+}
+
+/* --- Navigation --- */
+.nav-col { position: sticky; top: 100px; height: fit-content; }
+.nav-item {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px; 
+    border-radius: 12px; color: var(--figma-text-muted); text-decoration: none; transition: 0.3s;
+    font-size: 14px; font-weight: 600;
+}
+.nav-item:hover { background: var(--figma-primary-soft); color: var(--figma-primary); }
+.nav-item.active { background: var(--figma-primary); color: white; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3); }
+
+/* --- Analytics Card --- */
+.analytics-card {
+    background: white; border: 1px solid var(--figma-border);
+    border-radius: var(--radius-figma); padding: 24px; transition: 0.3s;
+    height: 100%;
+}
+.bento-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
+
+.data-label { font-size: 11px; font-weight: 800; color: var(--figma-text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.data-value { font-size: 32px; font-weight: 800; color: var(--figma-text-main); line-height: 1.2; margin: 5px 0; }
+
+.progress-track { height: 8px; background: #F1F5F9; border-radius: 10px; overflow: hidden; position: relative; }
+.progress-fill { height: 100%; background: var(--figma-primary); width: 0; transition: 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* --- Heatmap --- */
+.heatmap { display: flex; gap: 8px; margin-top: 15px; }
+.heatmap-cell { flex: 1; height: 35px; border-radius: 8px; background: #F1F5F9; position: relative; transition: 0.3s; }
+.heatmap-cell.active { background: var(--figma-primary); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2); }
+.heatmap-cell::after { 
+    content: attr(data-day); position: absolute; bottom: -22px; 
+    left: 50%; transform: translateX(-50%); font-size: 10px; 
+    font-weight: 700; color: var(--figma-text-muted); 
+}
+
+/* Animations */
+.reveal { opacity: 0; transform: translateY(15px); animation: fadeInUp 0.5s forwards; }
+@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<header class="page-header border-bottom bg-white sticky-top shadow-sm" style="z-index: 1050;">
+    <div class="dashboard-wrapper py-3 d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="fw-black mb-0"><i class="bi bi-terminal-fill text-primary me-2"></i>COMMAND_CENTER</h5>
+            <p class="text-muted extra-small mb-0">System status: <span class="text-success fw-bold">ONLINE</span> • {{ user.username }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light border-0 rounded-start-pill ps-3"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" id="course-filter" class="form-control border-0 bg-light rounded-end-pill pe-3" placeholder="Filter curriculum...">
+            </div>
+            <button class="btn btn-dark btn-sm rounded-pill px-4 fw-bold">Export_CSV</button>
+        </div>
+    </div>
+</header>
+
+<div class="dashboard-wrapper">
+    <div class="dashboard-grid">
+        <aside class="nav-col">
+            <nav class="d-flex flex-column gap-2">
+                <a href="#" class="nav-item active"><i class="bi bi-cpu"></i> Dashboard</a>
+                <a href="{% url 'courses' %}" class="nav-item"><i class="bi bi-layers"></i> Global Library</a>
+                <a href="#" class="nav-item"><i class="bi bi-bell"></i> System Alerts</a>
+                
+                {% if user.is_staff %}
+                    <div class="mt-4 pt-4 border-top opacity-50">
+                        <span class="extra-small fw-bold text-muted ps-3">MENTOR_CONTROLS</span>
+                    </div>
+                    <a href="{% url 'mentor_review_list' %}" class="nav-item">
+                        <i class="bi bi-clipboard-check"></i> Review Queue
+                        <span class="badge bg-primary ms-auto rounded-pill">NEW</span>
+                    </a>
+                {% endif %}
+
+                <hr class="my-4 opacity-50">
+                <a href="{% url 'logout' %}" class="nav-item text-danger"><i class="bi bi-power"></i> Logout_Session</a>
+            </nav>
+        </aside>
+
+        <main>
+            <div class="bento-row">
+                <div class="analytics-card reveal">
+                    <span class="data-label">ACTIVE_CURRICULUM</span>
+                    <div class="data-value">{{ courses|length }}</div>
+                    <span class="badge bg-indigo-subtle text-primary border border-primary border-opacity-10">SYNC_OK</span>
+                </div>
+                <div class="analytics-card reveal" style="animation-delay: 0.1s;">
+                    <span class="data-label">AVG_COMPLETION</span>
+                    <div class="data-value">{{ avg_comp|default:0 }}%</div>
+                    <div class="progress-track"><div class="progress-fill" data-width="{{ avg_comp|default:0 }}%"></div></div>
+                </div>
+                <div class="analytics-card reveal" style="animation-delay: 0.2s;">
+                    <span class="data-label">XP_ARCHON_LEVEL</span>
+                    <div class="data-value">{{ total_xp|default:0 }}</div>
+                    <span class="text-primary fw-black small">RANK: LEVEL {{ xp_level|default:1 }}</span>
+                </div>
+            </div>
+
+            <div class="analytics-card mb-5 reveal" style="animation-delay: 0.3s;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="data-label">CONSISTENCY_HEATMAP</span>
+                    <span class="extra-small text-muted fw-bold">ROLLING_7_DAYS</span>
+                </div>
+                <div class="heatmap mb-4">
+                    {% for day in heatmap %}
+                    <div class="heatmap-cell {{ day.state }}" data-day="{{ day.day }}"></div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <h6 class="fw-black mb-4"><i class="bi bi-journal-code text-primary me-2"></i>ENROLLED_TRACKS</h6>
+            <div class="row g-4" id="course-grid">
+                {% for mc in courses %}
+                <div class="col-md-6 course-card-item">
+                    <div class="analytics-card h-100 p-0 overflow-hidden shadow-sm hover-up">
+                        <img src="{% if mc.course.image %}{{ mc.course.image.url }}{% else %}{% static 'assets/img/default_course.jpg' %}{% endif %}" 
+                             class="w-100" 
+                             style="height: 150px; object-fit: cover;"
+                             onerror="this.src='https://placehold.co/600x400/6366f1/ffffff?text=Node+Active'">
+                        
+                        <div class="p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold mb-0 text-truncate" style="max-width: 70%;">{{ mc.course.name }}</h6>
+                                <span class="badge bg-dark rounded-pill">{{ mc.progress }}%</span>
+                            </div>
+                            <div class="progress-track mb-4"><div class="progress-fill" data-width="{{ mc.progress }}%"></div></div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'course_detail' mc.course.id %}" class="btn btn-primary btn-sm rounded-pill w-100 fw-bold">RESUME_LAB</a>
+
+                                <form action="{% url 'remove_mycourse' mc.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <button class="btn btn-outline-light btn-sm rounded-circle border text-muted" title="Archive Node"><i class="bi bi-archive"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No active curriculum nodes detected.</p>
+                    <a href="{% url 'courses' %}" class="btn btn-primary rounded-pill px-4">Initialize Library</a>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+
+        <aside class="analytics-panel">
+            <div class="analytics-card mb-4">
+                <h6 class="fw-black small mb-3">RECENT_NOTIFICATIONS</h6>
+                <div id="notification-feed">
+                    {% for lab in recent_labs %}
+                    <div class="p-2 mb-2 rounded-3 bg-light border-start border-primary border-4 d-flex justify-content-between align-items-center" id="notif-{{ lab.id }}">
+                        <div>
+                            <div class="small fw-bold text-dark">{{ lab.title|truncatechars:18 }}</div>
+                            <div class="extra-small text-muted">{{ lab.status }} • {{ lab.created_at|date:"d M" }}</div>
+                        </div>
+                        <button onclick="acknowledgeNode({{ lab.id }})" class="btn btn-link text-muted p-0"><i class="bi bi-check2-circle"></i></button>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 opacity-50">
+                        <i class="bi bi-cloud-slash h4"></i>
+                        <p class="extra-small mb-0">No active alerts</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="analytics-card bg-dark text-white p-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="spinner-grow spinner-grow-sm text-primary" style="width: 10px; height: 10px;"></span>
+                    <span class="small fw-black text-uppercase letter-spacing-1">Instructor_Pulse</span>
+                </div>
+                <p class="extra-small opacity-75 mb-4 line-height-base">"System analysis indicates your Backend proficiency is 12% higher than average. Ready for the next node?"</p>
+                <button class="btn btn-primary btn-sm w-100 rounded-pill fw-bold" id="mentorBtn">CONNECT_SYNC</button>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<script>
+// Acknowledge Node Function defined globally to ensure accessibility
+function acknowledgeNode(notificationId) {
+    fetch('/notifications/ack/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ id: notificationId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const el = document.getElementById(`notif-${notificationId}`);
+            el.style.transition = '0.3s';
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(20px)';
+            setTimeout(() => el.remove(), 300);
+        }
+    })
+    .catch(error => console.error('CRITICAL_SYNC_ERROR:', error));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Initial Handshake: Progress Bar Animation
+    setTimeout(() => {
+        document.querySelectorAll('.progress-fill').forEach(el => {
+            el.style.width = el.dataset.width;
+        });
+    }, 300);
+
+    // 2. Real-time Search Handshake
+    const searchInput = document.getElementById('course-filter');
+    if(searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            document.querySelectorAll('.course-card-item').forEach(card => {
+                const title = card.querySelector('h6').innerText.toLowerCase();
+                card.style.display = title.includes(val) ? 'block' : 'none';
+            });
+        });
+    }
+
+    // 3. Mentor Interaction AJAX Simulation
+    const mBtn = document.getElementById('mentorBtn');
+    if(mBtn) {
+        mBtn.addEventListener('click', function() {
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>SYNCING...';
+            setTimeout(() => {
+                alert("Mentor Handshake Established: Logic updated for your current XP level.");
+                this.innerHTML = 'CONNECT_SYNC';
+            }, 1000);
+        });
+    }
+});
+</script>
+{% endblock %}

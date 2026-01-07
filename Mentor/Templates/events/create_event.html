@@ -1,0 +1,14 @@
+<form method="post" class="surface-node p-4">
+    {% csrf_token %}
+    <h4 class="fw-black mb-4">Provision New Session</h4>
+    {% for field in form %}
+        <div class="mb-3">
+            <label class="small fw-bold text-muted uppercase">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold">
+        INITIALIZE_LIVE_NODE
+    </button>
+</form>

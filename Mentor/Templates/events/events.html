@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Curriculum Events | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Figma Pro Design Tokens --- */
+:root {
+    --figma-bg: #f8fafc;
+    --figma-primary: #6366f1;
+    --figma-secondary: #10b981;
+    --figma-border: #e2e8f0;
+    --figma-text-main: #0f172a;
+    --radius-xl: 24px;
+}
+
+body { background-color: var(--figma-bg); color: var(--figma-text-main); font-family: 'Inter', sans-serif; }
+
+/* --- Live Status Pulse --- */
+.pulse-live {
+    width: 8px; height: 8px; background: var(--figma-secondary);
+    border-radius: 50%; display: inline-block;
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+    animation: pulse-green 2s infinite;
+}
+@keyframes pulse-green { 
+    0% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.7); } 
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 
+    100% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0); } 
+}
+
+/* --- Bento Card Architecture --- */
+.bento-event-card {
+    background: #ffffff; border: 1px solid var(--figma-border);
+    border-radius: var(--radius-xl); overflow: hidden;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    height: 100%; display: flex; flex-direction: column;
+}
+.bento-event-card:hover { 
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
+    border-color: var(--figma-primary);
+}
+
+.card-img-wrapper { position: relative; height: 200px; overflow: hidden; }
+.card-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+
+.status-overlay {
+    position: absolute; top: 15px; left: 15px;
+    background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px);
+    color: white; padding: 6px 14px; border-radius: 12px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+}
+
+.btn-join-live {
+    background: var(--figma-primary); color: white;
+    width: 100%; padding: 14px; border-radius: 14px;
+    font-weight: 700; border: none; transition: 0.3s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.btn-join-live:hover { background: #4f46e5; transform: scale(0.98); }
+
+.reveal { opacity: 0; transform: translateY(20px); transition: 0.8s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <div class="reveal mb-5">
+        <span class="badge bg-indigo-50 text-primary px-3 py-1 rounded-pill fw-bold mb-3 small">SYNC_PROTOCOL_V4</span>
+        <h1 class="fw-extrabold display-4" style="letter-spacing: -3px;">Live <span class="text-primary">Deployments.</span></h1>
+        <p class="text-muted fs-5">Interactive workshops with real-time Google Meet integration.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        {% for e in upcoming %}
+        <div class="col-lg-6 col-xl-4 reveal" style="transition-delay: {{ forloop.counter0|add:1 }}00ms">
+            <div class="bento-event-card">
+                <div class="card-img-wrapper">
+                    <img src="{{ e.image.url }}" alt="{{ e.title }}">
+                    <div class="status-overlay">
+                        {% if e.is_live %}
+                            <span class="pulse-live me-2"></span> LIVE NOW
+                        {% else %}
+                            SCHEDULED
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <small class="text-primary fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 1px;">{{ e.category }}</small>
+                        <h4 class="fw-bold my-2"><a href="{% url 'event_detail' e.slug %}" class="text-dark text-decoration-none">{{ e.title }}</a></h4>
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <i class="bi bi-calendar3 text-muted"></i>
+                            <span class="small fw-bold">{{ e.date|date:"D, j M Y" }}</span>
+                            <span class="text-muted small">•</span>
+                            <span class="small fw-bold">{{ e.date|time:"g:i A" }}</span>
+                        </div>
+                    </div>
+
+                    {% if e.is_live %}
+                        <a href="{{ e.google_meet_link }}" target="_blank" class="btn-join-live shadow-sm">
+                            <i class="bi bi-camera-video-fill"></i> Join Mentor Room
+                        </a>
+                    {% else %}
+                        <button class="btn btn-outline-dark w-100 py-3 rounded-4 fw-bold" disabled>
+                            Node Locked
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5 bento-event-card border-dashed">
+            <p class="text-muted">No live curriculum provisioned at this time.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="reveal mt-5 pt-5 border-top">
+        <h3 class="fw-bold mb-4">Historical Archives</h3>
+        <div class="row g-3">
+            {% for e in past %}
+            <div class="col-md-6 col-lg-3">
+                <a href="{% url 'event_detail' e.slug %}" class="bento-event-card p-3 text-decoration-none">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-archive text-muted fs-4"></i>
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark">{{ e.title }}</h6>
+                            <small class="text-muted">{{ e.date|date:"M Y" }}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Entrance Handshake
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    });
+</script>
+{% endblock %}

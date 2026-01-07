@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Identity Node Settings | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Figma Pro Design Tokens --- */
+:root {
+    --figma-bg: #f8fafc;
+    --figma-card: #ffffff;
+    --figma-primary: #6366f1;
+    --figma-primary-soft: #eef2ff;
+    --figma-border: #e2e8f0;
+    --figma-text-main: #0f172a;
+    --figma-text-muted: #64748b;
+    --radius-xl: 24px;
+    --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+body { background-color: var(--figma-bg); font-family: 'Plus Jakarta Sans', sans-serif; }
+
+/* --- Layout Architecture --- */
+.edit-container { max-width: 900px; margin: 0 auto; }
+.identity-grid { display: grid; grid-template-columns: 280px 1fr; gap: 32px; }
+
+/* --- Identity Sidebar --- */
+.identity-sidebar {
+    background: var(--figma-card);
+    border: 1px solid var(--figma-border);
+    border-radius: var(--radius-xl);
+    padding: 32px;
+    height: fit-content;
+    position: sticky; top: 100px;
+    box-shadow: var(--shadow-soft);
+}
+
+/* --- Main Config Card --- */
+.config-card {
+    background: var(--figma-card);
+    border: 1px solid var(--figma-border);
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    box-shadow: var(--shadow-soft);
+}
+
+/* --- Avatar Provisioning --- */
+.avatar-provision-node {
+    position: relative;
+    width: 100px; height: 100px;
+    margin: 0 auto 20px;
+}
+.avatar-frame {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px var(--figma-primary);
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.upload-trigger {
+    position: absolute; bottom: 0; right: 0;
+    background: var(--figma-text-main); color: white;
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: 2px solid white;
+    transition: 0.3s;
+}
+.upload-trigger:hover { background: var(--figma-primary); transform: scale(1.1); }
+
+/* --- Form Handshake Styling --- */
+.form-node-title {
+    font-size: 11px; font-weight: 800; color: var(--figma-primary);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
+}
+.form-node-title::after { content: ""; flex: 1; height: 1px; background: var(--figma-border); }
+
+.field-label { font-weight: 700; color: var(--figma-text-main); font-size: 13px; margin-bottom: 8px; }
+.figma-input {
+    height: 52px; border-radius: 14px;
+    border: 2px solid var(--figma-border);
+    background: #fafafa; font-weight: 500;
+    transition: 0.3s;
+}
+.figma-input:focus {
+    background: #fff; border-color: var(--figma-primary);
+    box-shadow: 0 0 0 4px var(--figma-primary-soft);
+}
+
+/* --- Action Handshakes --- */
+.btn-commit {
+    background: var(--figma-text-main); color: white;
+    border: none; padding: 16px; border-radius: 14px;
+    font-weight: 700; width: 100%; transition: 0.3s;
+}
+.btn-commit:hover { background: var(--figma-primary); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3); }
+
+/* --- Reveal Stagger --- */
+.reveal { opacity: 0; transform: translateY(20px); transition: 0.6s var(--spring-easing); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 768px) { .identity-grid { grid-template-columns: 1fr; } .identity-sidebar { position: relative; top: 0; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 edit-container">
+    
+    <div class="identity-grid">
+        
+        <div class="identity-sidebar reveal">
+            <div class="text-center">
+                <div class="avatar-provision-node">
+                    {% if user.profile_image %}
+                        <img src="{{ user.profile_image.url }}" id="imgPreview" class="avatar-frame">
+                    {% else %}
+                        <img src="{% static 'assets/img/avatar.png' %}" id="imgPreview" class="avatar-frame">
+                    {% endif %}
+                    <label for="imageInput" class="upload-trigger"><i class="bi bi-pencil-fill"></i></label>
+                </div>
+                <h5 class="fw-bold mb-1">{{ user.username|upper }}</h5>
+                <span class="badge bg-indigo-50 text-primary rounded-pill small px-3">ACTIVE_NODE</span>
+                
+                <div class="mt-4 pt-4 border-top">
+                    <div class="text-start mb-3">
+                        <small class="text-muted d-block mb-1">Status</small>
+                        <span class="fw-bold small d-flex align-items-center gap-2">
+                            <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span> Synchronized
+                        </span>
+                    </div>
+                    <div class="text-start">
+                        <small class="text-muted d-block mb-1">Account ID</small>
+                        <span class="fw-bold small text-truncate d-block">USR_00{{ user.id }}STABLE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="config-card reveal" style="transition-delay: 0.1s;">
+            <div class="mb-5">
+                <h3 class="fw-extrabold mb-1">Identity Settings</h3>
+                <p class="text-muted">Modify your global platform parameters and instructor credentials.</p>
+            </div>
+
+            {% if messages %}
+                {% for msg in messages %}
+                    <div class="alert alert-{{ msg.tags }} border-0 shadow-sm rounded-4 mb-4 small fw-bold">
+                        <i class="bi bi-shield-check me-2"></i> {{ msg }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="profile_image" id="imageInput" class="d-none" accept="image/*">
+
+                <div class="form-node-title">Personal Handshake</div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="field-label">First Name</label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control figma-input" placeholder="First Name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="field-label">Last Name</label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control figma-input" placeholder="Last Name" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="field-label">Primary Communication Address (Email)</label>
+                    <input type="email" name="email" value="{{ user.email }}" class="form-control figma-input" placeholder="email@address.com" required>
+                </div>
+
+                {% if request.user.is_superuser %}
+                    <div class="form-node-title">Privileged Access Node</div>
+                    <div class="p-4 rounded-4 border mb-4 bg-light d-flex gap-5">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_staff" id="is_staff" {% if user.is_staff %}checked{% endif %}>
+                            <label class="fw-bold small ms-2" for="is_staff">Staff Node</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_superuser" id="is_superuser" {% if user.is_superuser %}checked{% endif %}>
+                            <label class="fw-bold small ms-2" for="is_superuser">Admin Node</label>
+                        </div>
+                    </div>
+
+                    {% if user.instructor_profile %}
+                        <div class="form-node-title">Mentor Provisions</div>
+                        <div class="mb-3">
+                            <label class="field-label">Payout Node (PayPal/Bank)</label>
+                            <input type="email" name="payout_email" class="form-control figma-input" value="{{ user.instructor_profile.payout_email }}">
+                        </div>
+                        <div class="mb-4">
+                            <label class="field-label">Instructor Curriculum Bio</label>
+                            <textarea name="bio" rows="4" class="form-control figma-input py-3" style="height: auto;">{{ user.instructor_profile.bio }}</textarea>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <div class="pt-4 mt-4 border-top">
+                    <button type="submit" class="btn-commit mb-3">Commit Changes</button>
+                    <a href="{% url 'profile' %}" class="btn btn-link w-100 text-decoration-none fw-bold text-muted small">Discard and Abort</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Entrance Handshake
+        document.querySelectorAll('.reveal').forEach((el, i) => {
+            setTimeout(() => el.classList.add('visible'), i * 150);
+        });
+
+        // Image Provisioning Preview
+        const imageInput = document.getElementById('imageInput');
+        const imgPreview = document.getElementById('imgPreview');
+
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imgPreview.src = e.target.result;
+                    imgPreview.style.transform = 'scale(1.1)';
+                    setTimeout(() => imgPreview.style.transform = 'scale(1)', 400);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+</script>
+{% endblock %}

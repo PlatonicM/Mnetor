@@ -1,0 +1,15 @@
+{% extends "emails/email_base.html" %}
+{% block content %}
+
+<h2 style="margin-top:0;">You're on the Waitlist</h2>
+
+<p>Hi {{ name }},</p>
+
+<p>
+  The event <strong>{{ event.title }}</strong> is currently full,  
+  but you've been added to the waitlist.
+</p>
+
+<p>We’ll notify you instantly if a seat becomes available.</p>
+
+{% endblock %}

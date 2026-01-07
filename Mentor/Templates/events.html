@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Live Workshops | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- 1. Global Vivid Tokens --- */
+:root {
+    --fig-primary: #4f46e5;
+    --fig-primary-glow: rgba(79, 70, 229, 0.4);
+    --fig-accent: #f43f5e;
+    --fig-neon-purple: #a855f7;
+    --fig-success: #10b981;
+    --fig-bg: #f8fafc;
+    --radius-omega: 28px;
+    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background-color: var(--fig-bg); font-family: 'Plus Jakarta Sans', sans-serif; }
+
+/* --- 2. Live Signal UI --- */
+.status-badge-glass {
+    position: absolute; top: 20px; left: 20px;
+    background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white; padding: 8px 16px; border-radius: 100px;
+    font-size: 10px; font-weight: 900; letter-spacing: 1.5px;
+    display: flex; align-items: center; gap: 8px; z-index: 10;
+}
+.pulse-rose {
+    width: 8px; height: 8px; background: var(--fig-accent);
+    border-radius: 50%; box-shadow: 0 0 10px var(--fig-accent);
+    animation: pulse-rose 2s infinite;
+}
+@keyframes pulse-rose { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
+
+/* --- 3. The Event Bento Node --- */
+.event-card-bento {
+    background: #ffffff; border: 2px solid #ffffff;
+    border-radius: var(--radius-omega); overflow: hidden;
+    transition: 0.4s var(--spring-easing);
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05);
+    height: 100%; display: flex; flex-direction: column;
+}
+.event-card-bento:hover {
+    transform: translateY(-15px) scale(1.01);
+    border-color: var(--fig-primary);
+    box-shadow: 0 30px 60px -15px var(--fig-primary-glow);
+}
+
+.img-container { position: relative; height: 260px; overflow: hidden; background: #000; }
+.img-container img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s ease; opacity: 0.85; }
+.event-card-bento:hover .img-container img { transform: scale(1.1); opacity: 1; }
+
+/* --- 4. Laboratory Feature Nodes --- */
+.lab-node-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 25px; }
+.lab-node {
+    background: #f1f5f9; padding: 12px; border-radius: 16px;
+    display: flex; align-items: center; gap: 10px; transition: 0.3s;
+}
+.lab-node i { color: var(--fig-primary); font-size: 1.2rem; }
+.lab-node span { font-size: 11px; font-weight: 700; color: #475569; }
+.lab-node:hover { background: var(--fig-primary-soft); transform: translateX(5px); }
+
+/* --- 5. Action Handshake --- */
+.btn-vivid-sync {
+    background: linear-gradient(90deg, var(--fig-primary), var(--fig-neon-purple));
+    color: white !important; padding: 18px; border-radius: 20px;
+    font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    transition: 0.3s; border: none; box-shadow: 0 10px 20px -5px var(--fig-primary-glow);
+}
+.btn-vivid-sync:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 15px 30px var(--fig-primary-glow); }
+
+.text-gradient {
+    background: linear-gradient(to right, #6366f1, #f43f5e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.reveal { opacity: 0; transform: translateY(30px); transition: 0.8s var(--spring-easing); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-6">
+    
+    <div class="reveal mb-6 text-center text-md-start">
+        <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-black mb-3 extra-small">DEPLOYMENT CLUSTER ACTIVE</span>
+        <h1 class="fw-black display-3 text-slate-900" style="letter-spacing: -3px;">Live <span class="text-gradient">Labs!</span></h1>
+        <p class="text-muted lead fw-medium" style="max-width: 650px;">Provision real-time sync nodes with industry architects. Join production-grade laboratories and scale your technical stack instantly.</p>
+    </div>
+
+    <div class="row g-4 mb-6">
+        {% for e in upcoming %}
+        <div class="col-lg-6 reveal" style="transition-delay: {{ forloop.counter0 }}00ms">
+            <div class="event-card-bento">
+                <div class="img-container">
+                    <img src="{% if e.image %}{{ e.image.url }}{% else %}{% static 'assets/img/event-default.jpg' %}{% endif %}" alt="{{ e.title }}">
+                    <div class="status-badge-glass">
+                        <div class="pulse-rose"></div> LIVE SYNC ENABLED
+                    </div>
+                </div>
+
+                <div class="p-5">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <span class="text-primary extra-small fw-black d-block mb-1">{{ e.category.name|upper|default:"STATION_MODULE" }}</span>
+                            <h2 class="fw-black text-dark tracking-tighter">{{ e.title }}</h2>
+                        </div>
+                        <div class="d-flex">
+                            {% for speaker in e.speakers.all %}
+                            <img src="{% if speaker.photo %}{{ speaker.photo.url }}{% else %}https://ui-avatars.com/api/?name={{ speaker.name }}&background=4f46e5&color=fff{% endif %}" 
+                                 class="speaker-avatar-stack shadow-lg" style="width: 45px; height: 45px; border-radius: 15px; border: 3px solid #fff; margin-left: -15px;" title="{{ speaker.name }}">
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="p-3 border rounded-4 bg-light bg-opacity-50">
+                                <i class="bi bi-calendar3 text-primary me-2"></i>
+                                <span class="small fw-bold text-dark">{{ e.start|date:"D, j M Y" }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 border rounded-4 bg-light bg-opacity-50">
+                                <i class="bi bi-clock text-accent me-2"></i>
+                                <span class="small fw-bold text-dark">{{ e.start|time:"g:i A" }} IST</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="extra-small text-muted mb-3">Laboratory Sync Capabilities:</h6>
+                    <div class="lab-node-grid mb-5">
+                        <div class="lab-node"><i class="bi bi-cpu"></i><span>Cloud Instance Boot</span></div>
+                        <div class="lab-node"><i class="bi bi-code-slash"></i><span>Shared IDE Access</span></div>
+                        <div class="lab-node"><i class="bi bi-broadcast"></i><span>Low-Latency Stream</span></div>
+                        <div class="lab-node"><i class="bi bi-chat-left-dots"></i><span>Live Debug Comm</span></div>
+                        <div class="lab-node"><i class="bi bi-terminal"></i><span>Terminal Handshake</span></div>
+                        <div class="lab-node"><i class="bi bi-patch-check"></i><span>Instant Validations</span></div>
+                        <div class="lab-node"><i class="bi bi-people"></i><span>Pair Programming</span></div>
+                        <div class="lab-node"><i class="bi bi-cloud-arrow-down"></i><span>Code Pull Protocol</span></div>
+                        <div class="lab-node"><i class="bi bi-record-circle"></i><span>Session Archival</span></div>
+                        <div class="lab-node"><i class="bi bi-shield-check"></i><span>SOC2 Secure Sync</span></div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <span class="small text-muted fw-bold">CAPACITY_SYNC: <span class="text-dark">{{ e.seats_taken }}/{{ e.capacity }}</span></span>
+                        <div class="progress flex-grow-1 mx-4" style="height: 8px; border-radius: 10px; background: #e2e8f0;">
+                            <div class="progress-bar bg-primary" style="width: {% widthratio e.seats_taken e.capacity 100 %}%"></div>
+                        </div>
+                    </div>
+
+                    <a href="{{ e.google_meet_link|default:'#' }}" class="btn btn-vivid-sync w-100 d-flex align-items-center justify-content-center gap-3">
+                        <i class="bi bi-rocket-takeoff-fill fs-5"></i> INITIALIZE STATION SYNC
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-6 reveal border-2 border-dashed rounded-5 bg-white border-primary border-opacity-10">
+            <div class="display-1 text-primary opacity-10 mb-3"><i class="bi bi-gpu-card"></i></div>
+            <h5 class="fw-black text-muted uppercase">Global Cluster Offline</h5>
+            <p class="text-muted">No active sync nodes available. Check System Status for upcoming schedule.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="reveal mt-6 pt-5 border-top">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h3 class="fw-black text-slate-900 mb-1" style="letter-spacing: -1.5px;">Archive Handshakes</h3>
+            <p class="text-muted extra-small mb-0">Registry of successful historical deployments</p>
+        </div>
+        <div class="badge bg-light text-muted border px-3 py-2 rounded-pill font-mono extra-small">
+            TOTAL COURSE: {{ past.count }}
+        </div>
+    </div>
+
+    <div class="row g-3">
+        {% for e in past %}
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <a href="{{ e.get_absolute_url }}" class="event-card-bento p-3 text-decoration-none d-flex flex-column gap-3 h-100 transition-all" 
+               style="background: #ffffff; border: 1px solid var(--fig-border); border-radius: 20px;">
+                
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                        <i class="bi bi-file-earmark-zip-fill fs-5"></i>
+                    </div>
+                    <span class="badge rounded-pill bg-light text-primary border font-mono" style="font-size: 8px; letter-spacing: 0.5px;">
+                        {{ e.category.name|upper|default:"LEGACY NODE" }}
+                    </span>
+                </div>
+
+                <div class="overflow-hidden">
+                    <h6 class="fw-black mb-1 text-dark text-truncate" style="font-size: 14px;">{{ e.title|upper }}</h6>
+                    <div class="d-flex align-items-center gap-2">
+                        <small class="text-muted font-mono" style="font-size: 9px;">REF ID: #{{ e.id|add:"1000" }}</small>
+                        <span class="text-muted opacity-25">|</span>
+                        <small class="text-muted font-mono" style="font-size: 9px;">SYNC: {{ e.start|date:"d_M_Y"|upper }}</small>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-1 text-muted">
+                        <i class="bi bi-people-fill" style="font-size: 10px;"></i>
+                        <span style="font-size: 9px;" class="fw-bold">{{ e.speakers.count }} MENTORS</span>
+                    </div>
+                    <div class="text-primary fw-black" style="font-size: 9px; letter-spacing: 1px;">
+                        VIEW_LOG <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    });
+</script>
+{% endblock %}

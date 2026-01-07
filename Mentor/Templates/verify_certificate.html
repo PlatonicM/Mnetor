@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Credential Verification | MentorLMS{% endblock %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 90vh; padding: 40px 0;">
+    <div class="verification-mainframe p-4 p-md-5 bg-white shadow-lg rounded-5 text-center border" style="max-width: 600px; width: 100%;">
+        
+        {% if is_authentic %}
+            <div class="status-icon-wrapper mb-4 position-relative" style="height: 120px;">
+                <div class="pulse-ring"></div>
+                <i class="bi bi-patch-check-fill text-success" style="font-size: 5.5rem; position: relative; z-index: 2;"></i>
+            </div>
+
+            <h2 class="fw-black text-dark mb-1" style="letter-spacing: -1px;">CREDENTIAL VERIFIED</h2>
+            <p class="text-muted small mb-4">Registry Node: <span class="badge bg-light text-dark font-monospace">{{ serial_no }}</span></p>
+
+            <div class="info-grid text-start bg-light p-4 rounded-4 border mb-4">
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-5 text-muted extra-small fw-bold">RECIPIENT_NAME</div>
+                    <div class="col-7 fw-bold text-dark">{{ student_name|upper }}</div>
+                </div>
+                <div class="row mb-3 border-bottom pb-2">
+                    <div class="col-5 text-muted extra-small fw-bold">COURSE_TRACK</div>
+                    <div class="col-7 fw-bold text-primary">{{ course_name }}</div>
+                </div>
+                <div class="row mb-0">
+                    <div class="col-5 text-muted extra-small fw-bold">DATE_ISSUED</div>
+                    <div class="col-7 fw-bold">{{ issue_date|date:"d F, Y" }}</div>
+                </div>
+            </div>
+
+            <div class="mb-4 p-3 border border-success rounded-pill bg-success bg-opacity-10">
+                <span class="text-success fw-bold small">
+                    <i class="bi bi-shield-lock-fill me-2"></i> CRYPTOGRAPHICALLY AUTHENTICATED
+                </span>
+            </div>
+
+            <div class="social-share-node pt-4 border-top">
+                <p class="text-muted extra-small fw-bold mb-3">SHARE_ACHIEVEMENT_LOG</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ linkedin_url }}" target="_blank" class="btn btn-linkedin rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm">
+                        <i class="bi bi-linkedin"></i> Add to Profile
+                    </a>
+                    
+                    <button onclick="copyVerifyLink()" class="btn btn-outline-secondary rounded-pill px-4 py-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-link-45deg"></i> Copy Link
+                    </button>
+                </div>
+            </div>
+
+        {% else %}
+            <div class="mb-4">
+                <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 5rem;"></i>
+            </div>
+            <h2 class="fw-bold text-danger">SECURITY_ERROR</h2>
+            <p class="text-muted">The requested certificate ID does not exist in our central registry.</p>
+            <div class="alert alert-danger border-0 small rounded-4 p-3">
+                <strong>WARNING:</strong> This document may be fraudulent, expired, or revoked by the system administrator.
+            </div>
+        {% endif %}
+
+        <div class="mt-5">
+            <a href="/" class="btn btn-dark rounded-pill px-5 fw-bold shadow-sm transition-base">
+                <i class="bi bi-house-door me-2"></i> RETURN_TO_BASE
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Design Tokens & Animations */
+    body { background: radial-gradient(circle at center, #ffffff, #f1f5f9); }
+    
+    .extra-small { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .verification-mainframe {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .verification-mainframe:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    .pulse-ring {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80px;
+        height: 80px;
+        background-color: rgba(25, 135, 84, 0.15);
+        border-radius: 50%;
+        animation: pulse-ring-animation 2s infinite;
+        z-index: 1;
+    }
+
+    @keyframes pulse-ring-animation {
+        0% { width: 80px; height: 80px; opacity: 1; }
+        100% { width: 180px; height: 180px; opacity: 0; }
+    }
+
+    .btn-linkedin {
+        background-color: #0077b5;
+        color: white;
+        border: none;
+        font-size: 13px;
+        font-weight: 700;
+        transition: 0.3s var(--spring-easing);
+    }
+
+    .btn-linkedin:hover {
+        background-color: #005582;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .transition-base { transition: 0.3s ease; }
+    .transition-base:hover { transform: scale(1.02); }
+</style>
+
+<script>
+/**
+ * HANDSHAKE: Copy Verification URL to Clipboard
+ */
+function copyVerifyLink() {
+    const el = document.createElement('input');
+    el.value = window.location.href;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    
+    // Modern Alert Placeholder (You can replace this with a Toast)
+    alert("SYSTEM: Verification link successfully copied to clipboard.");
+}
+</script>
+{% endblock %}

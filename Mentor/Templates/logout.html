@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Session Terminated | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Security Theme Tokens --- */
+:root {
+  --clr-primary: #6366f1;
+  --clr-danger: #ef4444;
+  --clr-slate-50: #f8fafc;
+  --clr-slate-200: #e2e8f0;
+  --clr-slate-400: #94a3b8;
+  --clr-slate-900: #0f172a;
+  --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background: radial-gradient(circle at center, #ffffff, #f1f5f9); }
+
+/* --- Logout Container Architecture --- */
+.logout-container {
+  max-width: 550px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--clr-slate-200);
+  border-radius: 32px;
+  padding: 60px 40px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+  margin-top: 80px;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: entrance 0.8s var(--spring-easing) forwards;
+}
+
+@keyframes entrance {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Visual Elements --- */
+.logout-icon-box {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 30px;
+}
+
+.logout-gif {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 15px rgba(99, 102, 241, 0.2));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.05); }
+}
+
+/* --- System Status Display --- */
+.status-block {
+  background: var(--clr-slate-50);
+  border: 1px dashed var(--clr-slate-200);
+  border-radius: 16px;
+  padding: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--clr-danger);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--clr-danger);
+}
+
+/* --- Technical Progress Timer --- */
+.timer-wrapper {
+  margin-top: 40px;
+  padding-top: 25px;
+  border-top: 1px solid var(--clr-slate-100);
+}
+
+.timer-bar-bg {
+  height: 4px;
+  background: var(--clr-slate-100);
+  border-radius: 10px;
+  width: 100%;
+  overflow: hidden;
+  margin: 15px 0;
+}
+
+.timer-bar-fill {
+  height: 100%;
+  background: var(--clr-primary);
+  width: 100%;
+  transition: width 1s linear;
+}
+
+#countdown {
+  font-family: 'Monaco', monospace;
+  font-weight: 900;
+  color: var(--clr-primary);
+}
+
+.btn-initialize {
+  background: var(--clr-slate-900);
+  color: white;
+  padding: 16px 32px;
+  border-radius: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s var(--spring-easing);
+  border: none;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-initialize:hover {
+  background: var(--clr-primary);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3);
+  color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center">
+    <div class="logout-container text-center">
+
+        <div class="logout-icon-box">
+            <img src="{% static 'assets/img/logout.gif' %}" class="logout-gif" alt="Logout Protocol">
+        </div>
+
+        <div class="status-block">
+            <span class="status-dot"></span>
+            <span class="extra-small fw-black text-muted" style="font-size: 10px; letter-spacing: 1px;">SESSION_TERMINATED_SUCCESSFULLY</span>
+        </div>
+
+        <h2 class="fw-black text-slate-900 mb-2" style="letter-spacing: -2px; font-size: 2.5rem;">Safe Travels</h2>
+        <p class="text-muted px-lg-4">Your workspace handshake has been securely closed. All cached tokens have been cleared.</p>
+
+        <div class="mt-4">
+            <a href="{% url 'login' %}" class="btn-initialize shadow-sm">
+                Initialize New Session <i class="bi bi-arrow-right-short fs-4"></i>
+            </a>
+        </div>
+
+        <div class="timer-wrapper">
+            <p class="extra-small text-muted fw-bold mb-0">
+                Redirecting to secure login in <span id="countdown">5</span>s
+            </p>
+            <div class="timer-bar-bg">
+                <div class="timer-bar-fill" id="timerBar"></div>
+            </div>
+            <p class="text-muted" style="font-size: 11px;">Identity Protocol v4.0.2</p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let counter = 5;
+const countdownEl = document.getElementById("countdown");
+const timerBar = document.getElementById("timerBar");
+
+// Technical countdown with visual progress depletion
+let timer = setInterval(() => {
+    counter--;
+    countdownEl.textContent = counter;
+    
+    // Update progress bar width
+    let percentage = (counter / 5) * 100;
+    timerBar.style.width = percentage + "%";
+
+    if (counter <= 0) {
+        clearInterval(timer);
+        window.location.href = "{% url 'login' %}";
+    }
+}, 1000);
+</script>
+{% endblock %}

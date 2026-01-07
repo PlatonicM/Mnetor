@@ -1,0 +1,20 @@
+{% extends "emails/email_base.html" %}
+{% block content %}
+
+<h2 style="margin-top:0;">You Got a Seat!</h2>
+
+<p>Hi {{ name }},</p>
+
+<p>
+  Good news! A seat opened up for <strong>{{ event.title }}</strong>  
+  on {{ event.start|date:"F j, Y, g:i A" }}.
+</p>
+
+<p>You are now confirmed.</p>
+
+<p>
+  <a href="{{ request.build_absolute_uri(event.get_absolute_url) }}"
+     style="color:#1b7ced;">View Event</a>
+</p>
+
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Admin Control Center{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* --- Figma Design Tokens --- */
+:root {
+    --figma-bg: #f8fafc;
+    --figma-card: #ffffff;
+    --figma-primary: #6366f1; /* Indigo 500 */
+    --figma-success: #10b981;
+    --figma-text-main: #0f172a;
+    --figma-text-muted: #64748b;
+    --figma-border: #e2e8f0;
+    --radius-xl: 24px;
+    --radius-lg: 16px;
+}
+
+body { background-color: var(--figma-bg); font-family: 'Inter', sans-serif; color: var(--figma-text-main); }
+
+/* --- Reveal Entrance --- */
+.reveal {
+    opacity: 0; transform: translateY(20px);
+    transition: 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* --- Bento Card Architecture --- */
+.bento-card {
+    background: var(--figma-card);
+    border: 1px solid var(--figma-border);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    height: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+.bento-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    border-color: var(--figma-primary);
+}
+
+/* --- Stat Node Styling --- */
+.stat-label { font-size: 0.875rem; font-weight: 600; color: var(--figma-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2rem; font-weight: 800; margin: 8px 0; }
+.stat-icon-wrapper {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+}
+
+/* --- List Styling --- */
+.figma-list-item {
+    border: none; padding: 16px 0; border-bottom: 1px solid var(--figma-border);
+    background: transparent; transition: 0.2s;
+}
+.figma-list-item:last-child { border-bottom: none; }
+.figma-list-item:hover { transform: translateX(5px); }
+
+/* --- Buttons --- */
+.btn-figma-primary {
+    background: var(--figma-text-main); color: #fff;
+    border-radius: 12px; padding: 12px 20px; font-weight: 600;
+    transition: 0.3s; border: none; width: 100%;
+}
+.btn-figma-primary:hover { background: var(--figma-primary); transform: translateY(-2px); }
+
+/* --- Chart Area --- */
+.chart-container {
+    background: #f1f5f9; border-radius: var(--radius-lg);
+    min-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <div class="d-flex justify-content-between align-items-end mb-5 reveal">
+        <div>
+            <h1 class="stat-value text-dark" style="font-size: 2.5rem; letter-spacing: -1.5px;">Command <span class="text-primary">Center.</span></h1>
+            <p class="stat-label mb-0">System Overview & Performance Metrics</p>
+        </div>
+        <div class="text-end d-none d-md-block">
+            <span class="badge bg-light text-dark border p-2 px-3 rounded-pill fw-bold">
+                <i class="bi bi-clock-history me-1"></i> Last sync: Just now
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4 reveal">
+            <div class="bento-card">
+                <div class="d-flex justify-content-between">
+                    <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-journal-code"></i>
+                    </div>
+                    <span class="text-success small fw-bold">Active</span>
+                </div>
+                <div class="mt-4">
+                    <p class="stat-label">Active Courses</p>
+                    <h2 class="stat-value">{{ total_courses }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 reveal">
+            <div class="bento-card">
+                <div class="d-flex justify-content-between">
+                    <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                    <span class="text-success small fw-bold">+12% vs last month</span>
+                </div>
+                <div class="mt-4">
+                    <p class="stat-label">Enrolled Students</p>
+                    <h2 class="stat-value">{{ total_students }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 reveal">
+            <div class="bento-card">
+                <div class="d-flex justify-content-between">
+                    <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <i class="bi bi-arrow-up-right text-success"></i>
+                </div>
+                <div class="mt-4">
+                    <p class="stat-label">Gross Revenue</p>
+                    <h2 class="stat-value text-primary">₹{{ total_earnings }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="bento-card reveal">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold m-0"><i class="bi bi-graph-up-arrow me-2 text-primary"></i> Revenue Streams</h5>
+                    <select class="form-select form-select-sm w-auto border-0 bg-light fw-bold">
+                        <option>Last 30 Days</option>
+                        <option>Last Year</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <div id="chartLoader" class="fw-bold text-muted">Analyzing Data...</div>
+                    <img id="salesChart" src="{% url 'admin_sales_chart' %}" class="img-fluid" style="display:none;">
+                </div>
+
+                <div class="mt-5">
+                    <h6 class="stat-label mb-3">Live Feed: Recent Transactions</h6>
+                    <div class="list-group list-group-flush">
+                        {% for o in recent_orders %}
+                        <div class="figma-list-item d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="stat-icon-wrapper bg-light me-3" style="width: 40px; height: 40px; font-size: 1rem;">
+                                    <i class="bi bi-cart"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0 fw-bold">#{{ o.id }} – {{ o.user.username }}</p>
+                                    <small class="text-muted">{{ o.created_at|date:"M d, H:i" }}</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <p class="mb-0 fw-bold text-success">₹{{ o.total }}</p>
+                                <span class="badge rounded-pill 
+                                    {% if o.status == 'Completed' %}bg-success-subtle text-success
+                                    {% else %}bg-warning-subtle text-warning{% endif %} px-3" style="font-size: 10px;">
+                                    {{ o.status|upper }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="bento-card mb-4 reveal">
+                <h6 class="stat-label mb-4">🏆 High Performance Nodes</h6>
+                {% for c in top_courses %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small fw-bold">{{ c.course__name }}</span>
+                            <span class="small fw-bold">₹{{ c.revenue|default:0 }}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-primary" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted small">No performance data available.</p>
+                {% endfor %}
+            </div>
+
+            <div class="bento-card reveal shadow-lg border-primary border-opacity-25" style="background: linear-gradient(180deg, #fff 0%, #fefeff 100%);">
+                <h6 class="stat-label mb-4">⚡ System Protocols</h6>
+                <a href="{% url 'admin:index' %}" class="btn-figma-primary mb-3 d-flex align-items-center justify-content-center">
+                    <i class="bi bi-cpu me-2"></i> Core Admin Panel
+                </a>
+                <a href="{% url 'admin:classapp_order_changelist' %}" class="btn btn-outline-dark w-100 rounded-3 py-2 fw-bold small">
+                    <i class="bi bi-file-earmark-text me-2"></i> Audit All Orders
+                </a>
+                <div class="mt-4 p-3 bg-light rounded-4">
+                    <p class="small text-muted mb-0"><i class="bi bi-shield-lock me-1"></i> Secure session active for <strong>{{ request.user.username }}</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Chart Loader Logic
+document.addEventListener("DOMContentLoaded", function() {
+    const chartImg = document.getElementById("salesChart");
+    const loader = document.getElementById("chartLoader");
+    if (chartImg) {
+        chartImg.onload = function() {
+            loader.style.display = "none";
+            chartImg.style.display = "block";
+        };
+    }
+    
+    // Intersection Observer for Reveal on scroll
+    const observerOptions = { threshold: 0.1 };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+});
+</script>
+{% endblock %}

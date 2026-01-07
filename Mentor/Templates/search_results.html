@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Search Results | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Modern Theme Tokens --- */
+:root {
+  --clr-primary: #6366f1;
+  --clr-primary-dark: #4f46e5;
+  --clr-slate-50: #f8fafc;
+  --clr-slate-100: #f1f5f9;
+  --clr-slate-200: #e2e8f0;
+  --clr-slate-700: #334155;
+  --clr-slate-900: #0f172a;
+  --radius-lg: 20px;
+  --shadow-premium: 0 20px 25px -5px rgba(0, 0, 0, 0.04), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background-color: var(--clr-slate-50); }
+
+/* --- Reveal Animation --- */
+.reveal { opacity: 0; transform: translateY(30px); transition: 0.8s var(--spring-easing); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* --- Search Header Upgraded --- */
+.search-header {
+  padding: 80px 0;
+  background: #ffffff;
+  background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%);
+  border-bottom: 1px solid var(--clr-slate-200);
+  text-align: center;
+}
+.search-header h2 {
+  font-weight: 900;
+  color: var(--clr-slate-900);
+  letter-spacing: -2px;
+  font-size: 3rem;
+}
+
+/* --- Solid Course Card --- */
+.course-card {
+  background: #ffffff;
+  border: 1px solid var(--clr-slate-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.5s var(--spring-easing);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.course-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 30px 60px -12px rgba(15, 23, 42, 0.12);
+  border-color: var(--clr-primary);
+}
+
+.course-img-wrapper {
+  overflow: hidden;
+  height: 200px;
+  background: var(--clr-slate-100);
+  position: relative;
+}
+
+.course-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1s ease;
+}
+
+.course-card:hover img { transform: scale(1.1); }
+
+/* --- UI Elements --- */
+.category-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--clr-slate-700);
+  background: var(--clr-slate-100);
+  padding: 6px 14px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-view {
+  background: var(--clr-slate-900);
+  color: #ffffff;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 20px;
+  transition: 0.3s var(--spring-easing);
+  border: none;
+}
+
+.btn-view:hover {
+  background: var(--clr-primary);
+  color: #ffffff;
+  transform: scale(1.05);
+  box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+}
+
+/* --- Empty State --- */
+.empty-state {
+  padding: 120px 0;
+  text-align: center;
+}
+.empty-icon { font-size: 5rem; color: var(--clr-slate-200); margin-bottom: 24px; }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="search-header reveal">
+    <div class="container">
+        <h2 class="mb-2">Discovery Hub</h2>
+        <p class="text-muted mb-0">
+            Filtering protocols for: 
+            <span class="text-primary fw-bold px-3 py-1 bg-primary-subtle rounded-pill">"{{ request.GET.q|default:"Catalog" }}"</span>
+        </p>
+        {% if results %}
+        <p class="extra-small text-muted mt-3 fw-bold uppercase" style="letter-spacing: 1px;">{{ results|length }} Nodes Found</p>
+        {% endif %}
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container">
+
+        {% if not results %}
+        <div class="empty-state reveal">
+            <i class="bi bi-cpu empty-icon d-block"></i>
+            <h3 class="fw-black text-slate-900">No Protocol Match</h3>
+            <p class="text-muted mb-4">The keyword "{{ request.GET.q }}" did not return any active library nodes.</p>
+            <a href="{% url 'courses' %}" class="btn-view d-inline-flex text-decoration-none px-5 py-3">Explore Full Catalog</a>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            {% for c in results %}
+            <div class="col-lg-3 col-md-4 col-sm-6 reveal" style="transition-delay: {{ forloop.counter0 }}00ms;">
+                <div class="course-card">
+                    
+                    <div class="course-img-wrapper">
+                        {% if c.image %}
+                            <img src="{{ c.image.url }}" alt="{{ c.name }}">
+                        {% else %}
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                                <i class="bi bi-image text-muted fs-1"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="p-4 d-flex flex-column flex-grow-1">
+                        <div class="mb-3">
+                            <span class="category-badge">{{ c.category|default:"General" }}</span>
+                        </div>
+
+                        <h6 class="fw-bold text-slate-900 mb-3" style="line-height: 1.4; font-size: 1.1rem; letter-spacing: -0.5px;">
+                            {{ c.name|truncatechars:40 }}
+                        </h6>
+
+                        <div class="mb-4 d-flex align-items-center gap-2">
+                            {% if c.avg_rating %}
+                                <div class="px-2 py-1 bg-warning-subtle text-warning rounded-pill extra-small fw-black">
+                                    <i class="bi bi-star-fill me-1"></i>{{ c.avg_rating|floatformat:1 }}
+                                </div>
+                            {% endif %}
+                            <span class="text-muted extra-small fw-medium"><i class="bi bi-people me-1"></i>Enrolled</span>
+                        </div>
+
+                        <div class="mt-auto d-flex justify-content-between align-items-center pt-3 border-top">
+                            <span class="fw-black text-slate-900 fs-5">₹{{ c.price }}</span>
+                            <a href="{% url 'course_detail' c.id %}" class="btn-view text-decoration-none">
+                                Open Track
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Staggered Reveal Logic
+document.addEventListener("DOMContentLoaded", () => {
+  const observerOptions = { threshold: 0.1 };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+});
+</script>
+{% endblock %}

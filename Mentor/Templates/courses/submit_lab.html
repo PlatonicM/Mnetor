@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Submit Lab Node | Command Center{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Design Tokens --- */
+:root {
+    --adm-glass: rgba(255, 255, 255, 0.7);
+    --adm-primary: #6366F1;
+    --adm-border: rgba(226, 232, 240, 0.8);
+    --radius-terminal: 24px;
+}
+
+body { 
+    background: radial-gradient(circle at top right, #F8FAFC, #EEF2FF);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* --- Layout Architecture --- */
+.submit-wrapper { max-width: 1400px; margin: 0 auto; padding: 40px 24px; }
+.submit-grid { display: grid; grid-template-columns: 1fr 480px; gap: 40px; align-items: start; }
+
+/* --- Instruction Node --- */
+.instruction-card { padding-right: 20px; }
+.step-item {
+    display: flex; gap: 16px; margin-bottom: 24px; padding: 20px;
+    background: white; border-radius: 16px; border-left: 4px solid var(--adm-primary);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+/* --- Submission Terminal --- */
+.terminal-card {
+    background: var(--adm-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--radius-terminal);
+    padding: 32px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+}
+
+.terminal-input {
+    background: rgba(0,0,0,0.03);
+    border: 1px solid var(--adm-border);
+    border-radius: 12px;
+    padding: 14px;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    transition: 0.3s;
+}
+.terminal-input:focus { background: white; border-color: var(--adm-primary); outline: none; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+
+/* --- File Upload Area --- */
+.upload-zone {
+    border: 2px dashed #CBD5E1;
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    transition: 0.3s;
+    cursor: pointer;
+    background: rgba(255,255,255,0.4);
+}
+.upload-zone:hover { border-color: var(--adm-primary); background: rgba(99, 102, 241, 0.05); }
+
+/* --- Animations --- */
+.reveal { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s forwards; }
+@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="submit-wrapper">
+    <header class="mb-5 reveal">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb extra-small fw-bold text-uppercase opacity-50">
+                <li class="breadcrumb-item"><a href="{% url 'hub' %}" class="text-dark">Hub</a></li>
+                <li class="breadcrumb-item"><a href="#" class="text-dark">{{ lab.course.name }}</a></li>
+                <li class="breadcrumb-item active text-primary">Lab_Submit</li>
+            </ol>
+        </nav>
+        <h1 class="fw-black text-slate-900 mb-1" style="letter-spacing: -1.5px;">INITIALIZE_SUBMISSION.</h1>
+        <p class="text-muted fw-bold">LAB_ID: {{ lab.id|default:"#404" }} • STATUS: <span class="text-warning">AWAITING_PAYLOAD</span></p>
+    </header>
+
+    <div class="submit-grid">
+        <div class="instruction-card reveal" style="animation-delay: 0.1s;">
+            <h5 class="fw-black mb-4">SUBMISSION_CRITERIA</h5>
+            
+            <div class="step-item">
+                <div class="h4 text-primary fw-black">01</div>
+                <div>
+                    <h6 class="fw-bold mb-1">Functional Validation</h6>
+                    <p class="small text-muted mb-0">Ensure all unit tests pass locally before initiating the handshake with the server.</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="h4 text-primary fw-black">02</div>
+                <div>
+                    <h6 class="fw-bold mb-1">Documentation Sync</h6>
+                    <p class="small text-muted mb-0">Include comments for complex logic blocks. Mentors value code readability at this XP level.</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="h4 text-primary fw-black">03</div>
+                <div>
+                    <h6 class="fw-bold mb-1">Resource Optimization</h6>
+                    <p class="small text-muted mb-0">Verify memory handling. Submissions are audited for high-performance efficiency.</p>
+                </div>
+            </div>
+        </div>
+
+        <aside class="reveal" style="animation-delay: 0.2s;">
+            <div class="terminal-card">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="extra-small fw-black text-muted mb-2 letter-spacing-1">PAYLOAD_LINK (GITHUB/DRIVE)</label>
+                        <input type="url" name="link" class="form-control terminal-input" placeholder="https://github.com/archon/project-node" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="extra-small fw-black text-muted mb-2 letter-spacing-1">DOCUMENTATION_ASSETS</label>
+                        <div class="upload-zone" onclick="document.getElementById('labFile').click()">
+                            <i class="bi bi-cloud-arrow-up display-6 text-primary"></i>
+                            <p class="small fw-bold mt-2 mb-0">Drag payload or <span class="text-primary">Browse</span></p>
+                            <span class="extra-small text-muted">PDF, ZIP or MD (MAX 10MB)</span>
+                            <input type="file" id="labFile" name="file" class="d-none">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="extra-small fw-black text-muted mb-2 letter-spacing-1">ARCHON_NOTES</label>
+                        <textarea name="notes" class="form-control terminal-input" rows="4" placeholder="Brief system summary..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-black shadow-glow" id="submitBtn">
+                        EXECUTE_SUBMISSION_SYNC
+                    </button>
+                </form>
+            </div>
+
+            <div class="mt-4 p-3 rounded-4 bg-dark text-white d-flex align-items-center gap-3">
+                <div class="spinner-border spinner-border-sm text-primary"></div>
+                <div class="extra-small fw-bold opacity-75">Establishing secure handshake with Mentor_Validation_Protocol...</div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form');
+    const btn = document.getElementById('submitBtn');
+
+    form.onsubmit = () => {
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>SYNCING_PAYLOAD...';
+        btn.classList.add('opacity-50');
+    };
+
+    // File selection UI update
+    const fileInput = document.getElementById('labFile');
+    const uploadZone = document.querySelector('.upload-zone');
+    
+    fileInput.onchange = () => {
+        if(fileInput.files.length > 0) {
+            uploadZone.innerHTML = `<i class="bi bi-check-circle-fill display-6 text-success"></i><p class="small fw-bold mt-2">${fileInput.files[0].name}</p>`;
+            uploadZone.style.borderColor = '#10B981';
+            uploadZone.style.background = 'rgba(16, 185, 129, 0.05)';
+        }
+    };
+});
+</script>
+{% endblock %}

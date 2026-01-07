@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}404 | Protocol Error{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="text-center reveal">
+        <div class="position-relative d-inline-block mb-4">
+            <h1 class="fw-black display-1 text-primary opacity-10" style="font-size: 10rem;">404</h1>
+            <div class="position-absolute top-50 start-50 translate-middle">
+                <i class="bi bi-exclamation-triangle-fill text-primary display-4 shadow-glow"></i>
+            </div>
+        </div>
+
+        <h2 class="fw-black text-slate-900 mb-2">NODE_DETECTION_FAILED.</h2>
+        <p class="text-muted mb-5 fw-bold">The requested address is currently outside our synchronized curriculum index.</p>
+
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill px-4 fw-black shadow-glow">
+                RETURN_TO_BASE
+            </a>
+            <a href="{% url 'courses' %}" class="btn btn-outline-dark rounded-pill px-4 fw-black">
+                BROWSE_LIBRARY
+            </a>
+        </div>
+
+        <div class="mt-5 p-3 rounded-4 bg-dark text-start mx-auto" style="max-width: 400px; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="d-flex gap-2 mb-2">
+                <span class="rounded-circle bg-danger" style="width: 8px; height: 8px;"></span>
+                <span class="rounded-circle bg-warning" style="width: 8px; height: 8px;"></span>
+                <span class="rounded-circle bg-success" style="width: 8px; height: 8px;"></span>
+            </div>
+            <code class="extra-small text-success opacity-75 font-monospace">
+                > Initializing system scan...<br>
+                > Error 404: Link broken.<br>
+                > Handshake terminated.<br>
+                > <span class="text-white">Awaiting user redirection...</span>
+            </code>
+        </div>
+    </div>
+</div>
+
+<style>
+    .shadow-glow { filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.4)); }
+</style>
+{% endblock %}

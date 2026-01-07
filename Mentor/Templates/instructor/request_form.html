@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Become an Instructor{% endblock %}
+
+{% block extra_css %}
+<style>
+
+/* Reveal Animation */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: .8s cubic-bezier(.18,.89,.32,1.28);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Glass Black Box */
+.black-box {
+  border: 2px solid #000;
+  background: #ffffffee;
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  padding: 28px;
+  transition: .35s ease;
+}
+.black-box:hover {
+  transform: translateY(-8px);
+  border-color: #48b46a;
+  box-shadow: 0 22px 48px rgba(0,0,0,.25);
+}
+
+/* Inputs */
+.form-control {
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  padding: 10px !important;
+  transition: .35s ease;
+}
+.form-control:focus {
+  border-color: #48b46a !important;
+  box-shadow: 0 0 12px rgba(72,180,106,.45) !important;
+  transform: translateY(-2px);
+}
+
+/* Labels */
+label {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* Premium Button */
+.btn-premium {
+  border: 2px solid #000;
+  border-radius: 12px;
+  font-weight: 700;
+  padding: 12px;
+  background: #000;
+  color: #fff;
+  width: 100%;
+  transition: .35s ease;
+}
+.btn-premium:hover {
+  background: #48b46a;
+  color: #fff;
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(0,0,0,.25);
+}
+
+/* Page Header */
+.page-title {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+</style>
+{% endblock extra_css %}
+
+
+
+{% block content %}
+
+<div class="container my-5 reveal" style="max-width:700px;">
+
+  <div class="black-box">
+
+    <h3 class="page-title text-center mb-4">Become an Instructor</h3>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <!-- Bio -->
+      <div class="mb-3">
+        <label>Bio</label>
+        <textarea name="bio" class="form-control" rows="4" required>
+{{ req.bio|default:"" }}</textarea>
+      </div>
+
+      <!-- Experience -->
+      <div class="mb-3">
+        <label>Experience</label>
+        <input type="text" name="experience"
+               class="form-control"
+               value="{{ req.experience|default:'' }}"
+               required>
+      </div>
+
+      <!-- Portfolio -->
+      <div class="mb-4">
+        <label>Portfolio URL (optional)</label>
+        <input type="url" name="portfolio_url"
+               class="form-control"
+               value="{{ req.portfolio_url|default:'' }}">
+      </div>
+
+      <!-- Button -->
+      <button class="btn-premium">Submit Request</button>
+
+    </form>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+<script>
+/* Reveal Scroll Animation */
+document.addEventListener("scroll", () => {
+  document.querySelectorAll(".reveal").forEach((el) => {
+    if (el.getBoundingClientRect().top < window.innerHeight - 60) {
+      el.classList.add("visible");
+    }
+  });
+});
+</script>
+{% endblock %}

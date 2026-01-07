@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Submit Lab | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Submission Theme Tokens --- */
+:root {
+    --clr-primary: #6366f1;
+    --clr-slate-50: #f8fafc;
+    --clr-slate-100: #f1f5f9;
+    --clr-slate-200: #e2e8f0;
+    --clr-slate-900: #0f172a;
+    --radius-figma: 24px;
+}
+
+body { background: radial-gradient(circle at top right, #EEF2FF, #F8FAFC); }
+
+/* --- Specialized Form Styling --- */
+.glass-submission-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: var(--radius-figma);
+    padding: 40px;
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.08);
+}
+
+.data-label { 
+    font-size: 11px; 
+    font-weight: 800; 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+    color: #94a3b8; 
+    margin-bottom: 10px; 
+    display: block; 
+}
+
+.form-control-technical {
+    background: #f8fafc !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.form-control-technical:focus {
+    border-color: var(--clr-primary) !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+    transform: translateY(-2px);
+}
+
+.extra-small { font-size: 10px; font-weight: 800; text-transform: uppercase; }
+
+/* Checklist Styling */
+.integrity-check {
+    background: #f1f5f9;
+    padding: 20px;
+    border-radius: 18px;
+    margin-bottom: 30px;
+}
+.check-item { font-size: 12px; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.check-item i { color: #10b981; }
+
+.xp-potential-box {
+    background: #eef2ff;
+    border: 1px dashed #6366f1;
+    animation: border-pulse 2s infinite;
+}
+
+@keyframes border-pulse {
+    0% { border-color: rgba(99, 102, 241, 0.4); }
+    50% { border-color: rgba(99, 102, 241, 1); }
+    100% { border-color: rgba(99, 102, 241, 0.4); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 850px;">
+    
+    <div class="text-center mb-5" data-aos="fade-down">
+        <div class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 mb-3 extra-small">
+            <i class="bi bi-shield-check me-2"></i>SECURE_SUBMISSION_PORTAL
+        </div>
+        <h2 class="fw-black mb-1" style="letter-spacing: -2px; font-size: 2.5rem;">Initialize Protocol</h2>
+        <p class="text-muted">Targeting Data Node: <span class="text-dark fw-bold">{{ course.name }}</span></p>
+    </div>
+
+    <div class="glass-submission-card shadow-lg" data-aos="fade-up">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <label class="data-label">LAB_MODULE_NAME</label>
+                    <input type="text" name="lab_title" class="form-control form-control-technical" 
+                           placeholder="e.g., Deep Learning Architecture Optimization" required>
+                </div>
+                
+                <div class="col-12">
+                    <label class="data-label">SUBMISSION_DATA (CODE / REPO_LINK)</label>
+                    <textarea name="lab_content" class="form-control form-control-technical" 
+                              rows="8" placeholder="Paste your source code or GitHub repository URL..." required></textarea>
+                </div>
+            </div>
+
+            <div class="integrity-check">
+                <p class="extra-small text-dark mb-3">Pre-Submission Checklist</p>
+                <div class="check-item"><i class="bi bi-check-circle-fill"></i> Code is documented and readable.</div>
+                <div class="check-item"><i class="bi bi-check-circle-fill"></i> All private keys and tokens have been removed.</div>
+                <div class="check-item"><i class="bi bi-check-circle-fill"></i> This work is original and adheres to Academy standards.</div>
+            </div>
+
+            <div class="xp-potential-box p-3 rounded-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="bg-primary text-white rounded-3 p-2 shadow-sm">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                        </div>
+                        <div>
+                            <span class="extra-small text-primary d-block">Reward_Potential</span>
+                            <span class="fw-bold text-dark">+200 XP upon successful review</span>
+                        </div>
+                    </div>
+                    <i class="bi bi-stars text-primary fs-4"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-black shadow-lg transition-all" style="letter-spacing: 1px;">
+                START_SUBMISSION_HANDSHAKE <i class="bi bi-chevron-right ms-2"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'dashboard' %}" class="text-decoration-none extra-small text-muted hover-primary">
+            <i class="bi bi-arrow-left me-1"></i> Abort_Protocol_Return_To_Hub
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Subtle focus interaction for the technical form
+    document.querySelectorAll('.form-control-technical').forEach(input => {
+        input.addEventListener('focus', () => {
+            console.log("Input Node: Focus Established");
+        });
+    });
+</script>
+{% endblock %}

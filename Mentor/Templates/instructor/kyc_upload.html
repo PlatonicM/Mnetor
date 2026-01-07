@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}KYC Upload{% endblock %}
+
+{% block content %}
+
+<style>
+/* =============================
+   GLOBAL REVEAL ANIMATION
+============================= */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: .8s cubic-bezier(.19,1,.22,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* =============================
+   PREMIUM BLACK BOX
+============================= */
+.black-box {
+  border: 2px solid #000;
+  background: rgba(255, 235, 235, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  padding: 25px;
+  transition: .35s ease;
+}
+.black-box:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 50px rgba(0,0,0,.20);
+  border-color: #ff6a6a;
+}
+
+/* Inputs */
+.form-control, select {
+  border: 2px solid #000 !important;
+  border-radius: 10px !important;
+  padding: 10px !important;
+  transition: .3s ease;
+}
+.form-control:focus, select:focus {
+  border-color: #48b46a !important;
+  box-shadow: 0 0 10px rgba(72,180,106,.45);
+  transform: translateY(-2px);
+}
+
+/* Upload Button */
+.btn-upload {
+  font-weight: 700;
+  border: 2px solid #000;
+  background: #48b46a;
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  transition: .3s ease;
+}
+.btn-upload:hover {
+  transform: translateY(-4px);
+  background: #3aa85b;
+  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+}
+
+/* Badge status */
+.badge-status {
+  padding: 6px 12px;
+  font-weight: 700;
+  border-radius: 12px;
+}
+</style>
+
+
+
+<div class="container my-5" style="max-width:850px;">
+
+  <!-- ============================= -->
+  <!-- HEADER -->
+  <!-- ============================= -->
+  <div class="reveal mb-4">
+    <h2 class="fw-bold">KYC Verification</h2>
+    <p class="text-muted">
+      Upload your identity document for verification and payout activation.
+    </p>
+  </div>
+
+  <!-- ============================= -->
+  <!-- UPLOAD BOX -->
+  <!-- ============================= -->
+  <div class="black-box reveal mb-4">
+
+    <h4 class="fw-bold mb-3">Upload KYC Document</h4>
+
+    <form id="kyc-form" method="post"
+          enctype="multipart/form-data"
+          action="{% url 'kyc_upload' %}">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <!-- Document Type -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Document Type</label>
+        {{ form.doc_type }}
+      </div>
+
+      <!-- File Upload -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Upload File (JPG/PNG/PDF, max 4MB)</label>
+        {{ form.file }}
+      </div>
+
+      <button type="submit" id="kyc-submit"
+              class="btn-upload mt-2">
+        Upload Document
+      </button>
+
+      <span id="kyc-spinner" style="display:none;" class="ms-2">⏳ Uploading...</span>
+
+    </form>
+  </div>
+
+
+  <!-- ============================= -->
+  <!-- EXISTING ENTRIES -->
+  <!-- ============================= -->
+  <div class="black-box reveal">
+    <h4 class="fw-bold mb-3">Your Submissions</h4>
+
+    <ul class="list-group">
+      {% for d in existing %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+
+        <div>
+          <strong>{{ d.get_doc_type_display }}</strong>
+          <br>
+          <small class="text-muted">{{ d.submitted_at|date:"Y-m-d H:i" }}</small>
+          <br>
+
+          <span class="badge-status 
+            {% if d.status=='APPROVED' %}bg-success text-light
+            {% elif d.status=='REJECTED' %}bg-danger text-light
+            {% else %}bg-warning text-dark{% endif %}">
+              {{ d.status }}
+          </span>
+        </div>
+
+        <a href="{% url 'kyc_detail' d.id %}"
+           class="btn btn-outline-dark btn-sm"
+           style="border-width:2px;">
+          View
+        </a>
+
+      </li>
+      {% empty %}
+      <li class="list-group-item text-muted">No KYC documents submitted yet.</li>
+      {% endfor %}
+    </ul>
+
+  </div>
+
+</div>
+
+
+
+<!-- ============================= -->
+<!-- REVEAL SCRIPT -->
+<!-- ============================= -->
+<script>
+document.addEventListener("scroll", () => {
+  document.querySelectorAll(".reveal").forEach(el => {
+    if(el.getBoundingClientRect().top < window.innerHeight - 80){
+      el.classList.add("visible");
+    }
+  });
+});
+</script>
+
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function(){
+  const form = document.getElementById("kyc-form");
+  const btn = document.getElementById("kyc-submit");
+  const spinner = document.getElementById("kyc-spinner");
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    btn.disabled = true;
+    spinner.style.display = "inline";
+
+    const data = new FormData(form);
+
+    fetch(form.action, {
+      method: "POST",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: data
+    })
+    .then(res => res.json())
+    .then(json => {
+      if (json.success) {
+        if (typeof showToast === "function") showToast("KYC Submitted Successfully ✔");
+        location.reload();
+      } else {
+        alert("Upload failed: " + JSON.stringify(json.errors));
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Upload error");
+    })
+    .finally(() => {
+      btn.disabled = false;
+      spinner.style.display = "none";
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+<div class="bento-card reveal shadow-premium" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="rounded-circle bg-primary-soft p-3">
+            <i class="bi bi-envelope-at-fill text-primary h4 mb-0"></i>
+        </div>
+        <div>
+            <h5 class="fw-black mb-0 text-slate-900">SYSTEM_FEED_SYNC</h5>
+            <p class="extra-small text-muted fw-bold mb-0 text-uppercase">Establish notification handshake</p>
+        </div>
+    </div>
+
+    <form id="ajax-sync-form" action="{% url 'subscribe_node' %}" method="POST" class="position-relative">
+        {% csrf_token %}
+        <div class="input-group mb-3">
+            <input type="email" name="email" id="sync-email"
+                   class="form-control border-0 bg-light rounded-start-pill px-4 py-3 small fw-bold" 
+                   placeholder="archon@protocol.com" required>
+            <button type="submit" id="sync-btn" class="btn btn-primary rounded-end-pill px-4 fw-black shadow-glow">
+                <span class="btn-text">SYNC_NODE</span>
+                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+            </button>
+        </div>
+        
+        <div id="sync-status" class="extra-small fw-bold mt-2 d-none"></div>
+
+        <p class="extra-small text-muted mb-0 opacity-75 mt-2" id="encryption-tag">
+            <i class="bi bi-shield-check me-1"></i> Data encrypted via Identity_Protocol_v4
+        </p>
+    </form>
+</div>
+
+<style>
+    .bg-primary-soft { background: rgba(99, 102, 241, 0.1); }
+    .shadow-glow { box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); transition: var(--transition-main); }
+    .shadow-glow:hover { box-shadow: 0 0 25px rgba(99, 102, 241, 0.6); }
+    
+    /* AJAX State Transitions */
+    .sync-success { color: #10b981 !important; animation: pulse-green 1.5s ease; }
+    .sync-error { color: #ef4444 !important; }
+
+    @keyframes pulse-green {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        background: #ffffff !important;
+        border: 1px solid var(--clr-primary) !important;
+    }
+</style>
+
+<script>
+document.getElementById('ajax-sync-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const form = this;
+    const btn = document.getElementById('sync-btn');
+    const btnText = btn.querySelector('.btn-text');
+    const spinner = btn.querySelector('.spinner-border');
+    const statusMsg = document.getElementById('sync-status');
+    const emailInput = document.getElementById('sync-email');
+
+    // UI Feedback: Start Handshake
+    btn.disabled = true;
+    btnText.innerText = "SYNCING...";
+    spinner.classList.remove('d-none');
+    statusMsg.classList.add('d-none');
+
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest', // Tells Django this is an AJAX request
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // UI Feedback: Success Handshake
+        spinner.classList.add('d-none');
+        statusMsg.classList.remove('d-none');
+
+        if (data.status === 'success') {
+            btn.classList.replace('btn-primary', 'btn-success');
+            btnText.innerText = "SUCCESS";
+            statusMsg.innerText = "> PROTOCOL_ESTABLISHED: NODE_ACTIVE";
+            statusMsg.className = "extra-small fw-bold mt-2 sync-success";
+            emailInput.value = ''; // Reset input
+        } else {
+            btn.disabled = false;
+            btnText.innerText = "RETRY";
+            statusMsg.innerText = "> ERROR: " + (data.message || "HANDSHAKE_FAILED");
+            statusMsg.className = "extra-small fw-bold mt-2 sync-error";
+        }
+    })
+    .catch(error => {
+        spinner.classList.add('d-none');
+        btn.disabled = false;
+        btnText.innerText = "RETRY";
+        statusMsg.classList.remove('d-none');
+        statusMsg.innerText = "> CRITICAL_FAILURE: UNABLE_TO_CONNECT";
+        statusMsg.className = "extra-small fw-bold mt-2 sync-error";
+    });
+});
+</script>

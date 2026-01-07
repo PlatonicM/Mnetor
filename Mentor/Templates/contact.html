@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Support Control | Command Center{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- 1. Industrial Cyber Tokens --- */
+:root {
+    --figma-bg: #F0F4F8;
+    --figma-primary: #4F46E5; 
+    --figma-success: #059669; 
+    --figma-accent: #6366f1;
+    --radius-figma: 30px;
+    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background: radial-gradient(circle at top right, #eef2ff, #f1f5f9, #f0fdf4); color: #0f172a; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+
+/* --- 2. Entrance Handshake --- */
+.reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s var(--spring-easing); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* --- 3. Hero Section Architecture --- */
+.support-hero { 
+    padding: 120px 0 80px; 
+    background: white;
+    border-bottom: 2px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.support-hero::before {
+    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: radial-gradient(var(--figma-primary-soft) 1px, transparent 1px);
+    background-size: 30px 30px; opacity: 0.3; pointer-events: none;
+}
+
+/* --- 4. Surface Card System --- */
+.surface-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border: 2px solid #ffffff;
+    border-radius: var(--radius-figma);
+    padding: 2.5rem;
+    transition: all 0.5s var(--spring-easing);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+}
+.surface-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px -15px rgba(79, 70, 229, 0.15);
+    border-color: var(--figma-primary);
+}
+
+/* --- 5. Form Engineering --- */
+.input-node {
+    background: #f8fafc; border: 2px solid #e2e8f0;
+    border-radius: 16px; padding: 18px; font-weight: 600;
+    transition: 0.3s; width: 100%;
+}
+.input-node:focus {
+    background: #fff; border-color: var(--figma-primary);
+    box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.1); outline: none;
+}
+
+.btn-transmit {
+    background: linear-gradient(90deg, var(--figma-primary), var(--figma-accent));
+    color: white; padding: 18px; border-radius: 100px;
+    font-weight: 900; letter-spacing: 2px; width: 100%; border: none;
+    transition: 0.4s var(--spring-easing); display: flex; 
+    align-items: center; justify-content: center; gap: 12px;
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+}
+.btn-transmit:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(79, 70, 229, 0.4); }
+
+/* --- 6. Utility & Typography --- */
+.fw-black { font-weight: 900 !important; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+.extra-small-bold { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+
+/* Status Pulsing */
+.pulse-dot { width: 10px; height: 10px; background: var(--figma-success); border-radius: 50%; position: relative; }
+.pulse-dot::after {
+    content: ''; position: absolute; width: 100%; height: 100%;
+    background: inherit; border-radius: inherit; animation: pulse-ping 2s infinite;
+}
+@keyframes pulse-ping { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3.5); opacity: 0; } }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+
+<section class="support-hero reveal">
+    <div class="container text-center position-relative" style="z-index: 2;">
+        <div class="d-inline-flex align-items-center gap-3 bg-light px-4 py-2 rounded-pill border border-success border-opacity-25 mb-4 shadow-sm">
+            <div class="pulse-dot"></div> 
+            <span class="font-mono extra-small-bold text-success">Get In Touch</span>
+        </div>
+        <h1 class="display-3 fw-black text-dark mb-3" style="letter-spacing: -4px;">
+            How can we <span class="text-primary">help?</span>
+        </h1>
+        <p class="text-muted fs-5 mx-auto font-mono opacity-75" style="max-width: 600px;">
+            Have questions about our courses or need help choosing the right plan? We're here to help you succeed: <span class="text-primary fw-black">~10 MINUTES.</span>
+        </p>
+    </div>
+</section>
+
+<div class="container py-5">
+    
+    <div class="reveal mb-5">
+        <div class="surface-card p-0 overflow-hidden border-2 shadow-2xl" style="height: 380px;">
+            <iframe 
+                width="100%" height="100%" style="border:0; filter: contrast(1.1) saturate(1.1) brightness(1.02);" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d119066.52982230402!2d79.002466!3d21.1458!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bd4c0a5a31faf13%3A0x19b37d25510fe5d4!2sNagpur%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
+                allowfullscreen="" loading="lazy">
+            </iframe>
+        </div>
+    </div>
+    
+
+    <div class="row g-4 align-items-stretch">
+        <div class="col-lg-4 d-flex flex-column gap-4">
+            <div class="surface-card border-2 shadow-lg flex-grow-1">
+                <h5 class="fw-black text-dark mb-4 tracking-tighter">CONTACT US</h5>
+                
+                <div class="d-flex gap-4 mb-4 p-3 rounded-4 bg-light border">
+                    <div class="bg-primary text-white p-3 rounded-3 shadow-sm d-flex align-items-center"><i class="bi bi-geo-alt-fill fs-4"></i></div>
+                    <div class="overflow-hidden">
+                        <h6 class="fw-black mb-1 text-dark">HQ NAGPUR</h6>
+                        <small class="text-muted font-mono d-block text-truncate" style="font-size: 11px;">IT Park, Nagpur, MH</small>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-4 mb-4 p-3 rounded-4 bg-light border">
+                    <div class="bg-success text-white p-3 rounded-3 shadow-sm d-flex align-items-center"><i class="bi bi-envelope-at-fill fs-4"></i></div>
+                    <div class="overflow-hidden">
+                        <h6 class="fw-black mb-1 text-dark">EMAIL</h6>
+                        <small class="text-muted font-mono d-block" style="font-size: 11px;">support@mentorlms.com</small>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-4 border-top">
+                    <span class="extra-small-bold text-primary d-block mb-3">OFFICE HOURS</span>
+                    <div class="d-flex justify-content-between small font-mono"><span class="text-muted">MON-FRI:</span><span class="fw-black">09:00 - 06:00</span></div>
+                    <div class="d-flex justify-content-between small font-mono"><span class="text-muted">Weekends:</span><span class="fw-black text-success">10:00 - 02:00</span></div>
+                </div>
+            </div>
+
+            <div class="surface-card bg-dark text-white border-0 shadow-2xl" style="background: linear-gradient(135deg, #1e293b, #0f172a);">
+                <h5 class="fw-black text-primary mb-2 font-mono">ENTERPRISE HUB</h5>
+                <p class="small text-white opacity-50 font-mono mb-0">Custom provisioning for organizational clusters.</p>
+                <div class="mt-3 font-mono extra-small-bold text-success">
+                    <i class="bi bi-patch-check-fill me-1"></i> enterprise@mentorlms.com
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="surface-card border-2 shadow-2xl">
+                <h3 class="fw-black text-dark mb-1 tracking-tighter">SEND US A MESSAGE</h3>
+                <p class="text-muted font-mono mb-4 opacity-75">Your inquiry will be routed to the appropriate engineering team.</p>
+                
+                <form id="contact-form" method="POST">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="extra-small-bold text-primary mb-2 d-block">FULL NAME</label>
+                            <input type="text" name="name" class="input-node" placeholder="Jhone Dov" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="extra-small-bold text-primary mb-2 d-block">EMAIL</label>
+                            <input type="email" name="email" class="input-node" placeholder="jhone123@gmail.com" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="extra-small-bold text-primary mb-2 d-block">SUBJECT</label>
+                            <select name="subject" class="input-node font-mono">
+                                <option>CURRICULUM DEPLOYMENT</option>
+                                <option>BILLING & TRANSACTIONS</option>
+                                <option>TECHNICAL INFRASTRUCTURE ERR</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="extra-small-bold text-primary mb-2 d-block">MESSAGE</label>
+                            <textarea name="message" rows="5" class="input-node" placeholder="Describe the anomaly..." required></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-transmit mt-5" id="submit-btn">
+                        <span id="btn-text">SEND MESSAGE</span> <i class="bi bi-broadcast"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5 py-5 reveal">
+        <div class="text-center mb-5">
+            <h2 class="fw-black display-4 text-dark tracking-tighter">Knowledge Cache</h2>
+            <p class="text-primary fw-black font-mono extra-small-bold mt-2">HISTORICAL SOLUTION LOGS</p>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="accordion accordion-flush" id="faqAccordion">
+                    <div class="surface-card p-0 mb-3 border-2 overflow-hidden reveal">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button fw-black font-mono py-4 px-4 shadow-none bg-white text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#f1">
+                                <i class="bi bi-terminal-fill text-primary me-3"></i> HOW DO I REPROVISION FAILED NODES?
+                            </button>
+                        </h2>
+                        <div id="f1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted font-mono px-5 pb-5 pt-0" style="line-height: 1.8;">
+                                <div class="p-3 bg-light rounded-3 border-start border-4 border-primary">
+                                    Recovery is automated. Visit <strong>STUDENT DASHBOARD</strong>, select your courses, and initialize <em>"RE-PROVISION INSTANCE."</em>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => entry.target.classList.add('visible'), index * 50);
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+});
+</script>
+{% endblock %}

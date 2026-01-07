@@ -1,0 +1,13 @@
+{
+    "serverpulse.services": [
+        {
+            "name": "mentor (django)",
+            "type": "django",
+            "port": 8000,
+            "healthCheckPath": "/health/",
+            "enableHealthCheck": true,
+            "healthCheckInterval": 10000
+        }
+    ],
+    "DockerRun.DisableDockerrc": true
+}

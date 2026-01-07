@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Curriculum Roadmap | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<script src='https://cdn.jsdelivr.net/npm/index.global.min.js'></script>
+
+<style>
+/* --- Figma Pro Design Tokens --- */
+:root {
+    --fc-border-color: #e2e8f0;
+    --fc-daygrid-event-dot-width: 8px;
+    --fc-button-bg-color: #0f172a;
+    --fc-button-border-color: #0f172a;
+    --fc-button-hover-bg-color: #6366f1;
+    --fc-button-active-bg-color: #6366f1;
+    --fc-today-bg-color: #f8fafc;
+}
+
+/* --- Calendar Container Architecture --- */
+.calendar-wrapper {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Event Node Styling --- */
+.fc-event {
+    border-radius: 6px !important;
+    padding: 2px 6px !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    border: none !important;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.fc-event:hover {
+    transform: scale(1.05);
+    z-index: 5;
+}
+
+/* --- Custom Header Navigation --- */
+.fc-toolbar-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800 !important;
+    letter-spacing: -1px;
+    color: #0f172a;
+}
+
+.fc-button {
+    text-transform: capitalize !important;
+    font-weight: 700 !important;
+    border-radius: 12px !important;
+}
+
+/* --- Reveal Entrance --- */
+.reveal { opacity: 0; transform: translateY(20px); transition: 0.8s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <div class="reveal mb-5 d-flex justify-content-between align-items-end">
+        <div>
+            <span class="badge bg-indigo-50 text-primary px-3 py-1 rounded-pill fw-bold mb-3 small">LIVE PROTOCOL</span>
+            <h1 class="fw-extrabold display-5" style="letter-spacing: -3px;">Event <span class="text-primary">Roadmap.</span></h1>
+        </div>
+        <div class="d-none d-md-block text-end">
+            <p class="text-muted mb-0 small fw-bold text-uppercase">Timezone</p>
+            <h6 class="fw-bold">UTC/GMT +5:30</h6>
+        </div>
+    </div>
+
+    <div class="calendar-wrapper reveal" style="transition-delay: 0.1s;">
+        <div id="calendar"></div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Entrance Handshake
+    document.querySelectorAll('.reveal').forEach((el, i) => {
+        setTimeout(() => el.classList.add('visible'), i * 150);
+    });
+
+    // 2. FullCalendar Engine Initialization
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listMonth'
+        },
+        events: "{% url 'events_calendar' %}",
+        height: 'auto',
+        navLinks: true,
+        editable: false,
+        dayMaxEvents: true,
+        
+        // Premium Event Styling Handshake
+        eventDidMount: function(info) {
+            // Apply brand colors based on event type if available
+            info.el.style.backgroundColor = '#6366f1'; 
+            if (info.event.extendedProps.is_full) {
+                info.el.style.backgroundColor = '#94a3b8';
+            }
+        },
+
+        // Click Handshake: Intelligent Routing
+        eventClick: function(info) {
+            info.jsEvent.preventDefault(); // Stop default browser navigation
+            
+            // In a high-end UI, we slide the user into the detail node
+            if (info.event.url) {
+                window.location.href = info.event.url;
+            }
+        }
+    });
+
+    calendar.render();
+});
+</script>
+{% endblock %}

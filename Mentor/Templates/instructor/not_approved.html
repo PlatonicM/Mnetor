@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Instructor Access Pending{% endblock %}
+
+{% block extra_css %}
+<style>
+
+/* =============================================
+   Reveal Animation (global style)
+============================================= */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: .8s cubic-bezier(.19,1,.22,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* =============================================
+   Black Glass Box (unified across all pages)
+============================================= */
+.black-box {
+  border: 2px solid #000;
+  border-radius: 16px;
+  background: #ffffffee;
+  backdrop-filter: blur(8px);
+  padding: 28px;
+  transition: .35s ease;
+}
+.black-box:hover {
+  transform: translateY(-8px);
+  border-color: #48b46a;
+  box-shadow: 0 22px 48px rgba(0,0,0,.2);
+}
+
+/* Button premium */
+.btn-premium {
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  transition: .3s ease;
+}
+.btn-premium:hover {
+  background: #48b46a !important;
+  color: #fff !important;
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(0,0,0,.22);
+}
+
+</style>
+{% endblock extra_css %}
+
+
+{% block content %}
+
+<div class="container my-5 reveal" style="max-width: 650px;">
+
+  <div class="black-box text-center">
+
+    <img src="{% static 'assets/img/verify.png' %}" 
+         width="140" 
+         class="mb-3" 
+         style="filter: drop-shadow(0 4px 10px rgba(0,0,0,.2));">
+
+    <h3 class="fw-bold mb-2">Instructor Approval Pending</h3>
+
+    <p class="text-muted">
+      Your instructor profile has been created successfully.<br>
+      Our team will review your application shortly.
+    </p>
+
+    <div class="alert alert-info mt-3 fw-semibold border-2" style="border:2px solid #000;">
+      <i class="bi bi-hourglass-split"></i> 
+      Status: Awaiting admin approval.
+    </div>
+
+    <a href="{% url 'home' %}" 
+       class="btn btn-premium mt-3 px-4 py-2">
+      <i class="bi bi-house-door"></i> Back to Home
+    </a>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("scroll", () => {
+  document.querySelectorAll(".reveal").forEach(el => {
+    if (el.getBoundingClientRect().top < window.innerHeight - 80) {
+      el.classList.add("visible");
+    }
+  });
+});
+</script>
+{% endblock %}

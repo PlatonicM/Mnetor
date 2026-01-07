@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Command Center | Analytical Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- 1. Industrial Design Tokens --- */
+:root {
+    --figma-bg: #F0F4F8;
+    --glass-bg: rgba(255, 255, 255, 0.88);
+    --glass-border: rgba(255, 255, 255, 0.7);
+    --figma-primary: #4F46E5; 
+    --figma-success: #059669; 
+    --figma-video: #F43F5E;
+    --radius-figma: 28px;
+    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background: radial-gradient(circle at top right, #f0fdf4, #f1f5f9); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+
+/* --- 2. Geometry Alignment --- */
+.dashboard-container { max-width: 1600px; margin: 0 auto; padding: 0 30px; }
+.dashboard-grid { 
+    display: grid; 
+    grid-template-columns: 280px 1fr; 
+    gap: 40px; 
+    padding: 30px 0; 
+    align-items: start;
+}
+
+/* --- 3. Kinetic Glass Engine --- */
+.glass-card {
+    background: var(--glass-bg); 
+    backdrop-filter: blur(25px) saturate(200%);
+    border: 1px solid var(--glass-border); 
+    border-radius: var(--radius-figma);
+    padding: 26px; 
+    transition: all 0.4s var(--spring-easing);
+    box-shadow: 0 12px 40px rgba(31, 38, 135, 0.08);
+}
+.glass-card:hover { transform: translateY(-8px); border-color: rgba(99, 102, 241, 0.4); }
+
+/* --- 4. Sidebar Branding --- */
+.nav-link-custom {
+    display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+    border-radius: 16px; color: #64748B; font-weight: 700; text-decoration: none;
+    transition: 0.3s ease;
+}
+.nav-link-custom:hover { background: white; color: var(--figma-primary); transform: translateX(8px); }
+.nav-link-custom.active { 
+    background: var(--figma-primary); color: white !important; 
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); 
+}
+
+/* --- 5. Course Node High-Contrast Logic --- */
+.course-node {
+    background: white; border-radius: 24px; border: 1px solid #E2E8F0;
+    transition: 0.4s var(--spring-easing); position: relative; overflow: hidden;
+    height: 100%; display: flex; flex-direction: column;
+}
+.course-node.complete { border-color: var(--figma-success); border-width: 3px; }
+.course-node:hover { transform: translateY(-10px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+
+/* --- 6. Telemetry Rows --- */
+.vault-row {
+    background: rgba(255, 255, 255, 0.5); border: 1px solid var(--glass-border);
+    border-radius: 20px; transition: 0.3s ease;
+}
+.vault-row:hover { background: white; transform: translateX(10px); border-color: var(--figma-primary); }
+
+/* --- 7. Typography & Status --- */
+.text-success-node { color: var(--figma-success) !important; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+.extra-small { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; }
+
+@media (max-width: 992px) { .dashboard-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<header class="sticky-top border-bottom py-3" style="background: rgba(255,255,255,0.7); backdrop-filter: blur(25px); z-index: 1000;">
+    <div class="dashboard-container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <div class="bg-primary rounded-3 p-2 me-3 d-flex align-items-center justify-content-center shadow-lg" style="width: 42px; height: 42px; background: linear-gradient(135deg, #6366F1, #4F46E5);">
+                <i class="bi bi-layers-half text-white fs-5"></i>
+            </div>
+            <div>
+                <h6 class="fw-black mb-0">STUDENT DASHBORD <span class="badge bg-dark text-white extra-small ms-2"></span></h6>
+                <p class="extra-small text-muted mb-0 opacity-50 font-mono">ACTIVE STUDENT: {{ user.username|upper }}</p>
+            </div>
+        </div>
+        <div class="extra-small text-muted d-flex align-items-center gap-3">
+            <span class="fw-bold text-success font-mono"><i class="bi bi-broadcast me-1"></i> SYNC STABLE</span>
+            <div class="spinner-grow spinner-grow-sm text-success" style="width: 8px; height: 8px;"></div>
+        </div>
+    </div>
+</header>
+
+<div class="dashboard-container">
+    <div class="dashboard-grid">
+        
+        <aside>
+    <div class="glass-card text-center mb-4 p-0 overflow-hidden border-2">
+        <div class="p-4 bg-white bg-opacity-50">
+            <div class="avatar-wrapper position-relative mx-auto mb-3" style="width: 90px; height: 90px;">
+                <div class="w-100 h-100 rounded-circle border border-white d-flex align-items-center justify-content-center bg-white shadow-sm overflow-hidden">
+                     <i class="bi bi-person-circle text-primary fs-1"></i>
+                </div>
+                <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1 d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px;">
+                    <i class="bi bi-patch-check-fill text-success fs-5"></i>
+                </div>
+            </div>
+            <h6 class="fw-black mb-1 text-dark">{{ user.get_full_name|default:user.username|upper }}</h6>
+            <div class="d-flex align-items-center justify-content-center gap-2">
+                <span class="status-signal"></span>
+                <span class="extra-small-bold text-success font-mono">VERIFIED STUDENT</span>
+            </div>
+        </div>
+        
+        <!-- <div class="p-4 text-start border-top">
+            <p class="extra-small fw-black text-muted mb-3 opacity-50">STATION_METADATA</p>
+            <div class="mb-3">
+                <label class="extra-small opacity-50 d-block font-mono">SYSTEM_UPTIME</label>
+                <span class="small fw-black font-mono text-dark">{{ user.date_joined|timesince }}</span>
+            </div>
+            <div>
+                <label class="extra-small opacity-50 d-block font-mono">PACKET_SYNC</label>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="small fw-black text-success font-mono">99.98% Stable</span>
+                    <i class="bi bi-activity text-success opacity-50"></i>
+                </div>
+            </div>
+        </div> -->
+
+        <nav class="sidebar-nav d-flex flex-column gap-1 p-3 border-top">
+            <a href="{% url 'dashboard' %}" class="nav-link-custom active bg-primary text-white rounded-4 shadow-sm">
+                <i class="bi bi-grid-1x2-fill"></i> Workspace 
+            </a>
+            <a href="{% url 'courses' %}" class="nav-link-custom">
+                <i class="bi bi-layers-fill"></i> Library-->
+            </a>
+            <a href="{% url 'profile' %}" class="nav-link-custom">
+                <i class="bi bi-shield-lock"></i> Progress view-->
+            </a>
+            <hr class="my-3 opacity-10">
+            <a href="{% url 'logout' %}" class="nav-link-custom text-danger fw-bold"><i class="bi bi-power"></i> Logout--></a>
+        </nav>
+    </div>
+</aside>
+
+        <main>
+            <div class="glass-card mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="extra-small fw-black text-primary m-0"></i>STUDENT PERFORMANCE METRICS</h6>
+                    <span class="badge bg-primary-subtle text-primary extra-small px-3 py-2 font-mono">LOADED: {{ courses|length }} COURSES</span>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6 border-end">
+                        <p class="extra-small text-muted mb-1 d-flex align-items-center gap-2">
+                            <span class="live-led"></span> Session Uptime
+                        </p>
+                        <p id="session-uptime-display" class="h4 fw-black mb-0 font-mono text-dark">
+                            4h 20m 40s
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="meta-item p-3 rounded-4 bg-white bg-opacity-50">
+                            <p class="extra-small text-muted mb-1">Certificate Archive</p>
+                            <p class="h4 fw-black mb-0 font-mono">{{ user.certificate_set.count }} Records Found</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="glass-card mb-5 border-2 shadow-lg">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-primary border-opacity-25 pb-3">
+        <h6 class="extra-small-bold text-primary m-0 tracking-widest">
+            <i class="bi bi-safe2-fill me-2"></i>CERTIFICATION REPOSITORY
+        </h6>
+        <!-- <span class="badge bg-dark text-white font-mono extra-small px-3">ENCRYPTION LAYER: RSA_256</span> -->
+    </div>
+
+    <div class="row g-3">
+        {% for mc in courses %}
+        <div class="col-12">
+            <div class="vault-row p-3 d-flex justify-content-between align-items-center {% if mc.progress == 100 %}border-success-subtle bg-success-light{% endif %}" 
+                 style="border: 2px solid {% if mc.progress == 100 %}#10B981{% else %}#e2e8f0{% endif %}; border-radius: 20px; transition: 0.4s var(--spring-easing);">
+                
+                <div class="d-flex align-items-center gap-4">
+                    <div class="font-mono text-muted fw-bold opacity-50 ps-2" style="font-size: 14px; min-width: 45px;">
+                        SN: {{ forloop.counter|stringformat:"02d" }}
+                    </div>
+
+                    <div class="p-3 {% if mc.progress == 100 %}bg-success text-white shadow-success{% else %}bg-primary text-white shadow-primary{% endif %} rounded-4 text-center" style="width: 54px; height: 54px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi {% if mc.progress == 100 %}bi-patch-check-fill{% else %}bi-clock-history{% endif %} fs-4"></i>
+                    </div>
+
+                    <div>
+                        <div class="h6 fw-black text-dark mb-0 tracking-tight" style="font-size: 1.1rem;">{{ mc.course.name|upper }}</div>
+                        <div class="extra-small-bold text-muted font-mono mt-1">
+                            COURSE ID: <span class="text-primary">#{{ mc.course.id|add:"1000" }}</span> 
+                            || STATUS: {% if mc.progress == 100 %}<span class="text-success">VERIFIED</span>{% else %}<span class="text-warning">SYNCING</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-5">
+                    <div class="text-end">
+                        <div class="extra-small-bold text-muted mb-1">PROGRESS VIEW</div>
+                        <div class="h4 fw-black font-mono m-0 {% if mc.progress == 100 %}text-success{% else %}text-primary{% endif %}">
+                            {{ mc.progress }}%
+                        </div>
+                    </div>
+
+                    {% if mc.progress == 100 %}
+                    <!-- <a href="{% url 'download_certificate' course_id=mc.course.id %}" 
+                       class="btn btn-success rounded-pill px-4 py-2 fw-black extra-small-bold shadow-lg border-2 border-white hover-lift">
+                        <i class="bi bi-cloud-download-fill me-2"></i> HARVEST_DIPLOMA
+                    </a> -->
+                    {% else %}
+                    <div class="badge bg-light text-muted border px-3 py-2 font-mono extra-small">LOCKED</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="row g-4" id="course-grid">
+    {% for mc in courses %}
+    <div class="col-md-6">
+        <div class="course-node shadow-lg bg-white p-3 {% if mc.progress == 100 %}complete{% endif %}" 
+             style="border: 2px solid {% if mc.progress == 100 %}#10B981{% else %}#e2e8f0{% endif %}; border-radius: 30px; transition: 0.4s var(--spring-easing);">
+            
+            <div class="position-relative" style="height: 210px; overflow: hidden; border-radius: 24px; box-shadow: inset 0 0 20px rgba(0,0,0,0.1);">
+                <img src="{{ mc.course.image.url }}" class="w-100 h-100 object-fit-cover transition-all" style="filter: brightness(0.95);">
+                
+                <div class="position-absolute top-0 start-0 m-3 d-flex flex-column gap-2">
+                    <span class="badge bg-dark bg-opacity-75 text-white font-mono extra-small-bold px-3 py-2 shadow-sm" style="backdrop-filter: blur(10px);">
+                        SN: {{ forloop.counter|stringformat:"02d" }}
+                    </span>
+                </div>
+
+                {% if mc.progress == 100 %}
+                <div class="position-absolute top-0 end-0 m-3">
+                    <span class="badge bg-success rounded-pill px-3 py-2 extra-small-bold shadow-lg border-2 border-white">
+                        <i class="bi bi-patch-check-fill me-1"></i>COMPLEATE  MODULE
+                    </span>
+                </div>
+                {% endif %}
+
+                <div class="position-absolute bottom-0 start-0 m-3">
+                    <span class="badge bg-primary px-3 py-2 extra-small-bold font-mono shadow-sm">
+                        ID: #{{ mc.course.id|add:"1000" }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="p-3 mt-2">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="fw-black text-dark text-truncate m-0" style="letter-spacing: -0.5px;">{{ mc.course.name|upper }}</h5>
+                    <span class="font-mono extra-small-bold {% if mc.progress == 100 %}text-success{% else %}text-primary{% endif %}">
+                        {{ mc.progress }}%
+                    </span>
+                </div>
+                
+                <div class="progress mb-4" style="height: 12px; border-radius: 20px; background: #f1f5f9; border: 1px solid #e2e8f0;">
+                    <div class="progress-bar {% if mc.progress == 100 %}bg-success{% else %}bg-primary{% endif %} shadow-sm" 
+                         style="width: {{ mc.progress }}%; transition: width 1s ease-in-out;"></div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    {% if mc.progress == 100 %}
+                        <a href="{% url 'download_certificate' course_id=mc.course.id %}" 
+                           class="btn btn-success w-100 rounded-pill fw-black py-3 shadow-lg text-decoration-none d-flex align-items-center justify-content-center gap-2 hover-lift">
+                            <i class="bi bi-award-fill fs-5"></i>
+                            <span class="extra-small-bold">VIEW CERTIFICATE</span>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'course_detail' cid=mc.course.id %}" 
+                           class="btn btn-primary w-100 rounded-pill fw-black py-3 shadow-lg text-decoration-none d-flex align-items-center justify-content-center gap-2 hover-lift" 
+                           style="background: var(--figma-primary);">
+                            <i class="bi bi-play-circle-fill fs-5"></i>
+                            <span class="extra-small-bold">RESUME VIDEO--></span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+
+
+{% block extra_js %}
+<script>
+    /**
+     * PROTOCOL: LIVE_UPTIME_ENGINE
+     * Simulates session tracking with a visual ticker
+     */
+    function initializeUptimeTicker() {
+        const display = document.getElementById('session-uptime-display');
+        
+        // Random start offset for data visualization (3-8 hours)
+        let hrs = Math.floor(Math.random() * 5) + 3;
+        let mins = Math.floor(Math.random() * 60);
+        let secs = Math.floor(Math.random() * 60);
+
+        function update() {
+            secs++;
+            if (secs >= 60) { secs = 0; mins++; }
+            if (mins >= 60) { mins = 0; hrs++; }
+
+            const fHrs = hrs + "h";
+            const fMins = mins.toString().padStart(2, '0') + "m";
+            const fSecs = secs.toString().padStart(2, '0') + "s";
+
+            display.innerText = `${fHrs} ${fMins} ${fSecs}`;
+            
+            // Kinetic Effect: Subtle opacity flicker to mimic a data terminal
+            display.style.opacity = Math.random() > 0.99 ? '0.6' : '1';
+        }
+
+        setInterval(update, 1000);
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeUptimeTicker);
+</script>
+{% endblock %}

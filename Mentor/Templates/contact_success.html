@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Transmission Successful | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Design Tokens --- */
+:root {
+  --clr-success: #10b981;
+  --clr-bg: #F8FAFC;
+  --clr-card: #FFFFFF;
+  --radius-figma: 24px;
+  --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background-color: var(--clr-bg); overflow: hidden; }
+
+/* --- Success Animation Architecture --- */
+.success-container {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.success-orb {
+    width: 120px; height: 120px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 20px 40px rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    position: relative;
+    margin-bottom: 40px;
+    animation: orbEntrance 0.8s var(--spring-easing) forwards;
+}
+
+.success-orb i {
+    font-size: 3.5rem;
+    color: var(--clr-success);
+    z-index: 2;
+}
+
+.pulse-ring {
+    position: absolute;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--clr-success);
+    animation: successPulse 2s infinite;
+}
+
+/* --- Terminal Log Aesthetic --- */
+.handshake-log {
+    background: #0f172a;
+    color: #10b981;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 15px 25px;
+    border-radius: 12px;
+    font-size: 13px;
+    margin-bottom: 30px;
+    border-left: 4px solid var(--clr-success);
+    opacity: 0;
+    animation: fadeIn 0.5s ease 0.8s forwards;
+}
+
+/* --- Entrance Keyframes --- */
+@keyframes orbEntrance {
+    0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@keyframes successPulse {
+    0% { transform: scale(0.8); opacity: 0.8; }
+    100% { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes fadeIn { to { opacity: 1; } }
+
+.btn-home-sync {
+    background: var(--clr-slate-900);
+    color: white;
+    padding: 16px 40px;
+    border-radius: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: all 0.3s var(--spring-easing);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+.btn-home-sync:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    color: white;
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container success-container">
+    
+    <div class="success-orb">
+        <div class="pulse-ring"></div>
+        <i class="bi bi-check-all"></i>
+    </div>
+
+    <div class="text-center reveal visible">
+        <h2 class="fw-black text-slate-900 display-4 mb-3" style="letter-spacing: -3px;">HANDSHAKE_COMPLETE</h2>
+        <p class="text-muted fs-5 mb-5 mx-auto" style="max-width: 500px;">
+            Your transmission has been successfully received by our core engineering node. We will respond via your provided endpoint shortly.
+        </p>
+
+        <div class="handshake-log">
+            > INITIALIZING_SECURE_SYNC... [OK]<br>
+            > PACKET_RECEIVED_BY_NODE_01... [DONE]<br>
+            > STATUS: TRANSACTION_SUCCESSFUL
+        </div>
+
+        <a href="{% url 'home' %}" class="btn-home-sync shadow-lg">
+            <i class="bi bi-cpu-fill"></i> RETURN_TO_HUB
+        </a>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Confetti Handshake (Optional: requires adding a simple script link if you want real confetti)
+    console.log("SYSTEM_LOG: Success Protocol Initialized.");
+</script>
+{% endblock %}

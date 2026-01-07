@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Analytical Hub | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Figma High-Fidelity Tokens --- */
+:root {
+  --figma-bg: #f3f4f6;
+  --figma-card: #ffffff;
+  --figma-primary: #6366f1;
+  --figma-primary-soft: #eef2ff;
+  --figma-secondary: #10b981;
+  --figma-text-main: #111827;
+  --figma-text-muted: #6b7280;
+  --figma-border: #e5e7eb;
+  --radius-figma: 16px;
+  --shadow-figma: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+body { background-color: var(--figma-bg); color: var(--figma-text-main); font-family: 'Inter', sans-serif; }
+
+/* --- Staggered Reveal --- */
+.reveal { opacity: 0; transform: translateY(20px); transition: 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* --- Navigation & Pulse --- */
+.glass-nav {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--figma-border);
+    border-radius: var(--radius-figma);
+    padding: 12px;
+    position: sticky; top: 24px;
+}
+.pulse-icon {
+    width: 8px; height: 8px; background: var(--figma-secondary);
+    border-radius: 50%; display: inline-block;
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+    animation: pulse-green 2s infinite;
+}
+@keyframes pulse-green { 0% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0); } }
+
+/* --- Bento & Analytical Cards --- */
+.bento-card {
+    background: var(--figma-card); border: 1px solid var(--figma-border);
+    border-radius: var(--radius-figma); padding: 24px;
+    transition: all 0.3s ease;
+}
+.bento-card:hover { border-color: var(--figma-primary); transform: translateY(-2px); box-shadow: var(--shadow-figma); }
+
+.stat-trend { font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; }
+.trend-up { background: #d1fae5; color: #065f46; }
+
+/* --- Deployment Micro-Card --- */
+.deployment-card {
+    border: 1px solid var(--figma-border); border-radius: 14px;
+    background: #fff; overflow: hidden; transition: 0.3s;
+}
+.deployment-card:hover { border-color: var(--figma-primary); background: #fcfcff; }
+
+/* --- Skill Matrix --- */
+.skill-bar-bg { height: 6px; background: #e5e7eb; border-radius: 10px; position: relative; }
+.skill-bar-fill { height: 100%; border-radius: 10px; background: var(--figma-primary); transition: 1.5s ease-out; width: 0; }
+
+/* --- Floating AI (AJAX Interface) --- */
+.ai-fab-modern {
+    position: fixed; bottom: 30px; right: 30px;
+    width: 60px; height: 60px; background: var(--figma-text-main);
+    color: white; border-radius: 18px; display: flex;
+    align-items: center; justify-content: center; font-size: 24px;
+    cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    z-index: 1000; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.ai-fab-modern:hover { transform: scale(1.1) rotate(5deg); background: var(--figma-primary); }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+
+<div class="ai-fab-modern shadow-lg" id="mentorLauncher">
+    <i class="bi bi-stars"></i>
+</div>
+
+<div class="container-fluid px-lg-5 py-4">
+    <div class="row g-4">
+        
+        <div class="col-lg-2">
+            <div class="glass-nav reveal">
+                <div class="p-3 mb-3 border-bottom">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="pulse-icon"></span>
+                        <span class="fw-bold small text-uppercase">Live Engine</span>
+                    </div>
+                    <small class="text-muted">ID: {{ user.username|upper }}</small>
+                </div>
+                <nav class="d-flex flex-column gap-1">
+                    <a href="#" class="nav-item-figma active"><i class="bi bi-bar-chart-fill me-2"></i> Analytics</a>
+                    <a href="{% url 'courses' %}" class="nav-item-figma"><i class="bi bi-plus-square me-2"></i> Deploy</a>
+                    <a href="#" class="nav-item-figma"><i class="bi bi-lightning-charge me-2"></i> Labs</a>
+                    <a href="#" class="nav-item-figma"><i class="bi bi-shield-check me-2"></i> Verified</a>
+                    <hr class="my-3 opacity-10">
+                    <a href="{% url 'logout' %}" class="nav-item-figma text-danger"><i class="bi bi-power me-2"></i> Exit</a>
+                </nav>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="row g-3 mb-4">
+                <div class="col-md-4 reveal" style="animation-delay: 0.1s;">
+                    <div class="bento-card">
+                        <small class="text-muted fw-bold text-uppercase mb-2 d-block">Completion Rate</small>
+                        <div class="d-flex align-items-end gap-2">
+                            <h2 class="fw-bold mb-0">74.8%</h2>
+                            <span class="stat-trend trend-up mb-1">+5.2%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal" style="animation-delay: 0.2s;">
+                    <div class="bento-stat p-0 h-100 border-0">
+                        <div class="bento-card h-100 bg-white border-primary">
+                            <small class="text-primary fw-bold text-uppercase mb-2 d-block">Lab Uptime</small>
+                            <h2 class="fw-bold mb-0">12h 45m</h2>
+                            <small class="text-muted">Total active session</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal" style="animation-delay: 0.3s;">
+                    <div class="bento-card">
+                        <small class="text-muted fw-bold text-uppercase mb-2 d-block">Knowledge XP</small>
+                        <h2 class="fw-bold mb-0">4.2k</h2>
+                        <div class="skill-bar-bg mt-2"><div class="skill-bar-fill bg-warning" style="width: 60%"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal" style="animation-delay: 0.4s;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Active Deployments ({{ courses|length }})</h5>
+                    <div class="d-flex gap-2">
+                        <input type="text" id="course-filter" class="form-control form-control-sm border-0 shadow-sm" placeholder="Filter parameters..." style="border-radius: 8px;">
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    {% if courses %}
+                        {% for mc in courses %}
+                        <div class="col-12 course-card-item">
+                            <div class="deployment-card shadow-sm">
+                                <div class="row g-0 align-items-center">
+                                    <div class="col-md-2">
+                                        <img src="{{ mc.course.image.url }}" class="w-100" style="height: 100px; object-fit: cover; opacity: 0.9;" alt="">
+                                    </div>
+                                    <div class="col-md-10 p-3 px-4">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-4">
+                                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 10px;">Deployment Name</small>
+                                                <span class="fw-bold text-truncate d-block">{{ mc.course.name }}</span>
+                                            </div>
+                                            <div class="col-md-3 text-center">
+                                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 10px;">Efficiency</small>
+                                                <span class="text-primary fw-extrabold">{{ mc.progress }}%</span>
+                                            </div>
+                                            <div class="col-md-5 d-flex gap-2">
+                                                <a href="/course/{{ mc.course.id }}/" class="btn btn-dark rounded-pill flex-grow-1 fw-bold btn-sm">Access Lab</a>
+                                                <form method="POST" action="{% url 'remove_from_dashboard' mc.course.id %}">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-outline-danger border-0 rounded-circle btn-sm"><i class="bi bi-x-circle"></i></button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="reveal" style="animation-delay: 0.5s;">
+                <div class="bento-card mb-4">
+                    <h6 class="fw-bold mb-3 small text-uppercase">Skill Proficiency</h6>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1"><span>Backend Systems</span><span class="fw-bold">88%</span></div>
+                        <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="88%"></div></div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1"><span>Frontend/UX</span><span class="fw-bold">42%</span></div>
+                        <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="42%" style="background: var(--figma-secondary);"></div></div>
+                    </div>
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between small mb-1"><span>Security Protocol</span><span class="fw-bold">15%</span></div>
+                        <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="15%" style="background: var(--figma-accent);"></div></div>
+                    </div>
+                </div>
+
+                <div class="bento-card">
+                    <h6 class="fw-bold mb-3 small text-uppercase">System Suggestions</h6>
+                    <div class="p-3 bg-light rounded-3 mb-0">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-cpu text-primary"></i>
+                            <span class="small fw-bold">Optimization Identified</span>
+                        </div>
+                        <p class="text-muted mb-0" style="font-size: 12px; line-height: 1.5;">
+                            User shows high retention in <b>Python</b> logic. We recommend jumping to <b>Module 4: Async Programming</b> to skip foundational review.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Reveal Elements
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if(entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                // Trigger Skill Bars once visible
+                const bars = entry.target.querySelectorAll('.skill-bar-fill');
+                bars.forEach(bar => {
+                    if(bar.dataset.width) bar.style.width = bar.dataset.width;
+                });
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+
+    // 2. Real-time Search Filter
+    const searchInput = document.getElementById('course-filter');
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('.course-card-item').forEach(card => {
+            const name = card.innerText.toLowerCase();
+            card.style.display = name.includes(query) ? 'block' : 'none';
+        });
+    });
+
+    // 3. AI Mentor Interaction
+    document.getElementById('mentorLauncher').addEventListener('click', () => {
+        const msg = "System Diagnostics: \n\n• Current Path: Technical Architecture \n• Efficiency: 74.8% \n• Recommended: Finish Python Lambda Lab.";
+        alert(msg);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,111 @@
+<li class="category-node-wrapper">
+
+  <a href="{% url 'courses' %}?category={{ category.id }}" 
+     class="category-node-link d-flex align-items-center justify-content-between">
+    
+    <div class="d-flex align-items-center gap-2">
+      <span class="node-indicator"></span>
+      <span class="category-name fw-bold">{{ category.name }}</span>
+    </div>
+
+    {% if category.children.exists %}
+      <i class="bi bi-chevron-right node-chevron transition-all"></i>
+    {% endif %}
+  </a>
+
+  {% if category.children.exists %}
+  <ul class="subcategory-matrix ms-3">
+    {% for child in category.children.all %}
+      {% include "partials/category_dropdown_item.html" with category=child %}
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+</li>
+
+<style>
+/* --- Figma Navigation Tokens --- */
+.category-node-wrapper {
+    list-style: none;
+    position: relative;
+    padding: 2px 0;
+}
+
+.category-node-link {
+    padding: 10px 14px;
+    border-radius: 12px;
+    color: var(--figma-text-main);
+    text-decoration: none;
+    transition: all 0.3s var(--spring-easing);
+    border: 1px solid transparent;
+}
+
+.category-node-link:hover {
+    background: white;
+    border-color: var(--figma-border);
+    color: var(--figma-primary);
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+/* Feature: Active Node Line */
+.node-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--figma-border);
+    transition: 0.3s;
+}
+
+.category-node-link:hover .node-indicator {
+    background: var(--figma-primary);
+    box-shadow: 0 0 8px var(--figma-primary);
+    transform: scale(1.2);
+}
+
+.category-name {
+    font-size: 14px;
+    letter-spacing: -0.2px;
+}
+
+/* Sub-menu Architecture */
+.subcategory-matrix {
+    list-style: none;
+    padding-left: 12px;
+    margin-top: 4px;
+    border-left: 1.5px solid var(--figma-border);
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.5s var(--spring-easing);
+}
+
+/* Feature 4: Automatic Expansion on Hover (Desktop Optimized) */
+.category-node-wrapper:hover > .subcategory-matrix {
+    max-height: 1000px; /* Large enough to fit children */
+    opacity: 1;
+    margin-bottom: 10px;
+}
+
+.category-node-wrapper:hover > .category-node-link .node-chevron {
+    transform: rotate(90deg);
+    color: var(--figma-primary);
+}
+
+/* Feature 5: Staggered Fade-in for Omega Nodes */
+.subcategory-matrix li {
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: 0.4s var(--spring-easing);
+}
+
+.category-node-wrapper:hover > .subcategory-matrix li {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Adding a slight delay to each item for a fluid entrance */
+{% for i in "123456789" %}
+.subcategory-matrix li:nth-child({{ forloop.counter }}) { transition-delay: {{ forloop.counter0|add:1 }}0ms; }
+{% endfor %}
+</style>

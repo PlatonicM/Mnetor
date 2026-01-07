@@ -1,0 +1,14 @@
+{% extends "emails/email_base.html" %}
+{% block content %}
+
+<h2 style="margin-top:0;">Registration Received</h2>
+
+<p>Hi {{ name }},</p>
+
+<p>
+  Your registration for <strong>{{ event.title }}</strong> is pending approval.
+</p>
+
+<p>We will notify you once it is confirmed.</p>
+
+{% endblock %}

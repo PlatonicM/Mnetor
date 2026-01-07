@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Instructor Hub | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* --- Figma Instructor Design Tokens --- */
+:root {
+    --adm-bg: #f8fafc;
+    --adm-card: #ffffff;
+    --adm-primary: #6366f1;
+    --adm-secondary: #10b981;
+    --adm-border: #e2e8f0;
+    --adm-text-main: #0f172a;
+    --adm-text-muted: #64748b;
+    --radius-xl: 24px;
+    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background-color: var(--adm-bg); font-family: 'Inter', sans-serif; color: var(--adm-text-main); }
+
+/* --- Reveal Entrance Handshake --- */
+.reveal { 
+    opacity: 0; transform: translateY(30px); 
+    transition: 0.8s var(--spring-easing); 
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* --- Bento Card Architecture --- */
+.bento-node {
+    background: var(--adm-card);
+    border: 1.5px solid var(--adm-border);
+    border-radius: var(--radius-xl);
+    padding: 28px;
+    height: 100%;
+    transition: all 0.4s var(--spring-easing);
+    position: relative;
+    overflow: hidden;
+}
+.bento-node:hover {
+    transform: translateY(-10px);
+    border-color: var(--adm-primary);
+    box-shadow: 0 30px 60px -12px rgba(99, 102, 241, 0.12);
+}
+
+/* --- Stat Node Styling --- */
+.stat-icon-hub {
+    width: 54px; height: 54px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; margin-bottom: 20px;
+    transition: 0.3s;
+}
+.bento-node:hover .stat-icon-hub { transform: scale(1.1) rotate(5deg); }
+
+.stat-label { font-size: 12px; font-weight: 800; color: var(--adm-text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.stat-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.2rem; font-weight: 800; margin: 4px 0; letter-spacing: -1px; }
+
+/* --- Table Handshake Styling --- */
+.figma-table-row {
+    padding: 16px; border-radius: 14px; margin-bottom: 10px;
+    border: 1px solid transparent; transition: 0.3s;
+}
+.figma-table-row:hover { background: #fafbff; border-color: var(--adm-border); }
+
+/* --- Chart Container Node --- */
+.chart-node {
+    background: #ffffff; border: 1.5px solid var(--adm-border);
+    border-radius: var(--radius-xl); padding: 30px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-5">
+    
+    <div class="d-flex justify-content-between align-items-end mb-5 reveal">
+        <div>
+            <h1 class="stat-value text-dark" style="font-size: 2.8rem;">Instructor <span class="text-primary">Hub.</span></h1>
+            <p class="stat-label mb-0"><i class="bi bi-cpu-fill text-primary"></i> Real-time Operations & Analytics</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-white border rounded-4 p-2 px-3 fw-bold small shadow-sm"><i class="bi bi-gear-fill me-2"></i> Settings</button>
+            <button class="btn btn-dark rounded-4 p-2 px-4 fw-bold small shadow-sm">Sync Now</button>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4 reveal" style="transition-delay: 0.1s;">
+            <div class="bento-node">
+                <div class="stat-icon-hub bg-green-50 text-success"><i class="bi bi-currency-rupee"></i></div>
+                <p class="stat-label">Total Net Revenue</p>
+                <h2 class="stat-value text-success">₹{{ total_earnings }}</h2>
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    <span class="badge bg-success-soft text-success rounded-pill fw-bold">+ ₹{{ monthly_earnings|default:0 }}</span>
+                    <small class="text-muted fw-bold">this cycle</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 reveal" style="transition-delay: 0.2s;">
+            <div class="bento-node">
+                <div class="stat-icon-hub bg-indigo-50 text-primary"><i class="bi bi-people-fill"></i></div>
+                <p class="stat-label">Learner Population</p>
+                <h2 class="stat-value">{{ students_count }}</h2>
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    <span class="badge bg-indigo-50 text-primary rounded-pill fw-bold">Active Protocol</span>
+                    <small class="text-muted fw-bold">Global Reach</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 reveal" style="transition-delay: 0.3s;">
+            <div class="bento-node">
+                <div class="stat-icon-hub bg-orange-50 text-warning"><i class="bi bi-journal-code"></i></div>
+                <p class="stat-label">Provisioned Tracks</p>
+                <h2 class="stat-value">{{ courses.count }}</h2>
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    <span class="badge bg-orange-50 text-warning rounded-pill fw-bold">{{ published_courses|default:courses.count }} Live Nodes</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7 reveal" style="transition-delay: 0.4s;">
+            <div class="bento-node">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold m-0"><i class="bi bi-trophy me-2 text-primary"></i> Top Performing Nodes</h5>
+                    <button class="btn btn-link btn-sm text-decoration-none fw-bold">Audit All</button>
+                </div>
+
+                <div class="figma-list mt-3">
+                    {% for c in top_courses %}
+                    <div class="figma-table-row d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-2 bg-light rounded-3 fw-bold small text-muted">0{{ forloop.counter }}</div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ c.course__name }}</h6>
+                                <small class="text-muted">{{ c.enrollments }} Students Synced</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <h6 class="mb-0 fw-extrabold text-success">₹{{ c.revenue|default:0 }}</h6>
+                            <small class="stat-label" style="font-size: 9px;">Yield</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <p class="text-muted small">No performance data provisioned yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5 reveal" style="transition-delay: 0.5s;">
+            <div class="chart-node shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="stat-label m-0">Revenue Velocity</h6>
+                    <span class="badge bg-light text-dark border">12M WINDOW</span>
+                </div>
+                
+                <div class="text-center py-2">
+                    <img src="{% url 'instructor_analytics_chart' %}" 
+                         class="img-fluid rounded-4" 
+                         style="filter: drop-shadow(0 10px 20px rgba(0,0,0,0.05));">
+                </div>
+                
+                <div class="mt-4 p-3 bg-light rounded-4 border-dashed border">
+                    <p class="small text-muted mb-0 fw-medium">
+                        <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+                        The revenue spline is currently tracking at <strong>1.4x velocity</strong> compared to previous cycle.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Reveal Observer for High-Performance Animation
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+});
+</script>
+{% endblock %}

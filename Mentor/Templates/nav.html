@@ -1,0 +1,332 @@
+{% load static %}
+<header id="header" class="main-header">
+<style>
+  /* --- Design Tokens: Vivid Omega System --- */
+  :root {
+    --clr-primary: #4f46e5; /* Electric Indigo */
+    --clr-primary-hover: #4338ca;
+    --clr-primary-soft: rgba(79, 70, 229, 0.08);
+    --clr-accent: #f43f5e; /* Rose Neon */
+    --clr-slate-900: #0f172a;
+    --clr-slate-600: #475569;
+    --clr-slate-200: #e2e8f0;
+    --radius-figma: 14px;
+    --shadow-premium: 0px 15px 40px -12px rgba(79, 70, 229, 0.15);
+    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .main-header {
+    width: 100%;
+    background: #ffffff;
+    border-bottom: 1px solid var(--clr-slate-200);
+    z-index: 9999;
+    position: sticky;
+    top: 0;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 0 24px;
+  }
+
+  .main-header.scrolled {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 2px 24px;
+    box-shadow: var(--shadow-premium);
+    border-bottom-color: rgba(79, 70, 229, 0.1);
+  }
+
+  .navbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+    max-width: 1440px;
+    margin: 0 auto;
+    transition: 0.3s;
+  }
+  .main-header.scrolled .navbar-container { height: 70px; }
+
+  /* --- BRAND NODE --- */
+  .nav-brand-premium {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none !important;
+  }
+  .brand-logo-container {
+    background: linear-gradient(135deg, var(--clr-primary), #a855f7); /* Indigo to Purple */
+    color: white;
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 8px 20px -4px rgba(79, 70, 229, 0.4);
+    transition: all 0.4s var(--spring-easing);
+  }
+  .brand-text {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--clr-slate-900);
+    letter-spacing: -1.5px;
+    line-height: 1;
+  }
+  .nav-brand-premium:hover .brand-logo-container { transform: scale(1.1) rotate(-5deg); filter: brightness(1.1); }
+
+  /* --- NAVIGATION HUB --- */
+  .nav-menu { display: flex; align-items: center; gap: 8px; height: 100%; }
+  .nav-link-node {
+    color: var(--clr-slate-600);
+    font-weight: 700;
+    text-decoration: none !important;
+    font-size: 15px;
+    padding: 10px 18px;
+    position: relative;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  .nav-link-node::after {
+    content: '';
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: var(--clr-primary);
+    border-radius: 4px;
+    transition: all 0.3s var(--spring-easing);
+    transform: translateX(-50%);
+  }
+
+  .nav-link-node:hover { color: var(--clr-primary); }
+  .nav-link-node:hover::after, 
+  .nav-link-node.active-node::after {
+    width: 24px;
+  }
+  .nav-link-node.active-node { color: var(--clr-primary); }
+
+  /* --- BADGE NODE --- */
+  .badge-node {
+    position: absolute; top: 4px; right: 4px; 
+    background: var(--clr-accent); /* Vibrant Rose */
+    color: white;
+    border-radius: 7px; font-size: 9px; 
+    width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center; 
+    font-weight: 900; border: 2px solid #fff;
+    box-shadow: 0 4px 8px rgba(244, 63, 94, 0.3);
+  }
+
+  /* --- ICON ACTIONS --- */
+  .icon-btn-node {
+    position: relative; color: var(--clr-slate-600); font-size: 22px; 
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.3s; text-decoration: none !important;
+  }
+  .icon-btn-node:hover { background: var(--clr-primary-soft); color: var(--clr-primary); }
+  #cart-handshake-node:hover { color: var(--clr-accent); background: rgba(244, 63, 94, 0.05); }
+
+  /* --- AVATAR --- */
+  .avatar-handshake {
+    width: 44px; height: 44px;
+    padding: 2px;
+    border-radius: 12px; /* Standardized to match other icons */
+    background: white;
+    border: 2px solid var(--clr-slate-200);
+    transition: 0.5s var(--spring-easing);
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .avatar-handshake:hover { border-color: var(--clr-primary); transform: scale(1.05); }
+  .nav-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+
+  /* --- AUTH BUTTONS --- */
+  .btn-sign-in-node {
+    background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-hover));
+    border: none;
+    color: white !important;
+    padding: 10px 24px;
+    font-weight: 800;
+    border-radius: 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.25);
+  }
+  .btn-sign-in-node:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+    filter: brightness(1.1);
+  }
+
+  @media (max-width: 1024px) { .nav-menu { display: none; } }
+</style>
+
+<div class="navbar-container">
+  <a href="{% url 'home' %}" class="nav-brand-premium">
+      <div class="brand-logo-container">
+          <i class="bi bi-mortarboard-fill"></i>
+      </div>
+      <span class="brand-text">Mentor<span style="color: var(--clr-primary);">LMS</span></span>
+  </a>
+
+  <div class="nav-menu">
+    <a href="{% url 'home' %}" class="nav-link-node {% if request.resolver_match.url_name == 'home' %}active-node{% endif %}">Home</a>
+    <a href="{% url 'courses' %}" class="nav-link-node {% if request.resolver_match.url_name == 'courses' %}active-node{% endif %}">Catalog</a>
+    <a href="{% url 'about' %}" class="nav-link-node {% if request.resolver_match.url_name == 'about' %}active-node{% endif %}">About</a>
+  </div>
+
+  <div class="d-flex align-items-center">
+    <div class="icon-cluster d-flex align-items-center gap-2">
+        <a href="{% url 'cart' %}" class="icon-btn-node" id="cart-handshake-node">
+          <i class="bi bi-bag-heart-fill"></i>
+          <span class="badge-node" id="cart-count-badge">{{ cart_count|default:"0" }}</span>
+        </a>
+
+        {% if user.is_authenticated %}
+        <div class="dropdown">
+            <a href="#" class="icon-btn-node" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-bell-fill"></i>
+                <span class="badge-node bg-primary" style="background-color: var(--clr-primary) !important;" id="notif-count-badge">{{ unread_notifications_count|default:"0" }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow-premium border-0 p-2 mt-3" style="border-radius: 18px; min-width: 280px;">
+                <!-- <li><h6 class="dropdown-header fw-black extra-small text-muted" style="font-size: 10px; letter-spacing: 1px;">NOTIFICATIONS</h6></li> -->
+                <!-- <li><hr class="dropdown-divider opacity-50"></li> -->
+                <li>
+                  <a class="dropdown-item py-2 text-center text-primary fw-bold extra-small" href="{% url 'notifications' %}" style="letter-spacing: 1px; font-size: 11px;">
+                    VIEW ALL NOTIFICATIONS <i class="bi bi-arrow-right ms-1"></i>
+                  </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="dropdown ms-2">
+            <div class="avatar-handshake shadow-sm" data-bs-toggle="dropdown">
+                <img src="{% if user.profile_image %}{{ user.profile_image.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=4f46e5&color=fff{% endif %}" 
+                     class="nav-avatar-img" alt="{{ user.username }}">
+            </div>
+            <div class="dropdown-menu dropdown-menu-end shadow-premium border-0 p-2 mt-3" style="border-radius: 20px; min-width: 260px;">
+              <div class="px-4 py-3 bg-light rounded-4 mb-2">
+                  <p class="small fw-black mb-0 text-dark">{{ user.username|upper }}</p>
+                  <p class="text-muted mb-0 extra-small" style="font-size: 10px;">{{ user.email }}</p>
+              </div>
+              <a class="dropdown-item py-2 rounded-3" href="{% url 'profile' %}"><i class="bi bi-grid-1x2-fill me-2"></i> Progress View</a>
+              <a class="dropdown-item py-2 rounded-3" href="{% url 'mycourses' %}"><i class="bi bi-play-circle-fill me-2"></i> My Courses</a>
+              <div class="dropdown-divider opacity-50"></div>
+              <a class="dropdown-item py-2 rounded-3 text-danger" href="{% url 'logout' %}"><i class="bi bi-power me-2"></i> Logout Session</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="d-flex align-items-center gap-3 ms-2">
+            <a href="{% url 'login' %}" class="nav-link-node p-0" style="font-size: 14px;">Login</a>
+            <a href="{% url 'signup' %}" class="btn-sign-in-node text-decoration-none">Sign in</a>
+        </div>
+        {% endif %}
+        
+        <i class="bi bi-list-nested fs-2 d-lg-none cursor-pointer ms-3" onclick="toggleMobileNav()" style="color: var(--clr-slate-900);"></i>
+    </div>
+  </div>
+</div>
+</header>
+
+<!-- <script>
+  window.addEventListener('scroll', () => {
+    const header = document.getElementById('header');
+    header.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  window.syncCart = function(newCount) {
+    const badge = document.getElementById('cart-count-badge');
+    if (badge) {
+      badge.innerText = newCount;
+      badge.classList.remove('ajax-pulse');
+      void badge.offsetWidth; 
+      badge.classList.add('ajax-pulse');
+    }
+  };
+</script> -->
+
+
+
+<script>
+  // --- Header Scroll Logic ---
+  window.addEventListener('scroll', () => {
+    const header = document.getElementById('header');
+    if (header) header.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // --- Live Cart Logic ---
+  // Call this function whenever a product is added or removed via AJAX
+  window.syncCart = function(newCount) {
+    const badge = document.getElementById('cart-count-badge');
+    if (badge) {
+      badge.innerText = newCount;
+      // Trigger CSS Pulse Animation
+      badge.classList.remove('ajax-pulse');
+      void badge.offsetWidth; 
+      badge.classList.add('ajax-pulse');
+      
+      // Hide badge if count is 0
+      badge.style.display = newCount > 0 ? 'flex' : 'none';
+    }
+  };
+
+  // --- Live Notification Logic ---
+  // let notifications = [
+  //   { id: 1, text: "Course 'Python Pro' added to your library", time: "2m ago" },
+  //   { id: 2, text: "New mentor 'Zaid Shaikh' is now live", time: "1h ago" }
+  // ];
+
+  window.updateNotifications = function() {
+    const countBadge = document.getElementById('notif-count-badge');
+    const notifList = document.getElementById('notif-list');
+    
+    // Update Count
+    if (countBadge) {
+      countBadge.innerText = notifications.length;
+      countBadge.style.display = notifications.length > 0 ? 'flex' : 'none';
+    }
+
+    // Render List
+    if (notifList) {
+      if (notifications.length === 0) {
+        notifList.innerHTML = '<li class="p-3 text-center text-muted small">No new notifications</li>';
+      } else {
+        notifList.innerHTML = notifications.map(n => `
+          <li class="p-3 border-bottom d-flex justify-content-between align-items-start notif-item" id="notif-${n.id}">
+            <div>
+              <div class="small fw-bold text-dark">${n.text}</div>
+              <div class="extra-small text-muted">${n.time}</div>
+            </div>
+            <button onclick="removeNotification(${n.id})" class="btn btn-sm text-danger p-0 ms-2">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          </li>
+        `).join('');
+      }
+    }
+  };
+
+  window.removeNotification = function(id) {
+    // Filter out the notification
+    notifications = notifications.filter(n => n.id !== id);
+    
+    // Animate removal in UI
+    const el = document.getElementById(`notif-${id}`);
+    if (el) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(20px)';
+      setTimeout(() => updateNotifications(), 300);
+    } else {
+      updateNotifications();
+    }
+  };
+
+  // Initialize on load
+  document.addEventListener('DOMContentLoaded', () => {
+    updateNotifications();
+  });
+</script>

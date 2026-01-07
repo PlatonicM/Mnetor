@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Security Audit | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- Security Theme Tokens --- */
+:root {
+    --clr-active: #10b981;
+    --clr-audit: #6366f1;
+    --clr-slate-50: #f8fafc;
+    --clr-slate-200: #e2e8f0;
+    --clr-slate-800: #1e293b;
+    --radius-figma: 24px;
+}
+
+body { background: var(--clr-slate-50); }
+
+/* --- Audit Timeline Engine --- */
+.audit-timeline {
+    position: relative;
+    padding-left: 20px;
+}
+.audit-timeline::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 5px;
+    bottom: 5px;
+    width: 2px;
+    background: var(--clr-slate-200);
+}
+
+.timeline-node {
+    position: relative;
+    padding-bottom: 25px;
+}
+.timeline-node::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--clr-audit);
+    border: 2px solid white;
+    box-shadow: 0 0 0 3px var(--clr-slate-50);
+}
+
+/* --- Glass Card System --- */
+.glass-audit-card {
+    background: #ffffff;
+    border-radius: var(--radius-figma);
+    border: 1px solid var(--clr-slate-200);
+    overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.audit-header {
+    padding: 20px 24px;
+    background: #fff;
+    border-bottom: 1px solid var(--clr-slate-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* --- Active Pulse Animation --- */
+.pulse-active {
+    background: var(--clr-active);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 99px;
+    animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.log-item {
+    padding: 18px 24px;
+    transition: 0.3s ease;
+    border-bottom: 1px solid var(--clr-slate-50);
+}
+.log-item:hover {
+    background: #fcfdfe;
+    transform: translateX(5px);
+}
+
+.ip-badge {
+    background: var(--clr-slate-50);
+    color: var(--clr-slate-800);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: 'Monaco', monospace;
+    font-size: 11px;
+    border: 1px solid var(--clr-slate-200);
+}
+
+.extra-small { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 950px;">
+
+    <div class="d-flex align-items-center justify-content-between mb-5" data-aos="fade-down">
+        <div>
+            <h2 class="fw-black mb-1" style="letter-spacing: -1.5px;">SECURITY_AUDIT</h2>
+            <p class="text-muted small mb-0">Reviewing access protocols for <strong>{{ user.username }}</strong></p>
+        </div>
+        <div class="bg-white p-3 rounded-4 border shadow-sm text-center">
+            <span class="extra-small text-muted d-block mb-1">NODE_STATUS</span>
+            <span class="pulse-active">Encrypted Connection</span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6" data-aos="fade-right">
+            <div class="glass-audit-card">
+                <div class="audit-header">
+                    <h6 class="fw-black mb-0 extra-small text-primary">ACCESS_HISTORY_LOG</h6>
+                    <i class="bi bi-clock-history text-muted"></i>
+                </div>
+
+                <div class="p-4">
+                    <div class="audit-timeline">
+                        {% for entry in logins %}
+                        <div class="timeline-node">
+                            <div class="fw-bold text-slate-900 small">{{ entry.login_time|date:"d M Y, H:i" }}</div>
+                            <div class="mb-2">
+                                <span class="ip-badge"><i class="bi bi-hdd-network me-1"></i>{{ entry.ip_address }}</span>
+                            </div>
+                            <div class="text-muted" style="font-size: 11px; line-height: 1.4;">
+                                <i class="bi bi-browser-chrome me-1"></i> {{ entry.user_agent|truncatechars:65 }}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4 text-muted small">No logs detected.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6" data-aos="fade-left">
+            <div class="glass-audit-card">
+                <div class="audit-header">
+                    <h6 class="fw-black mb-0 extra-small text-dark">SESSION_PROTOCOLS</h6>
+                    <i class="bi bi-shield-check text-muted"></i>
+                </div>
+
+                {% for s in sessions %}
+                <div class="log-item">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <span class="extra-small text-muted d-block">INITIATED</span>
+                            <span class="fw-bold small">{{ s.login_time|date:"H:i:s" }}</span>
+                        </div>
+                        <div>
+                            {% if s.logout_time %}
+                            <span class="badge bg-light text-muted border extra-small">TERMINATED</span>
+                            {% else %}
+                            <span class="pulse-active">ACTIVE_SESSION</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-2 rounded-3 mb-2">
+                        <div class="extra-small text-muted mb-1">NETWORK_SOURCE</div>
+                        <span class="ip-badge d-inline-block">{{ s.ip_address }}</span>
+                    </div>
+
+                    <div class="extra-small text-muted">
+                        {% if s.logout_time %}
+                        <i class="bi bi-door-closed me-1"></i> End: {{ s.logout_time|date:"H:i:s" }}
+                        {% else %}
+                        <i class="bi bi-wifi me-1"></i> Direct Link Established
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5 text-muted small">Zero session traces found.</div>
+                {% endfor %}
+            </div>
+            
+            <div class="mt-4 p-4 bg-primary text-white rounded-4 shadow-sm" data-aos="zoom-in">
+                <div class="d-flex gap-3">
+                    <i class="bi bi-exclamation-triangle fs-2"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Unrecognized Activity?</h6>
+                        <p class="extra-small mb-0 opacity-75">If you notice a login from an unknown IP, we recommend initializing a password reset protocol immediately.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Simple AOS-like animation logic for items if AOS is not globally available
+        const nodes = document.querySelectorAll('.timeline-node');
+        nodes.forEach((node, index) => {
+            node.style.opacity = '0';
+            node.style.transition = '0.5s ease-out';
+            node.style.transitionDelay = `${index * 0.1}s`;
+            setTimeout(() => {
+                node.style.opacity = '1';
+            }, 100);
+        });
+    });
+</script>
+{% endblock %}

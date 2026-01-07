@@ -1,0 +1,181 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block title %}Event Protocol Audit | MentorLMS{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+/* --- Advanced Design Tokens --- */
+:root {
+    --adm-bg: #f8fafc;
+    --adm-card: #ffffff;
+    --adm-primary: #6366f1;
+    --adm-secondary: #10b981;
+    --adm-border: #e2e8f0;
+    --adm-text-main: #0f172a;
+    --adm-text-muted: #64748b;
+    --radius-figma: 16px;
+    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --- Layout Shift --- */
+#main, body { background: var(--adm-bg) !important; font-family: 'Inter', sans-serif !important; }
+#content { padding: 24px 40px !important; }
+#changelist-filter { 
+    border-radius: var(--radius-figma); 
+    border: 1px solid var(--adm-border); 
+    background: white; 
+    margin-left: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+/* --- Command Header Architecture --- */
+.admin-omega-header {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--radius-figma);
+    padding: 24px 30px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+}
+
+.header-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 24px; color: var(--adm-text-main); letter-spacing: -1px; }
+.header-title i { color: var(--adm-primary); margin-right: 12px; }
+
+/* --- Protocol Filter Nodes --- */
+.protocol-filters { display: flex; gap: 12px; margin-bottom: 25px; flex-wrap: wrap; }
+
+.btn-protocol {
+    background: white; border: 1px solid var(--adm-border);
+    padding: 10px 22px; border-radius: 12px;
+    font-weight: 700; font-size: 13px;
+    color: var(--adm-text-main); text-decoration: none;
+    display: flex; align-items: center; gap: 8px; transition: 0.3s var(--spring-easing);
+}
+.btn-protocol:hover { border-color: var(--adm-primary); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.1); }
+.btn-protocol.active-node { background: var(--adm-text-main); color: white !important; border-color: var(--adm-text-main); }
+
+/* --- Status Badge Handshake --- */
+.status-pill {
+    padding: 6px 14px; border-radius: 50px;
+    font-size: 10px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center;
+}
+.pill-PENDING { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+.pill-CONFIRMED { background: #ecfdf5; color: #047857; border: 1px solid #d1fae5; }
+.pill-CANCELLED { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
+
+/* --- Table Interaction Engine --- */
+#changelist { 
+    border: 1px solid var(--adm-border) !important; 
+    border-radius: var(--radius-figma) !important; 
+    overflow: hidden !important; 
+    background: white !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+#result_list thead th { 
+    background: #f8fafc !important; 
+    text-transform: uppercase !important;
+    font-size: 11px !important; font-weight: 800 !important;
+    color: var(--adm-text-muted) !important; padding: 18px 15px !important;
+    border-bottom: 1px solid var(--adm-border) !important;
+}
+#result_list tbody tr { transition: 0.2s; border-bottom: 1px solid #f1f5f9; }
+#result_list tbody tr:hover { background-color: #fafbff !important; }
+#result_list td, #result_list th { padding: 16px !important; vertical-align: middle !important; font-size: 13px; }
+
+/* Custom field styling for related User data */
+.field-display_name { font-weight: 600; color: var(--adm-text-main); }
+.field-get_email { color: var(--adm-primary); font-family: monospace; font-size: 12px !important; }
+
+/* Action Bar Refinement */
+.actions { background: #f8fafc !important; border-bottom: 1px solid var(--adm-border) !important; padding: 15px !important; border-radius: var(--radius-figma) var(--radius-figma) 0 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="omega-admin-container">
+
+    <div class="admin-omega-header">
+        <div class="header-title">
+            <i class="bi bi-shield-lock-fill"></i> Registration <span style="color: var(--adm-primary);">Audit.</span>
+        </div>
+        <div class="system-status d-none d-md-flex align-items-center gap-3">
+            <div class="d-flex flex-column align-items-end">
+                <small class="fw-bold text-muted uppercase" style="font-size: 9px; letter-spacing: 1px;">Security_Node</small>
+                <small class="fw-bold text-success" style="font-size: 10px;">ENCRYPTED_SESSION</small>
+            </div>
+            <span class="pulse-dot"></span>
+        </div>
+    </div>
+
+    <div class="protocol-filters">
+        <a href="./" class="btn-protocol {% if not request.GET.status %}active-node{% endif %}">
+            <i class="bi bi-layers-half"></i> All Protocols
+        </a>
+        <a href="?status=PENDING" class="btn-protocol {% if request.GET.status == 'PENDING' %}active-node{% endif %}">
+            <i class="bi bi-hourglass-split"></i> Awaiting Sync
+        </a>
+        <a href="?status=CONFIRMED" class="btn-protocol {% if request.GET.status == 'CONFIRMED' %}active-node{% endif %}">
+            <i class="bi bi-shield-check text-success"></i> Verified
+        </a>
+        <a href="?status=CANCELLED" class="btn-protocol {% if request.GET.status == 'CANCELLED' %}active-node{% endif %}">
+            <i class="bi bi-exclamation-octagon text-danger"></i> Terminated
+        </a>
+    </div>
+
+    <div class="table-node-wrapper">
+        {{ block.super }}
+    </div>
+
+</div>
+
+<style>
+    .pulse-dot {
+        width: 10px; height: 10px; background: var(--adm-secondary);
+        border-radius: 50%; display: inline-block;
+        animation: pulse-sync 2s infinite;
+    }
+    @keyframes pulse-sync {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Protocol: Transform text status into Figma UI Pills
+    const statusMapping = () => {
+        const rows = document.querySelectorAll('#result_list tbody tr');
+        rows.forEach(row => {
+            const statusCell = row.querySelector('.field-status');
+            if (statusCell) {
+                const statusText = statusCell.innerText.trim().toUpperCase();
+                if (statusText && !statusCell.querySelector('.status-pill')) {
+                    statusCell.innerHTML = `<span class="status-pill pill-${statusText}">${statusText}</span>`;
+                }
+            }
+        });
+    };
+
+    statusMapping();
+    
+    // Feature: Watch for Django Admin AJAX actions/filtering
+    const observer = new MutationObserver(statusMapping);
+    const resultList = document.querySelector('#changelist-form');
+    if (resultList) {
+        observer.observe(resultList, { childList: true, subtree: true });
+    }
+});
+</script>
+{% endblock %}

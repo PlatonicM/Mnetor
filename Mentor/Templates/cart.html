@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Analytical Bag | Command Center{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- 1. Industrial Design Tokens --- */
+:root {
+    --figma-bg: #F0F4F8;
+    --figma-card: #FFFFFF;
+    --figma-primary: #4F46E5; 
+    --figma-success: #059669; 
+    --figma-border: #E2E8F0;
+    --figma-text-main: #0F172A;
+    --radius-figma: 28px;
+    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background: radial-gradient(circle at top right, #f0fdf4, #f1f5f9); color: var(--figma-text-main); font-family: 'Inter', sans-serif; }
+
+/* --- 2. Entrance Animation --- */
+.reveal { opacity: 0; transform: translateY(30px); transition: 0.8s var(--spring-easing); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* --- 3. Architecture Calibration --- */
+.cart-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 400px; 
+    gap: 40px; 
+    align-items: start;
+    padding-bottom: 50px;
+}
+
+/* --- 4. Resource Item Nodes --- */
+.cart-item-card {
+    background: rgba(255, 255, 255, 0.8); 
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--glass-border);
+    border-radius: 22px; 
+    padding: 24px;
+    display: flex; 
+    align-items: center; 
+    gap: 24px;
+    transition: all 0.4s var(--spring-easing);
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px -15px rgba(0,0,0,0.05);
+}
+.cart-item-card:hover { 
+    transform: translateX(12px) scale(1.01); 
+    border-color: var(--figma-primary);
+    background: #ffffff;
+    box-shadow: 0 20px 40px -15px rgba(79, 70, 229, 0.15);
+}
+
+.cart-item-img { 
+    width: 120px; 
+    height: 80px; 
+    border-radius: 14px; 
+    object-fit: cover; 
+    border: 1px solid var(--figma-border);
+    filter: brightness(0.9);
+}
+
+/* --- 5. Action Handshake --- */
+.btn-node-action {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--figma-border); background: white;
+    transition: 0.3s var(--spring-easing); color: #64748b;
+}
+.btn-node-action:hover { transform: translateY(-3px); border-color: var(--figma-primary); color: var(--figma-primary); box-shadow: 0 5px 15px rgba(79, 70, 229, 0.2); }
+.btn-node-action.delete:hover { background: #fff1f2; border-color: #f43f5e; color: #f43f5e; }
+
+/* --- 6. Summary Commitment Hub --- */
+.summary-node {
+    background: #ffffff; 
+    border: 2px solid var(--figma-primary);
+    border-radius: var(--radius-figma); 
+    padding: 35px;
+    position: sticky; 
+    top: 100px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.12);
+}
+
+.commitment-box {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: white; 
+    padding: 30px; 
+    border-radius: 22px; 
+    margin-top: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-deploy-sync {
+    background: var(--figma-primary); 
+    color: white;
+    width: 100%;
+    padding: 18px;
+    border-radius: 100px;
+    border: none; 
+    transition: 0.4s var(--spring-easing); 
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+}
+.btn-deploy-sync:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(79, 70, 229, 0.5); color: white; filter: brightness(1.1); }
+
+/* AJAX Visual Protocol */
+.removing { transform: scale(0.8) translateX(-100px); opacity: 0; filter: blur(10px); pointer-events: none; }
+
+.extra-small { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+.fw-black { font-weight: 900 !important; }
+
+@media (max-width: 992px) { .cart-grid { grid-template-columns: 1fr; } .summary-node { position: static; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-5">
+    
+    <div class="reveal mb-5">
+        <div class="d-flex align-items-center gap-4">
+            <div class="bg-dark text-white p-3 rounded-4 shadow-lg" style="background: linear-gradient(135deg, #4F46E5, #312E81);">
+                <i class="bi bi-bag-check-fill fs-2"></i>
+            </div>
+            <div>
+                <h1 class="fw-black m-0 tracking-tighter" style="font-size: 3rem;"><span class="text-primary">BAG</span></h1>
+                <p class="text-muted extra-small mb-0 font-mono">STUDENT: <span class="text-dark fw-bold">{{ user.username|upper }}</span> || COURSE_SYNC: #{{ user.id|add:5000 }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if items %}
+    <div class="cart-grid" id="cart-root">
+        <div class="cart-list">
+            <div class="d-flex align-items-center justify-content-between mb-4 px-3 py-2 rounded-3 border-start border-primary border-4" style="background: rgba(79, 70, 229, 0.03);">
+    <p class="extra-small-bold text-muted mb-0 font-mono tracking-widest">
+        PROVISIONING: 
+        <span id="header-count" class="text-primary fw-black fs-6 mx-1 node-glow">
+            {{ items|length }}
+        </span> 
+        TOTAL CURRICULUM COURSES
+    </p>
+    
+    <div class="d-flex align-items-center gap-2">
+        <span class="extra-small-bold text-primary opacity-75 font-mono" style="font-size: 8px;">LIVE_SYNC</span>
+        <div class="spinner-grow spinner-grow-sm text-primary" style="width: 10px; height: 10px;" role="status"></div>
+    </div>
+</div>
+            
+            {% for item in items %}
+            <div class="cart-item-card reveal" id="item-node-{{ item.course.id }}">
+                <div class="font-mono text-muted extra-small opacity-25" style="writing-mode: vertical-lr; transform: rotate(180deg);">SN: {{ forloop.counter|stringformat:"02d" }}</div>
+                
+                {% if item.course.image %}
+                    <img src="{{ item.course.image.url }}" class="cart-item-img shadow-sm" alt="">
+                {% else %}
+                    <div class="cart-item-img d-flex align-items-center justify-content-center text-muted bg-light">
+                        <i class="bi bi-code-square opacity-25 fs-2"></i>
+                    </div>
+                {% endif %}
+                
+                <div class="flex-grow-1">
+                    <span class="extra-small text-primary mb-1 d-block font-mono">DATA COURSE RESOURCE</span>
+                    <h5 class="fw-black mb-1 text-dark tracking-tight">{{ item.course.name|upper }}</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-white text-primary border border-primary border-opacity-25 extra-small font-mono">{{ item.course.category|upper }}</span>
+                        <span class="extra-small text-muted font-mono" style="font-size: 8px;">ID: #COURSE_{{ item.course.id|add:1000 }}</span>
+                    </div>
+                </div>
+
+                <div class="px-4 border-start d-none d-sm-block text-end">
+                    <span class="extra-small text-muted d-block mb-1">UNIT PRICE</span>
+                    <span class="fw-black font-mono text-dark h4">₹{{ item.course.price }}</span>
+                </div>
+                
+                <div class="action-cluster">
+                    <!-- <button class="btn-node-action" title="Save to Vault"><i class="bi bi-shield-plus"></i></button> -->
+                    <button class="btn-node-action delete ajax-remove" data-id="{{ item.course.id }}" title="De-provision Node">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+
+            <a href="{% url 'courses' %}" class="btn w-100 py-3 rounded-pill mt-4 reveal text-primary fw-black d-flex align-items-center justify-content-center gap-2" style="border: 2px dashed var(--figma-primary); background: rgba(79, 70, 229, 0.05); font-size: 11px; letter-spacing: 2px; transition: 0.3s;">
+                <i class="bi bi-plus-circle-fill"></i> ADD MORE COURSES
+            </a>
+        </div>
+
+        <aside class="reveal" style="transition-delay: 0.1s;">
+            <div class="summary-node">
+                <h6 class="fw-black mb-4 text-primary tracking-widest text-uppercase" style="font-size: 12px;"><i class="bi bi-graph-up-arrow me-2"></i>ORDER SUMMARY</h6>
+
+                <div class="space-y-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted extra-small-bold font-mono">SUBTOTAL</span>
+                        <span id="subtotal-val" class="fw-black font-mono">₹{{ total }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted extra-small-bold font-mono">GST (18%)</span>
+                        <span id="gst-val" class="fw-black font-mono">₹{{ gst }}</span>
+                    </div>
+
+                    <div class="commitment-box shadow-lg">
+                        <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: var(--figma-primary); opacity: 0.1; border-radius: 50%;"></div>
+                        
+                        <small class="fw-bold text-primary font-mono opacity-75 text-uppercase" style="font-size: 9px; letter-spacing: 2px;">TOTAL AMOUNT</small>
+                        <div class="display-5 fw-black mt-1 font-mono" id="final-total-val" style="letter-spacing: -3px;">₹{{ final_total }}</div>
+                        
+                        <a href="{% url 'checkout' %}" class="btn-deploy-sync mt-4">
+                        CHECKOUT <i class="bi bi-lightning-charge-fill ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-4 text-center border-top">
+                    <p class="extra-small text-muted mb-0 font-mono" style="font-size: 9px;"><i class="bi bi-patch-check-fill text-success me-1"></i> RSA_4096_GCM_ENCRYPTED_TUNNEL_ACTIVE</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+    {% else %}
+    <div class="text-center py-5 reveal">
+        <div class="bg-white d-inline-block p-5 rounded-circle shadow-lg border-2 border-dashed mb-4">
+            <i class="bi bi-cloud-slash display-1 text-primary opacity-25"></i>
+        </div>
+        <h2 class="fw-black tracking-tighter" style="font-size: 2.5rem;">Provisioning Bag Empty</h2>
+        <p class="text-muted mb-4 font-mono">No curriculum  courses detected in active session.</p>
+        <a href="{% url 'courses' %}" class="btn btn-primary px-5 py-3 rounded-pill fw-black extra-small-bold shadow-lg">ADD COURSES-></a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Entrance Observer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // 2. AJAX De-provisioning Protocol
+    document.querySelectorAll('.ajax-remove').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const courseId = this.dataset.id;
+            const itemNode = document.getElementById(`item-node-${courseId}`);
+            
+            // Visual de-provisioning (Immediate UI update)
+            itemNode.classList.add('removing');
+
+            fetch(`/cart/remove/${courseId}/`, {
+                method: 'POST',
+                headers: { 
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest' 
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    setTimeout(() => {
+                        itemNode.remove();
+                        
+                        // Sync Telemetry Data
+                        document.getElementById('subtotal-val').innerText = `₹${data.total}`;
+                        document.getElementById('gst-val').innerText = `₹${data.gst}`;
+                        document.getElementById('final-total-val').innerText = `₹${data.final_total}`;
+                        document.getElementById('header-count').innerText = data.cart_count;
+
+                        // Sync Global Badge
+                        if (window.syncCart) window.syncCart(data.cart_count);
+
+                        // If nodes are zero, reload for empty state UI
+                        if (data.cart_count === 0) {
+                            setTimeout(() => location.reload(), 200);
+                        }
+                    }, 500);
+                }
+            })
+            .catch(err => {
+                itemNode.classList.remove('removing');
+                console.error("Critical: Resource De-provisioning Protocol Interrupted", err);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

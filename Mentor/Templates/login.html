@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- 1. Global Sync Tokens (Updated Vivid Palette) --- */
+:root {
+  --clr-primary: #4F46E5; /* Deeper, more vibrant Indigo */
+  --clr-primary-glow: rgba(79, 70, 229, 0.4);
+  --clr-accent: #f43f5e;  /* Vivid Rose for sharp accents */
+  --clr-neon-purple: #a855f7;
+  --clr-bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  --clr-slate-200: #e2e8f0;
+  --clr-slate-900: #0f172a;
+}
+
+/* --- 2. Full Page Reset --- */
+html, body { 
+    height: auto; 
+    min-height: 100%; 
+    width: 100%;
+    margin: 0; 
+    padding: 0; 
+    overflow-x: hidden; 
+    overflow-y: auto;   
+}
+
+main, .container-fluid { 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    max-width: 100% !important; 
+    min-height: 100vh !important; 
+}
+
+body { 
+    background-color: #ffffff; 
+    color: var(--clr-slate-900); 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+}
+
+/* --- 3. Split Architecture --- */
+.split-container { 
+    min-height: 100vh; 
+    width: 100vw; 
+    display: flex; 
+    align-items: stretch;
+    flex-wrap: wrap; 
+}
+
+.form-side { 
+    flex: 0 0 42%; 
+    min-width: 400px;
+    background: #ffffff; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center;     
+    padding: 80px 40px; 
+    position: relative;
+    z-index: 10;
+    border-right: 1px solid var(--clr-slate-200);
+}
+
+.image-side {
+  flex: 1 0 58%;
+  background: var(--clr-bg-gradient);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 60px;
+  min-height: 100vh;
+}
+
+/* --- 4. Component Calibration --- */
+.form-inner-container { 
+    width: 100%; 
+    max-width: 420px; 
+}
+
+.nebula-bg {
+    position: absolute;
+    width: 150%; height: 150%;
+    background: radial-gradient(circle at 30% 20%, rgba(79, 70, 229, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 70% 80%, rgba(244, 63, 94, 0.15) 0%, transparent 40%);
+    animation: rotateNebula 25s infinite linear;
+}
+@keyframes rotateNebula { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.input-group-modern {
+  border: 2px solid var(--clr-slate-200);
+  border-radius: 16px;
+  background: #fdfdfd;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; align-items: center; margin-bottom: 20px;
+}
+
+.input-group-modern:focus-within {
+  border-color: var(--clr-primary);
+  background: #fff;
+  transform: scale(1.02);
+  box-shadow: 0 15px 30px -10px var(--clr-primary-glow);
+}
+
+.input-group-modern input { 
+    border: none !important; 
+    box-shadow: none !important; 
+    height: 54px; 
+    width: 100%; 
+    padding: 0 20px; 
+    font-weight: 600; 
+    background: transparent; 
+}
+.input-group-text-icon { padding-left: 20px; color: var(--clr-primary); font-size: 1.2rem; }
+
+/* --- 5. Feature Card Grid --- */
+.feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; z-index: 2; width: 100%; max-width: 600px; }
+.feature-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 28px; border-radius: 28px;
+    text-align: left;
+    transition: all 0.4s ease;
+}
+.feature-card:hover { 
+    background: rgba(255, 255, 255, 0.12); 
+    transform: translateY(-10px); 
+    border-color: var(--clr-neon-purple);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+.feature-card i { 
+    background: linear-gradient(135deg, var(--clr-neon-purple), var(--clr-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 2rem; margin-bottom: 12px; display: block; 
+}
+
+/* --- 6. Typography & CTA --- */
+.text-gradient {
+    background: linear-gradient(to right, #6366f1, #f43f5e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.btn-login {
+  background: linear-gradient(90deg, var(--clr-primary), var(--clr-neon-purple));
+  color: #fff; border: none; padding: 18px;
+  border-radius: 16px; font-weight: 900; width: 100%;
+  text-transform: uppercase; letter-spacing: 2px;
+  transition: all 0.4s ease;
+  box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.6);
+}
+.btn-login:hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px -5px rgba(79, 70, 229, 0.8);
+}
+
+.extra-small-bold { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--clr-primary); }
+
+@media (max-width: 992px) { 
+    .form-side { flex: 0 0 100%; border-right: none; padding: 60px 20px; } 
+    .image-side { flex: 0 0 100%; min-height: 500px; } 
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="split-container">
+  
+  <div class="form-side">
+    <div class="form-inner-container">
+        
+        <div class="mb-5">
+          <a href="/" class="text-decoration-none d-flex align-items-center gap-2">
+              <div class="p-2 rounded-3 text-white shadow-lg" style="background: linear-gradient(135deg, var(--clr-primary), var(--clr-neon-purple)) !important;">
+                <i class="bi bi-rocket-takeoff-fill fs-4"></i>
+              </div>
+              <span class="fw-bold fs-4 text-dark" style="letter-spacing: -1.5px;">MentorLMS<span class="text-primary"></span></span>
+          </a>
+        </div>
+
+        <div class="form-header mb-5">
+          <h2 class="fw-black display-6 mb-2" style="font-weight: 900; letter-spacing: -2px;">Welcome back<span class="text-gradient">!</span></h2>
+          <p class="text-muted fw-medium">Enter your account keys to login MentorLMS</p>
+        </div>
+
+        <form method="POST">
+          {% csrf_token %}
+          
+          <label class="extra-small-bold mb-2 d-block">USERNAME</label>
+          <div class="input-group-modern">
+              <span class="input-group-text-icon"><i class="bi bi-fingerprint"></i></span>
+              <input type="text" name="username" placeholder="Enter your Username" required>
+          </div>
+
+          <label class="extra-small-bold mb-2 d-block">PASSWORD</label>
+          <div class="input-group-modern position-relative">
+              <span class="input-group-text-icon"><i class="bi bi-shield-lock-fill"></i></span>
+              <input type="password" name="password" id="password" placeholder="••••••••" required onkeyup="updateStrength(this.value)">
+              <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y text-muted px-3 border-0" onclick="togglePassword()">
+                  <i class="bi bi-eye-fill" id="toggleIcon"></i>
+              </button>
+          </div>
+          <div class="strength-bar" id="strengthBar" style="height: 6px; border-radius: 10px; margin-top: -10px; margin-bottom: 25px; transition: 0.4s ease; background: #e2e8f0;"></div>
+
+          <div class="d-flex justify-content-end mb-4">
+            <a href="{% url 'forgot_password' %}" class="text-decoration-none small fw-bold text-gradient">FORGET PASSWORD?</a>
+          </div>
+
+          <button type="submit" class="btn-login mb-4 shadow-lg">
+            LOGIN <i class="bi bi-arrow-right-short fs-4"></i>
+          </button>
+
+          <p class="text-center text-muted small fw-medium">
+            SIGN IN? <a href="{% url 'signup' %}" class="text-primary fw-bold text-decoration-none">Provision Academy ID</a>
+          </p>
+        </form>
+
+        <div class="mt-5 pt-4 border-top opacity-50">
+             <div class="d-flex justify-content-between align-items-center extra-small-bold text-muted">
+                <span>© 2026 MENTORLMS</span> 
+                <div class="d-flex gap-3">
+                    <a href="#" class="text-reset text-decoration-none">PRIVACY</a>
+                    <a href="#" class="text-reset text-decoration-none">TERMS</a>
+                </div>
+            </div> 
+        </div>
+    </div>
+  </div>
+
+  <div class="image-side">
+    <div class="nebula-bg"></div>
+    <div class="visual-content text-center" style="z-index: 2;">
+        <h2 class="display-3 fw-black text-white mb-4" style="letter-spacing: -3px; font-weight: 900;">Engineering <span class="text-gradient">Autonomy</span></h2>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <i class="bi bi-terminal-fill"></i>
+                <h6 class="text-white fw-bold">Cloud Labs</h6>
+                <p class="text-white-50 small mb-0">Direct provisioning of on-demand curriculum nodes.</p>
+            </div>
+            <div class="feature-card">
+                <i class="bi bi-cpu-fill"></i>
+                <h6 class="text-white fw-bold">AI Mentorship</h6>
+                <p class="text-white-50 small mb-0">24/7 intelligent code reviews and assistance.</p>
+            </div>
+            <div class="feature-card">
+                <i class="bi bi-patch-check-fill"></i>
+                <h6 class="text-white fw-bold">Verified Credentials</h6>
+                <p class="text-white-50 small mb-0">Secure achievement logs for global firms.</p>
+            </div>
+            <div class="feature-card">
+                <i class="bi bi-people-fill"></i>
+                <h6 class="text-white fw-bold">Elite Sync</h6>
+                <p class="text-white-50 small mb-0">Direct handshake with 40+ industry leads.</p>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword() {
+    const passInput = document.getElementById('password');
+    const icon = document.getElementById('toggleIcon');
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        icon.classList.replace('bi-eye-fill', 'bi-eye-slash-fill');
+    } else {
+        passInput.type = 'password';
+        icon.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
+    }
+}
+
+function updateStrength(val) {
+    const bar = document.getElementById('strengthBar');
+    let width = 0; let color = "#e2e8f0";
+    if(val.length > 0 && val.length < 5) { width = 33; color = "#f43f5e"; } 
+    else if (val.length >= 5 && val.length < 8) { width = 66; color = "#fbbf24"; } 
+    else if (val.length >= 8) { width = 100; color = "#10b981"; }
+    bar.style.width = width + "%";
+    bar.style.backgroundColor = color;
+    bar.style.boxShadow = width > 0 ? `0 0 15px ${color}66` : "none";
+}
+</script>
+{% endblock %}

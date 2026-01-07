@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Academy ID | MentorLMS{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- 1. Global Sync Tokens (Updated Vivid Palette) --- */
+:root {
+  --clr-primary: #4F46E5; /* Deeper Indigo */
+  --clr-primary-glow: rgba(79, 70, 229, 0.4);
+  --clr-accent: #f43f5e;  /* Vivid Rose */
+  --clr-neon-purple: #a855f7;
+  --clr-success: #10b981;
+  --clr-bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  --clr-slate-200: #e2e8f0;
+  --clr-slate-900: #0f172a;
+}
+
+/* Force Full Size */
+main, .container-fluid { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+body { background-color: #ffffff; color: var(--clr-slate-900); font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; margin: 0; }
+
+/* --- Colorful Split System --- */
+.split-container { min-height: 100vh; width: 100vw; display: flex; margin: 0; }
+
+/* --- Left Side: Form --- */
+.form-side { 
+    flex: 0 0 42%; 
+    background: #ffffff; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    padding: 60px 6%; 
+    position: relative;
+    border-right: 1px solid var(--clr-slate-200);
+}
+
+/* Vibrant Glow Effect */
+.form-side::before {
+    content: ""; position: absolute; top: 5%; left: -10%; width: 350px; height: 350px;
+    background: var(--clr-primary-glow); filter: blur(100px); border-radius: 50%; z-index: 0; pointer-events: none;
+}
+
+/* --- Right Side: High Energy Visuals --- */
+.image-side {
+  flex: 0 0 58%;
+  background: var(--clr-bg-gradient);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 60px;
+}
+
+.nebula-bg {
+    position: absolute;
+    width: 150%; height: 150%;
+    background: radial-gradient(circle at 30% 20%, rgba(79, 70, 229, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 70% 80%, rgba(244, 63, 94, 0.15) 0%, transparent 40%);
+    animation: rotateNebula 25s infinite linear;
+}
+@keyframes rotateNebula { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* --- Colorful Components --- */
+.form-inner-container { width: 100%; max-width: 480px; margin: 0 auto; position: relative; z-index: 1; }
+
+.input-group-modern {
+  border: 2px solid var(--clr-slate-200);
+  border-radius: 16px;
+  background: #fdfdfd;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; align-items: center; margin-bottom: 16px;
+}
+.input-group-modern:focus-within {
+  border-color: var(--clr-primary);
+  background: #fff;
+  transform: scale(1.02);
+  box-shadow: 0 15px 30px -10px var(--clr-primary-glow);
+}
+.input-group-modern input { border: none !important; box-shadow: none !important; background: transparent; height: 52px; width: 100%; padding: 0 18px; font-weight: 600; }
+.input-group-text-icon { padding-left: 18px; color: var(--clr-primary); font-size: 1.1rem; }
+
+.btn-signup {
+  background: linear-gradient(90deg, var(--clr-primary), var(--clr-neon-purple));
+  color: #fff; border: none; padding: 18px;
+  border-radius: 16px; font-weight: 900; width: 100%;
+  text-transform: uppercase; letter-spacing: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.5);
+}
+.btn-signup:hover { transform: translateY(-2px); filter: brightness(1.2); box-shadow: 0 15px 40px -5px rgba(79, 70, 229, 0.7); }
+
+/* Feature Cards Glassmorphism */
+.feature-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 28px; border-radius: 28px;
+    transition: all 0.4s ease;
+    text-align: left;
+}
+.feature-card:hover { 
+    background: rgba(255, 255, 255, 0.12); 
+    transform: translateY(-10px); 
+    border-color: var(--clr-neon-purple); 
+}
+.feature-card i { 
+    background: linear-gradient(135deg, var(--clr-neon-purple), var(--clr-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 2rem; margin-bottom: 12px; display: block; 
+}
+.feature-card h6 { color: #fff; font-weight: 800; margin-bottom: 5px; }
+.feature-card p { color: rgba(255, 255, 255, 0.5); font-size: 0.75rem; margin: 0; line-height: 1.4; }
+
+.text-gradient {
+    background: linear-gradient(to right, #6366f1, #f43f5e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.strength-bar { height: 6px; border-radius: 10px; margin-top: -10px; margin-bottom: 20px; transition: 0.4s ease; }
+
+.extra-small-bold { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--clr-primary); }
+
+@media (max-width: 992px) { .image-side { display: none; } .form-side { flex: 0 0 100%; } }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="split-container">
+  
+  <div class="form-side">
+    <div class="form-inner-container">
+        <div class="mb-5">
+          <a href="/" class="text-decoration-none d-flex align-items-center gap-2">
+              <div class="p-2 rounded-3 text-white shadow-lg" style="background: linear-gradient(135deg, var(--clr-primary), var(--clr-neon-purple)) !important;">
+                <i class="bi bi-rocket-takeoff-fill fs-4"></i>
+              </div>
+              <span class="fw-bold fs-4 text-dark" style="letter-spacing: -1.5px;">MentorLMS<span class="text-primary"></span></span>
+          </a>
+        </div>
+
+        <div class="form-header mb-4">
+          <h2 class="fw-black display-6 mb-1" style="font-weight: 900; letter-spacing: -2px;">Create Academy ID<span class="text-gradient">!</span></h2>
+          <p class="text-muted fw-medium">Join the high-performance engineering platfrom</p>
+        </div>
+
+        <form method="POST">
+          {% csrf_token %}
+          
+          <div class="row g-2">
+            <div class="col-6">
+                <label class="extra-small-bold mb-2 d-block">FIRST NAME</label>
+                <div class="input-group-modern"><input type="text" name="first_name" placeholder="John" required></div>
+            </div>
+            <div class="col-6">
+                <label class="extra-small-bold mb-2 d-block">LAST NAME</label>
+                <div class="input-group-modern"><input type="text" name="last_name" placeholder="Doe" required></div>
+            </div>
+          </div>
+
+          <label class="extra-small-bold mb-2 d-block">USERNAME</label>
+          <div class="input-group-modern">
+              <span class="input-group-text-icon"><i class="bi bi-fingerprint"></i></span>
+              <input type="text" name="username" placeholder="johndoe_dev" required>
+          </div>
+
+          <label class="extra-small-bold mb-2 d-block">EMAIL</label>
+          <div class="input-group-modern">
+              <span class="input-group-text-icon"><i class="bi bi-envelope-at-fill"></i></span>
+              <input type="email" name="email" placeholder="name@protocol.com" required>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-md-6">
+                <label class="extra-small-bold mb-2 d-block">PASSWORD</label>
+                <div class="input-group-modern position-relative">
+                    <input type="password" name="password" id="pass1" placeholder="••••••••" required onkeyup="checkStrength(this.value)">
+                    <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y text-muted border-0" onclick="togglePass('pass1', this)"><i class="bi bi-eye-fill"></i></button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="extra-small-bold mb-2 d-block">CONFIRM PASSWORD</label>
+                <div class="input-group-modern position-relative">
+                    <input type="password" name="password2" id="pass2" placeholder="••••••••" required>
+                    <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y text-muted border-0" onclick="togglePass('pass2', this)"><i class="bi bi-eye-fill"></i></button>
+                </div>
+            </div>
+          </div>
+          <div class="strength-bar" id="strengthBar" style="background: #e2e8f0;"></div>
+
+          <button type="submit" class="btn-signup mb-4 shadow-lg">
+           SIGN IN <i class="bi bi-rocket-takeoff-fill ms-2"></i>
+          </button>
+
+          <p class="text-center text-muted small fw-medium">
+            Already have a account? <a href="{% url 'login' %}" class="text-primary fw-bold text-decoration-none">Login to MentorLMS</a>
+          </p>
+        </form>
+
+        <div class="mt-5 pt-4 border-top opacity-50">
+             <div class="d-flex justify-content-between align-items-center extra-small-bold text-muted">
+                <span>© 2026 MENTORLMS</span> 
+                <div class="d-flex gap-3">
+                    <a href="#" class="text-reset text-decoration-none">PRIVACY</a>
+                    <a href="#" class="text-reset text-decoration-none">TERMS</a>
+                </div>
+            </div> 
+        </div>
+    </div>
+  </div>
+
+  <div class="image-side">
+    <div class="nebula-bg"></div>
+    <div class="visual-content text-center" style="z-index: 2; max-width: 600px;">
+        <h2 class="display-3 fw-black text-white mb-4" style="letter-spacing: -3px; font-weight: 900;">Elevate Your <span class="text-gradient">Potential</span></h2>
+        
+        <div class="feature-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+            <div class="feature-card">
+                <i class="bi bi-terminal-fill"></i>
+                <h6 class="text-white fw-bold">Cloud Labs</h6>
+                <p>Instant browser-based coding terminals for real-world practice.</p>
+            </div>
+            <div class="feature-card">
+                <i class="bi bi-cpu-fill"></i>
+                <h6 class="text-white fw-bold">AI Mentorship</h6>
+                <p>24/7 intelligent code reviews and technical debugging nodes.</p>
+            </div>
+            <div class="feature-card">
+                <i class="bi bi-patch-check-fill"></i>
+                <h6 class="text-white fw-bold">Verified IDs</h6>
+                <p>Industry-standard verified credentials for your global career.</p>
+            </div>
+            <div class="feature-card">
+                <i class="bi bi-people-fill"></i>
+                <h6 class="text-white fw-bold">1:1 Sync</h6>
+                <p>Direct handshake with senior engineers from top tech firms.</p>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePass(id, btn) {
+    const input = document.getElementById(id);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('bi-eye-fill', 'bi-eye-slash-fill');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
+    }
+}
+
+function checkStrength(password) {
+    const bar = document.getElementById('strengthBar');
+    let strength = 0;
+    if (password.length > 6) strength += 33;
+    if (password.match(/[A-Z]/)) strength += 33;
+    if (password.match(/[0-9]/) || password.match(/[^a-zA-Z0-9]/)) strength += 34;
+
+    bar.style.width = strength + '%';
+    if (strength < 34) { bar.style.backgroundColor = '#f43f5e'; bar.style.boxShadow = "0 0 15px #f43f5e66"; }
+    else if (strength < 67) { bar.style.backgroundColor = '#fbbf24'; bar.style.boxShadow = "0 0 15px #fbbf2466"; }
+    else { bar.style.backgroundColor = '#10b981'; bar.style.boxShadow = "0 0 15px #10b98166"; }
+}
+</script>
+{% endblock %}

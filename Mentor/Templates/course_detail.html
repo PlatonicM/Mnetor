@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ course.name }} | Engineering Workspace{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- 1. Industrial Cyber Tokens --- */
+:root {
+    --figma-bg: #F0F4F8;
+    --figma-primary: #4F46E5; 
+    --figma-success: #059669; 
+    --figma-vibrant: #F43F5E;
+    --figma-card: #FFFFFF;
+    --radius-figma: 28px;
+    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background: radial-gradient(circle at top right, #eef2ff, #f1f5f9); color: #0f172a; font-family: 'Inter', sans-serif; }
+
+/* --- 2. Floating Command Header --- */
+.workspace-header {
+    background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(30px) saturate(180%);
+    border-bottom: 2px solid #ffffff; padding: 18px 0;
+    position: sticky; top: 0; z-index: 1050;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.03);
+}
+
+/* --- 3. The Omega Player Node --- */
+.omega-box {
+    background: var(--figma-card); border: 2px solid #ffffff;
+    border-radius: var(--radius-figma); box-shadow: 0 20px 50px -15px rgba(0,0,0,0.08);
+    overflow: hidden; transition: 0.4s var(--spring-easing);
+}
+
+.video-wrapper { 
+    width: 100%; aspect-ratio: 16 / 9; 
+    position: relative; background: #000;
+    border-radius: 20px; overflow: hidden; margin: 10px;
+}
+
+/* --- 4. Holographic Sidebar Navigation --- */
+.lesson-sidebar-card { height: calc(100vh - 120px); position: sticky; top: 100px; }
+.lesson-list-scroll { flex-grow: 1; overflow-y: auto; padding: 20px; scrollbar-width: thin; }
+
+.lesson-entry {
+    display: flex; align-items: center; gap: 15px; padding: 16px 20px;
+    border-radius: 20px; margin-bottom: 12px; transition: 0.4s var(--spring-easing);
+    text-decoration: none !important; color: #475569; border: 1px solid transparent;
+    background: #ffffff;
+}
+
+.lesson-entry.locked { opacity: 0.6; cursor: not-allowed; filter: grayscale(0.8); background: #f8fafc; }
+
+.lesson-entry:not(.locked):hover { 
+    background: #ffffff; 
+    transform: translateX(10px) scale(1.02); 
+    border-color: var(--figma-primary);
+    box-shadow: 0 15px 30px -10px rgba(79, 70, 229, 0.2);
+    color: var(--figma-primary);
+}
+
+.lesson-entry.active { 
+    background: linear-gradient(90deg, #f5f3ff 0%, #ffffff 100%);
+    border: 2px solid var(--figma-primary) !important;
+    color: var(--figma-primary); font-weight: 900; 
+    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.15);
+}
+
+/* --- 5. Handshake UI elements --- */
+#status-toast {
+    position: fixed; bottom: 40px; left: 40px; z-index: 9999;
+    padding: 18px 30px; background: #0f172a; color: #10b981;
+    border-radius: 22px; font-weight: 900; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; transform: translateY(200%); transition: 0.6s var(--spring-easing);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.4); border-left: 5px solid var(--figma-primary);
+}
+#status-toast.show { transform: translateY(0); }
+
+.fw-black { font-weight: 900 !important; }
+.extra-small-bold { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+
+/* Status Pulsing Animations */
+@keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(5,150,105,0.4); } 50% { box-shadow: 0 0 20px rgba(5,150,105,0.8); } 100% { box-shadow: 0 0 5px rgba(5,150,105,0.4); } }
+.active-pulse { animation: glowPulse 2s infinite; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="status-toast">> SYSTEM_SYNC: Handshake Complete_</div>
+
+<header class="workspace-header mb-5">
+    <div class="container-fluid px-lg-5">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-4">
+                <a href="{% url 'mycourses' %}" class="btn btn-white border-2 rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; transition: 0.3s;">
+                    <i class="bi bi-arrow-left fs-5"></i>
+                </a>
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-primary text-white extra-small-bold px-3 py-1">{{ course.category|upper }}</span>
+                        <i class="bi bi-chevron-right text-muted opacity-50" style="font-size: 10px;"></i>
+                        <span class="extra-small-bold text-muted font-mono">{{ course.name|upper }}</span>
+                    </div>
+                    <h4 class="fw-black text-dark mb-0 tracking-tighter uppercase">
+                        LESSION {{ forloop.counter|default:"01" }}: {{ current_lesson.title|upper }}
+                    </h4>
+                </div>
+            </div>
+            
+            <div class="d-flex align-items-center gap-4">
+                <div class="bg-dark text-white px-4 py-2 rounded-pill d-none d-md-flex align-items-center gap-3 shadow-lg">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="spinner-grow text-success" role="status" style="width: 10px; height: 10px;"></div>
+                        <span id="sessionTimer" class="font-mono extra-small-bold" style="color: #10b981;">UPTIME: 00:00:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="container-fluid px-lg-5" id="main-workspace">
+    <div class="row g-5">
+        
+        <div class="col-lg-8">
+            <div class="omega-box p-2 shadow-2xl">
+                <div class="video-wrapper shadow-lg">
+                    <div class="video-unlock-shield {% if is_unlocked %}d-none{% endif %}" id="unlockOverlay" style="position: absolute; inset: 0; background: #0f172a; z-index: 50; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                        <div class="text-center p-5">
+                            <div class="mb-4 text-primary opacity-50" style="font-size: 6rem;"><i class="bi bi-lock-fill"></i></div>
+                            <h2 class="fw-black text-white mb-2 tracking-tighter">ACCESS LOCKED</h2>
+                            <p class="text-white-50 font-mono mb-5">Initialize Handshake Protocol to Provision Content.</p>
+                            <button class="btn btn-primary btn-lg rounded-pill px-5 py-3 fw-black extra-small-bold shadow-lg" onclick="syncProgress('unlock')">
+                                TAP TO UNCLOCK
+                            </button>
+                        </div>
+                    </div>
+
+                    <video id="mainVideo" class="w-100 h-100 {% if not is_unlocked %}d-none{% endif %}" controls controlsList="nodownload" poster="{{ course.image.url }}">
+                        <source src="{{ current_lesson.video_url }}" type="video/mp4">
+                    </video>
+                </div>
+
+                <div class="p-4 d-flex justify-content-between align-items-center bg-white">
+                    <button class="btn btn-lg {% if is_completed %}btn-success{% else %}btn-outline-success{% endif %} rounded-pill px-5 py-3 fw-black extra-small-bold shadow-sm" 
+                            id="markReadBtn" {% if is_completed %}disabled{% endif %} onclick="syncProgress('read')">
+                        <i class="bi {% if is_completed %}bi-patch-check-fill{% else %}bi-lightning-charge{% endif %} me-2"></i> 
+                        {% if is_completed %}VALIDATION COMPLETE{% else %}VALIDATE PROGRESS{% endif %}
+                    </button>
+                    
+                    {% if next_lesson_id %}
+                    <a href="?lesson={{ next_lesson_id }}" class="btn btn-dark btn-lg rounded-pill px-5 py-3 fw-black extra-small-bold shadow-lg">
+                        NEXT SEQUENCE <i class="bi bi-arrow-right-circle ms-2"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="omega-box mt-5">
+    <div class="p-3 border-bottom bg-light bg-opacity-50 d-flex justify-content-between align-items-center">
+        <ul class="nav nav-pills gap-2" id="workspaceTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill extra-small-bold font-mono px-4" data-bs-toggle="pill" data-bs-target="#overview-pane" type="button">
+                    <i class="bi bi-terminal-fill me-2"></i>OVERVIEW
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill extra-small-bold font-mono px-4" data-bs-toggle="pill" data-bs-target="#notes-pane" type="button">
+                    <i class="bi bi-pencil-square me-2"></i>WRITE NOTES
+                </button>
+            </li>
+        </ul>
+        <span class="badge bg-white text-muted border extra-small-bold font-mono d-none d-md-block" style="font-size: 8px;">NODE_ID: #{{ current_lesson.id|add:400 }}</span>
+    </div>
+    
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="overview-pane" role="tabpanel">
+            <div class="p-5">
+                <p class="fw-bold text-dark mb-4" style="line-height: 1.6; font-size: 1.15rem;">
+                    This module provides the core architectural logic and practical implementation strategies for 
+                    <span class="text-primary">{{ current_lesson.title }}</span>. 
+                    Review the provisioning details below to ensure full synchronization with the curriculum requirements.
+                </p>
+
+                <div class="text-muted font-serif" style="line-height: 2; font-size: 1.05rem; border-left: 3px solid #eef2ff; padding-left: 20px;">
+                    {{ current_lesson.description|safe }}
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="notes-pane" role="tabpanel">
+            <div class="p-5 bg-dark">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="spinner-grow text-success" role="status" style="width: 8px; height: 8px;"></div>
+                        <span class="extra-small-bold text-success font-mono">AUTOSYNC BUFFER ACTIVE</span>
+                    </div>
+                    <span class="extra-small-bold text-white-50 font-mono">ENCRYPTED SESSION</span>
+                </div>
+                
+                <div class="position-relative">
+                    <textarea 
+                        class="form-control bg-transparent border-primary border-opacity-25 text-white font-mono p-4" 
+                        id="sessionNotes" 
+                        rows="12" 
+                        style="resize: none; font-size: 14px; line-height: 1.6; border-radius: 18px; outline: none;" 
+                        placeholder="> Enter technical insights or code snippets from this module..."></textarea>
+                </div>
+
+                <!-- <div class="mt-4 d-flex justify-content-between align-items-center">
+                    <p class="extra-small text-white-50 mb-0 font-mono">Last updated: <span id="noteTimestamp">--:--:--</span></p>
+                    <button class="btn btn-primary rounded-pill px-4 extra-small-bold font-mono shadow-lg" onclick="downloadNotes()">
+                        DOWNLOADS NOTES <i class="bi bi-download ms-2"></i>
+                    </button>
+                </div> -->
+            </div>
+        </div>
+    </div>
+</div>
+
+        </div>
+
+        <div class="col-lg-4">
+            <div class="omega-box p-4 mb-4 bg-dark text-white border-0 shadow-2xl" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="extra-small-bold opacity-50">PROGRESS BAR</span>
+                    <span id="progress-percent" class="badge bg-primary px-3 py-2 rounded-pill font-mono">{{ progress_percent|default:0 }}%</span>
+                </div>
+                <div class="progress border border-white border-opacity-10 shadow-inner" style="height: 12px; border-radius: 20px; background: rgba(255,255,255,0.05);">
+                    <div id="progress-bar" class="progress-bar bg-primary active-pulse" style="width: {{ progress_percent|default:0 }}%; transition: 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
+                </div>
+                
+                <div id="cert-section" class="cert-hub mt-4 {% if progress_percent == 100 %}unlocked{% endif %}" style="{% if progress_percent < 100 %}display:none;{% endif %}">
+                    <div class="d-flex align-items-center gap-3 p-3 rounded-4 border-2 border border-warning border-opacity-25 bg-warning bg-opacity-10">
+                        <div class="text-warning fs-1"><i class="bi bi-award-fill"></i></div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-black text-warning tracking-tighter">CERTIFICATE READY</h6>
+                            <a href="{% url 'download_certificate' course.id %}" class="extra-small-bold text-white text-decoration-none">DOWNLOADE CERTIFICATE</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="omega-box lesson-sidebar-card shadow-2xl d-flex flex-column border-2">
+                <div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-white sticky-top">
+                    <h6 class="fw-black text-dark mb-0 font-mono tracking-tighter">MODULE LIST</h6>
+                    <div class="badge bg-light text-primary border px-3 py-2 extra-small-bold">
+                        <span id="completed-count">{{ completed_count }}</span>/{{ total_count }} UNITS
+                    </div>
+                </div>
+                
+                <div class="lesson-list-scroll bg-light bg-opacity-30">
+                    {% for item in lesson_data %}
+                    <a href="?lesson={{ item.lesson.id }}" 
+                       class="lesson-entry shadow-sm {% if item.lesson.id == current_lesson.id %}active{% endif %} {% if item.is_locked %}locked{% endif %}">
+                        <div class="status-node">
+                            {% if item.is_completed %}
+                                <i class="bi bi-patch-check-fill text-success fs-4"></i>
+                            {% elif item.is_locked %}
+                                <i class="bi bi-shield-lock text-muted opacity-30"></i>
+                            {% else %}
+                                <div class="rounded-circle border-2 border border-primary" style="width:20px; height:20px;"></div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <span class="d-block extra-small-bold font-mono text-truncate">UNIT 0{{ forloop.counter }}: {{ item.lesson.title|upper }}</span>
+                            <span class="extra-small text-muted" style="font-size: 8px;">ENCRYPTED STREAM</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/**
+ * --- OMEGA WORKSPACE HANDSHAKE ENGINE v14.9 ---
+ * Integrated: Progress Sync, Cinematic Reveal, Note Harvesting, & Clipboard Protocol
+ */
+
+// --- 1. PROGRESS & CONTENT ACCESS PROTOCOL ---
+function syncProgress(type) {
+    const btn = document.getElementById('markReadBtn');
+    const overlay = document.getElementById('unlockOverlay');
+    const video = document.getElementById('mainVideo');
+
+    // Visual feedback for Handshake Initialization
+    if(type === 'read') btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> SYNCING_NODE...';
+    
+    fetch("{% url 'mark_lesson_complete' course.id current_lesson.id %}")
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === "success" || data.status === "ok") {
+            triggerHandshake("> HANDSHAKE_ACCEPTED: Node_Validated.");
+            
+            // Sync Telemetry UI
+            const progressBar = document.getElementById('progress-bar');
+            const progressPercent = document.getElementById('progress-percent');
+            const completedCount = document.getElementById('completed-count');
+
+            if(progressBar) progressBar.style.width = data.progress + "%";
+            if(progressPercent) progressPercent.innerText = data.progress + "%";
+            if(completedCount) completedCount.innerText = data.completed_count;
+
+            // Handle Cinematic Unlock Handshake
+            if(type === 'unlock' && overlay) {
+                overlay.style.opacity = '0';
+                overlay.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    overlay.classList.add('d-none');
+                    if(video) {
+                        video.classList.remove('d-none');
+                        video.play();
+                    }
+                }, 600);
+            }
+            
+            // Finalize Validation Button State
+            if(btn) {
+                btn.innerHTML = '<i class="bi bi-patch-check-fill me-2"></i> VALIDATION_SYNCED';
+                btn.classList.replace('btn-outline-success', 'btn-success');
+                btn.disabled = true;
+            }
+
+            // Global Course Completion Check
+            if(data.progress >= 100) {
+                const certSection = document.getElementById('cert-section');
+                if(certSection) certSection.style.display = 'block';
+                triggerHandshake("> CRITICAL_SUCCESS: All_Nodes_Provisioned.");
+            }
+        }
+    })
+    .catch(err => {
+        console.error("Critical Handshake Error:", err);
+        triggerHandshake("> ERR: CONNECTION_REFUSED.");
+        if(type === 'read') btn.innerHTML = 'RETRY_SYNC';
+    });
+}
+
+// --- 2. DOWNLOAD PROTOCOL: In-Memory Text File Generation ---
+function downloadNotes() {
+    const sessionNotes = document.getElementById('sessionNotes');
+    const text = sessionNotes ? sessionNotes.value : "";
+    
+    if(!text.trim()) {
+        triggerHandshake("> ERR: BUFFER_EMPTY. Provisioning aborted.");
+        return;
+    }
+
+    // Prepare metadata for filename
+    const date = new Date();
+    const timestamp = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate();
+    const filename = `MentorLMS_Log_{{ current_lesson.id }}_${timestamp}.txt`;
+    
+    // Create logical Blob (Client-side AJAX-less download)
+    const blob = new Blob([text], { type: 'text/plain' });
+    const link = document.createElement('a');
+    
+    link.download = filename;
+    link.href = window.URL.createObjectURL(blob);
+    link.style.display = 'none'; // Ensure element is hidden
+    
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup handshake memory
+    setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(link.href);
+    }, 100);
+    
+    triggerHandshake("> SUCCESS: Logic_Manifest_Harvested.");
+}
+
+// --- 3. CLIPBOARD HANDSHAKE: Instant Data Sync ---
+function copyNotesToClipboard() {
+    const sessionNotes = document.getElementById('sessionNotes');
+    const text = sessionNotes ? sessionNotes.value : "";
+    const btn = document.getElementById('copyBtn');
+
+    if(!text.trim()) {
+        triggerHandshake("> ERR: NOTHING_TO_SYNC.");
+        return;
+    }
+
+    navigator.clipboard.writeText(text).then(() => {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check2-all me-2"></i> SYNCED';
+        btn.classList.replace('btn-outline-light', 'btn-success');
+        
+        triggerHandshake("> PROTOCOL: Buffer_Synced_to_Clip.");
+
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.replace('btn-success', 'btn-outline-light');
+        }, 2000);
+    }).catch(err => {
+        triggerHandshake("> ERR: PERMISSION_DENIED.");
+    });
+}
+
+// --- 4. REAL-TIME TELEMETRY & SYSTEM LOGS ---
+
+// Auto-timestamp logic for active notepad
+const noteInput = document.getElementById('sessionNotes');
+if(noteInput) {
+    noteInput.addEventListener('input', () => {
+        const now = new Date();
+        const timeStr = now.getHours().toString().padStart(2, '0') + ":" + 
+                        now.getMinutes().toString().padStart(2, '0') + ":" + 
+                        now.getSeconds().toString().padStart(2, '0');
+        const timestampEl = document.getElementById('noteTimestamp');
+        if(timestampEl) timestampEl.innerText = timeStr;
+    });
+}
+
+// Global System Toast Function
+function triggerHandshake(msg) {
+    const toast = document.getElementById("status-toast");
+    if(toast) {
+        toast.innerText = msg;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 4000);
+    }
+}
+
+// Session Uptime Counter
+let sec = 0;
+setInterval(() => {
+    sec++;
+    let h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+    const pad = (v) => v < 10 ? "0"+v : v;
+    const timerDisplay = document.getElementById('sessionTimer');
+    if(timerDisplay) {
+        timerDisplay.innerText = `UPTIME: ${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+}, 1000);
+</script>
+{% endblock %}

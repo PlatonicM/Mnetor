@@ -1,0 +1,267 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" style="scroll-behavior: smooth;">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>{% block title %}Mentor | LMS{% endblock title %}</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+
+    <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock extra_css %}
+
+    <style>
+        :root {
+            /* --- Vivid Omega Palette --- */
+            --clr-primary: #4f46e5;       /* Electric Indigo */
+            --clr-primary-hover: #4338ca; /* Deep Indigo */
+            --clr-primary-soft: #f5f3ff;  /* Soft Lavender */
+            --clr-accent: #f43f5e;        /* Vivid Rose */
+            --clr-accent-glow: rgba(244, 63, 94, 0.4);
+            
+            /* --- Refined Industrial Slates --- */
+            --clr-slate-50: #f8fafc;
+            --clr-slate-100: #f1f5f9;
+            --clr-slate-200: #e2e8f0;
+            --clr-slate-700: #475569;
+            --clr-slate-800: #1e293b;
+            --clr-slate-900: #0f172a; /* Midnight */
+            
+            --radius-xl: 20px;
+            --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --shadow-vivid: 0 20px 40px -15px rgba(79, 70, 229, 0.15);
+        }
+
+        body { 
+            background: var(--clr-slate-50); 
+            font-family: 'Inter', sans-serif; 
+            overflow-x: hidden; 
+            color: var(--clr-slate-800); 
+        }
+
+        /* --- GLOBAL TELEMETRY --- */
+        .fw-black { font-weight: 900; }
+        .extra-small { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; }
+        .text-primary { color: var(--clr-primary) !important; }
+
+        /* --- TOAST HANDSHAKE --- */
+        #social-toast {
+            position: fixed; bottom: 30px; left: 30px; z-index: 10000;
+            background: var(--clr-slate-900); color: #10b981;
+            padding: 14px 24px; border-radius: 16px; font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; border-left: 5px solid var(--clr-primary);
+            transform: translateX(-150%); transition: 0.5s var(--spring-easing);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        #social-toast.active { transform: translateX(0); }
+
+        /* --- PRELOADER --- */
+        #preloader {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 9999; background: #fff; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .loader-orb {
+            width: 60px; height: 60px; border: 5px solid var(--clr-slate-100);
+            border-top-color: var(--clr-primary); border-radius: 50%;
+            animation: spin 0.8s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- KINETIC LINK PROTOCOL --- */
+        .footer-link { 
+            color: var(--clr-slate-600); 
+            text-decoration: none; 
+            transition: all 0.3s ease; 
+            display: inline-block; 
+            font-size: 14px;
+            position: relative;
+            padding: 2px 0;
+        }
+        .footer-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--clr-primary);
+            transition: all 0.3s var(--spring-easing);
+        }
+        .footer-link:hover { color: var(--clr-primary); transform: translateX(5px); }
+        .footer-link:hover::after { width: 20px; }
+
+        /* --- FOOTER HUB --- */
+        #footer { background: #fff; border-top: 1px solid var(--clr-slate-200); padding: 80px 0 0; }
+        
+        .social-btn {
+            width: 44px; height: 44px; border-radius: 12px; background: var(--clr-slate-50);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--clr-slate-700); border: 1px solid var(--clr-slate-200);
+            transition: all 0.4s var(--spring-easing);
+        }
+        .social-btn:hover { color: white; transform: translateY(-5px) scale(1.05); box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3); }
+        .node-x:hover { background: #000; border-color: #000; }
+        .node-ig:hover { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); border-color: transparent; }
+        .node-li:hover { background: #0077b5; border-color: #0077b5; }
+        .node-wa:hover { background: #25d366; border-color: #25d366; }
+
+        /* --- STATUS MONITOR --- */
+        .status-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 5px; animation: pulse 2s infinite; box-shadow: 0 0 12px #10b981; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.3); } }
+
+        .back-to-top {
+            position: fixed; visibility: hidden; opacity: 0; right: 25px; bottom: 25px;
+            background: var(--clr-slate-900); color: white; width: 50px; height: 50px;
+            border-radius: 15px; transition: 0.4s; z-index: 996;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .back-to-top.active { visibility: visible; opacity: 1; }
+        .back-to-top:hover { 
+            background: var(--clr-primary); 
+            transform: translateY(-5px); 
+            box-shadow: 0 15px 30px rgba(79, 70, 229, 0.4); 
+            color: #fff;
+        }
+
+        .bg-success-soft { background: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.2); }
+    </style>
+</head>
+
+<body>
+    <div id="social-toast">> Handshake: Initializing Secure Link...</div>
+
+    <div id="preloader">
+        <div class="loader-orb"></div>
+        <p class="mt-3 fw-bold text-primary extra-small" style="letter-spacing: 2px;">Synchronizing_Node</p>
+    </div>
+
+    {% include 'nav.html' %}
+
+    <main id="main">
+        {% block content %}{% endblock content %}
+    </main>
+
+    <footer id="footer">
+        <div class="container">
+            <div class="row gy-5 mb-5">
+                <div class="col-lg-4" data-aos="fade-right">
+                    <div class="footer-brand mb-3 fw-black fs-2 text-dark" style="letter-spacing: -2px;">Mentor<span class="text-primary">LMS</span></div>
+                    <p class="text-muted pe-lg-5" style="font-size: 15px; line-height: 1.7;">Building the next generation of architects through project-based deployments and industrial-grade curriculum.</p>
+                    
+                    <div class="d-flex gap-3 mt-4">
+                        <a href="#" target="_blank" class="social-btn node-x" onclick="handshake('X_NODE')"> <i class="bi bi-twitter-x"></i> </a>
+                        <a href="#" target="_blank" class="social-btn node-ig" onclick="handshake('IG_NODE')"> <i class="bi bi-instagram"></i></a>
+                        <a href="#" target="_blank" class="social-btn node-li" onclick="handshake('LI_NODE')"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" target="_blank" class="social-btn node-wa" onclick="handshake('WA_NODE')"><i class="bi bi-whatsapp"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-6" data-aos="fade-up" data-aos-delay="100">
+                    <h6 class="extra-small mb-4 text-dark" style="color: var(--clr-primary) !important;">Quick Links</h6>
+                    <nav class="nav flex-column gap-2">
+                        <a href="{% url 'courses' %}" class="footer-link fw-bold">All Tracks</a>
+                        <!-- <a href="{% url 'events' %}" class="footer-link fw-bold">Workshops</a> -->
+                        <a href="{% url 'about' %}" class="footer-link fw-bold">About Us</a>
+                        <a href="{% url 'contact' %}" class="footer-link fw-bold">Contact Us</a>
+                    </nav>
+                </div>
+
+                <div class="col-lg-3 col-6" data-aos="fade-up" data-aos-delay="200">
+                    <h6 class="extra-small mb-4 text-dark" style="color: var(--clr-primary) !important;">Contact Us</h6>
+                    <div class="nav flex-column gap-3">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-geo-alt-fill text-primary"></i>
+                            <span class="small fw-semibold text-muted">IT Park Phase 01, Nagpur, MH-440022</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-telephone-fill text-primary"></i>
+                            <a href="tel:+917030087366" class="footer-link fw-bold">+91 70300 87366</a>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-envelope-at-fill text-primary"></i>
+                            <a href="mailto:support@mentorlms.com" class="footer-link fw-bold">support@mentorlms.com</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-12" data-aos="fade-up" data-aos-delay="300">
+                    <h6 class="extra-small mb-4 text-dark" style="color: var(--clr-primary) !important;">Legal</h6>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <nav class="nav flex-column gap-2">
+                                <a href="#" class="footer-link fw-bold">Privacy</a>
+                                <a href="#" class="footer-link fw-bold">Terms</a>
+                            </nav>
+                        </div>
+                        <div class="col-6">
+                            <nav class="nav flex-column gap-2">
+                                <a href="#" class="footer-link fw-bold">FAQ</a>
+                                <a href="#" class="footer-link fw-bold">Partners</a>
+                            </nav>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 rounded-4 bg-light border border-dashed shadow-sm">
+                        <h6 class="extra-small mb-1 text-primary" style="font-size: 9px;">Office Hours</h6>
+                        <p class="text-dark small mb-0 fw-bold">MON - FRI: 09:00 - 06:00 IST</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-4 border-top d-md-flex align-items-center justify-content-between">
+                <div class="extra-small fw-bold text-muted">
+                    &copy; 2026 <span class="text-dark fw-black">MentorLMS</span>  <br> All rights reserved
+                </div>
+                <div class="d-flex align-items-center gap-4 mt-3 mt-md-0">
+                    <div class="d-flex gap-3">
+                        <a href="#" class="footer-social-icon text-muted hover-primary"><i class="bi bi-github fs-5"></i></a>
+                        <a href="#" class="footer-social-icon text-muted hover-primary"><i class="bi bi-discord fs-5"></i></a>
+                    </div>
+                    <div class="px-3 py-1 bg-success-soft rounded-pill d-flex align-items-center">
+                        <span class="status-dot"></span> 
+                        <span class="extra-small" style="font-size: 9px; font-weight: 900;">Cloud MentorLMS Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <a href="#" class="back-to-top shadow-lg"><i class="bi bi-arrow-up-short fs-3"></i></a>
+
+    <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+    <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+    <script>
+        function handshake(nodeName) {
+            const toast = document.getElementById('social-toast');
+            toast.innerText = `> Handshake: Connecting to ${nodeName}...`;
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 3000);
+        }
+
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('preloader');
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.remove(), 500);
+            }
+            AOS.init({ duration: 800, easing: 'ease-out-expo', once: true });
+        });
+
+        window.addEventListener('scroll', () => {
+            const btt = document.querySelector('.back-to-top');
+            if (window.scrollY > 300) btt.classList.add('active');
+            else btt.classList.remove('active');
+        });
+    </script>
+    {% block extra_js %}{% endblock extra_js %}
+</body>
+</html>

@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Activity Registry | Command Center{% endblock %}
+
+{% block extra_css %}
+<style>
+/* --- 1. Vibrant Industrial Tokens --- */
+:root {
+    --figma-bg: #F0F4F8;
+    --figma-primary: #4F46E5; 
+    --figma-success: #059669; 
+    --figma-vibrant: #F43F5E;
+    --figma-card: #FFFFFF;
+    --radius-figma: 28px;
+    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body { background: radial-gradient(circle at top right, #eef2ff, #f1f5f9, #f0fdf4); color: #0f172a; font-family: 'Inter', sans-serif; }
+
+.notify-wrapper { max-width: 900px; margin: 0 auto; }
+
+/* --- 2. Kinetic Header Node --- */
+.header-node {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 50px;
+}
+
+/* --- 3. Registry Card Architecture --- */
+.notify-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border: 2px solid #ffffff;
+    border-radius: var(--radius-figma);
+    overflow: hidden;
+    box-shadow: 0 30px 60px -15px rgba(0,0,0,0.08);
+}
+
+.notify-item {
+    padding: 30px 40px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    gap: 25px;
+    position: relative;
+    transition: all 0.4s var(--spring-easing);
+    background: transparent;
+}
+
+/* 4. Categorized Signal Protocol */
+.notify-item.unread { background: white; }
+.notify-item.unread::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 6px; background: var(--figma-primary);
+    box-shadow: 2px 0 15px rgba(79, 70, 229, 0.3);
+}
+
+/* Success Alerts Color Logic */
+.notify-item.type-success.unread::before { background: var(--figma-success); }
+.notify-item.type-alert.unread::before { background: var(--figma-vibrant); }
+
+/* --- 5. Action Hubs --- */
+.icon-node {
+    width: 56px; height: 56px; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+    transition: 0.3s var(--spring-easing);
+    border: 1px solid transparent;
+}
+.unread .icon-node { background: #f5f3ff; color: var(--figma-primary); border-color: #ddd6fe; box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.2); }
+.read .icon-node { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
+
+.notify-title { font-size: 1.15rem; font-weight: 900; color: #1e293b; margin-bottom: 6px; tracking-tighter; }
+.notify-msg { font-size: 15px; color: #475569; line-height: 1.7; margin-bottom: 20px; font-weight: 500; }
+
+.btn-protocol {
+    padding: 10px 20px; border-radius: 100px; font-size: 10px; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    border: 2px solid #e2e8f0; background: white;
+    transition: 0.3s var(--spring-easing); display: inline-flex; align-items: center; gap: 10px;
+}
+.btn-protocol:hover { transform: translateY(-4px); border-color: var(--figma-primary); color: var(--figma-primary); box-shadow: 0 15px 30px rgba(79, 70, 229, 0.15); }
+
+.btn-mark-handled { color: var(--figma-success); border-color: #a7f3d0; background: #f0fdf4; }
+.btn-mark-handled:hover { background: var(--figma-success); color: white; border-color: var(--figma-success); }
+
+/* Removal Physics */
+.notify-item.removing { transform: scale(0.9) translateX(100px); opacity: 0; filter: blur(12px); }
+
+/* --- 6. Helper Utilities --- */
+.fw-black { font-weight: 900 !important; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+.extra-small-bold { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+
+/* Pulse Animation */
+@keyframes signal-wave { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+.signal-led { width: 10px; height: 10px; background: var(--figma-primary); border-radius: 50%; animation: signal-wave 2s infinite; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 notify-wrapper">
+    
+    <div class="header-node reveal">
+        <div>
+            <div class="d-inline-flex align-items-center gap-3 bg-white px-3 py-1 rounded-pill border shadow-sm mb-2">
+                <div class="signal-led"></div>
+                <span class="extra-small-bold text-primary">System Notification Active</span>
+            </div>
+            <h1 class="fw-black text-dark m-0" style="letter-spacing: -3px; font-size: 3.2rem;">View <span class="text-primary">Notifications</span></h1>
+        </div>
+        <button id="flushAllBtn" class="btn btn-outline-danger rounded-pill px-4 extra-small-bold border-2 {% if not notifications %}d-none{% endif %}">
+            <i class="bi bi-trash3-fill me-2"></i> Flush Nodes
+        </button>
+    </div>
+
+    <div class="notify-card reveal" id="notifContainer">
+        {% for n in notifications %}
+        <div class="notify-item {% if not n.is_read %}unread{% else %}read{% endif %} type-{{ n.category|default:'general' }}" id="notif-{{ n.id }}">
+            <div class="icon-node shadow-sm">
+                {% if not n.is_read %}
+                    <i class="bi bi-lightning-charge-fill"></i>
+                {% else %}
+                    <i class="bi bi-check-all"></i>
+                {% endif %}
+            </div>
+
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="notify-title">{{ n.title|upper }}</h5>
+                    <span class="extra-small-bold font-mono text-muted opacity-50">{{ n.created_at|timesince|upper }} AGO</span>
+                </div>
+                <p class="notify-msg font-mono">{{ n.message }}</p>
+
+                <div class="d-flex gap-3">
+                    {% if n.url %}
+                    <a href="{{ n.url }}" class="btn-protocol text-decoration-none shadow-sm">
+                        <i class="bi bi-terminal-fill text-primary"></i> EXECUTE ACTION
+                    </a>
+                    {% endif %}
+
+                    {% if not n.is_read %}
+                    <button class="btn-protocol btn-mark-handled mark-read-btn" data-id="{{ n.id }}">
+                        <i class="bi bi-shield-check"></i> VALIDATE HANDLED
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="p-5 text-center bg-white">
+            <div class="mb-4 position-relative d-inline-block">
+                <i class="bi bi-shield-check text-success opacity-10" style="font-size: 8rem;"></i>
+                <div class="position-absolute top-50 start-50 translate-middle">
+                    <i class="bi bi-patch-check-fill text-success fs-1"></i>
+                </div>
+            </div>
+            <h2 class="fw-black tracking-tighter">STATUS: NOMINAL</h2>
+            <p class="text-muted font-mono small mb-4">No active curriculum alerts detected in current session buffer.</p>
+            <a href="{% url 'courses' %}" class="btn btn-primary rounded-pill px-5 py-3 fw-black extra-small-bold shadow-lg">
+                EXPLORE COURSES
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Reveal Entrance Handshake
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // AJAX Handshake: Single Node Decommission
+    document.querySelectorAll(".mark-read-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const notifId = this.getAttribute("data-id");
+            const parentItem = document.getElementById(`notif-${notifId}`);
+
+            parentItem.classList.add("removing");
+
+            fetch("{% url 'notifications_mark_read' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify({ id: notifId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.ok) {
+                    setTimeout(() => {
+                        parentItem.remove();
+                        if(document.querySelectorAll(".notify-item").length === 0) location.reload();
+                    }, 500);
+                }
+            })
+            .catch(err => {
+                parentItem.classList.remove("removing");
+                console.error("CRITICAL_SYSTEM_ERROR: Registry handshake failed.");
+            });
+        });
+    });
+
+    // AJAX Handshake: System Flush
+    const flushBtn = document.getElementById("flushAllBtn");
+    if(flushBtn) {
+        flushBtn.addEventListener("click", () => {
+            if(!confirm("SYSTEM_COMMAND: Decommission all registry alerts?")) return;
+
+            fetch("{% url 'notifications_mark_read' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify({ all: true })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.ok) {
+                    document.querySelectorAll(".notify-item").forEach(el => el.classList.add("removing"));
+                    setTimeout(() => location.reload(), 600);
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

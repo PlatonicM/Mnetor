@@ -1,0 +1,69 @@
+{# instructor/_badges.html #}
+
+<style>
+/* ================================
+   Premium Badge Style (Global)
+================================ */
+.instructor-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 30px;
+  border: 2px solid #000;
+  font-weight: 700;
+  font-size: 13px;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  background: #ffffffcc;
+  backdrop-filter: blur(6px);
+  transition: .3s ease;
+}
+
+.instructor-badge:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+}
+
+/* Colors */
+.badge-verified { background: #22c55e; color: #fff; }
+.badge-toprated { background: #0ea5e9; color: #fff; }
+.badge-expert   { background: #facc15; color: #000; }
+.badge-rising   { background: #f97316; color: #fff; }
+
+/* Icons */
+.instructor-badge i {
+  font-size: 15px;
+}
+</style>
+
+
+{% if badges %}
+  <div class="mt-2">
+    {% for b in badges %}
+
+      {% if b == "verified" %}
+        <span class="instructor-badge badge-verified">
+          <i class="bi bi-patch-check-fill"></i> Verified
+        </span>
+
+      {% elif b == "top_rated" %}
+        <span class="instructor-badge badge-toprated">
+          <i class="bi bi-star-fill"></i> Top Rated
+        </span>
+
+      {% elif b == "expert" %}
+        <span class="instructor-badge badge-expert">
+          <i class="bi bi-lightning-charge-fill"></i> Expert
+        </span>
+
+      {% elif b == "rising_star" %}
+        <span class="instructor-badge badge-rising">
+          <i class="bi bi-fire"></i> Rising Star
+        </span>
+
+      {% endif %}
+
+    {% endfor %}
+  </div>
+{% endif %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Instructor Approval Status{% endblock %}
+
+{% block extra_css %}
+<style>
+
+/* Reveal animation (global style) */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: .8s cubic-bezier(.19,1,.22,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Glass Black Box */
+.black-box {
+  border: 2px solid #000;
+  background: #ffffffee;
+  border-radius: 16px;
+  padding: 30px;
+  backdrop-filter: blur(8px);
+  transition: .35s ease;
+}
+.black-box:hover {
+  transform: translateY(-8px);
+  border-color: #48b46a;
+  box-shadow: 0 22px 48px rgba(0,0,0,.25);
+}
+
+/* Premium buttons */
+.btn-premium {
+  border: 2px solid #000 !important;
+  border-radius: 12px !important;
+  font-weight: 700;
+  padding: 10px 16px;
+  transition: .35s ease;
+}
+.btn-premium:hover {
+  background: #48b46a !important;
+  color: #fff !important;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.22);
+}
+
+.status-box {
+  border: 2px solid #000;
+  border-radius: 12px;
+  background: #f1f5f9;
+  padding: 12px;
+  font-weight: 600;
+}
+
+</style>
+{% endblock extra_css %}
+
+
+
+{% block content %}
+
+<div class="container my-5 reveal" style="max-width:700px;">
+
+  <div class="black-box text-center">
+
+    {% if req %}
+
+      {% if req.status == "PENDING" %}
+        <img src="{% static 'assets/img/verify.png' %}" width="120" class="mb-3">
+        <h3 class="fw-bold">⏳ Request Under Review</h3>
+        <p class="text-muted">Your instructor application is currently being reviewed.</p>
+
+        <div class="status-box mt-3 bg-warning-subtle">
+          <i class="bi bi-hourglass-split"></i> Status: Pending
+        </div>
+
+      {% elif req.status == "REJECTED" %}
+        <img src="{% static 'assets/img/error.png' %}" width="120" class="mb-3">
+        <h3 class="fw-bold text-danger">❌ Request Rejected</h3>
+        <p class="text-muted">
+          Your instructor application was rejected.<br>
+          You can update your details and reapply.
+        </p>
+
+        <a href="{% url 'request_instructor' %}" class="btn btn-premium mt-3">
+          Reapply
+        </a>
+
+      {% endif %}
+
+    {% else %}
+
+      <img src="{% static 'assets/img/apply.png' %}" width="120" class="mb-3">
+      <h3 class="fw-bold">Become an Instructor</h3>
+      <p class="text-muted">Apply to start teaching your own courses.</p>
+
+      <a href="{% url 'request_instructor' %}" class="btn btn-premium mt-3">
+        Apply Now
+      </a>
+
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("scroll", () => {
+  document.querySelectorAll(".reveal").forEach(el => {
+    if (el.getBoundingClientRect().top < window.innerHeight - 60) {
+      el.classList.add("visible");
+    }
+  });
+});
+</script>
+{% endblock %}
