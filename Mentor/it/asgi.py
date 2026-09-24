@@ -11,6 +11,8 @@ import os
 
 from django.core.asgi import get_asgi_application
 
+os.environ["GIO_USE_VFS"] = "local"
+os.environ["G_MESSAGES_DEBUG"] = "none"
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'it.settings')
 
 application = get_asgi_application()

@@ -11,6 +11,8 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+os.environ["GIO_USE_VFS"] = "local"
+os.environ["G_MESSAGES_DEBUG"] = ""
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'it.settings')
 
 application = get_wsgi_application()
