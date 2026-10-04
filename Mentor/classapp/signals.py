@@ -107,25 +107,27 @@ def track_login(sender, request, user, **kwargs):
     ua = request.META.get("HTTP_USER_AGENT", "")
     session_key = request.session.session_key
 
-    # Create login history row
-    LoginActivity.objects.create(
-        user=user,
-        ip_address=ip,
-        user_agent=ua,
-        login_time=timezone.now(),
-    )
+    # Safely track login history & session telemetry
+    try:
+        LoginActivity.objects.create(
+            user=user,
+            ip_address=ip,
+            user_agent=ua,
+            login_time=timezone.now(),
+        )
 
-    # Track / upsert active session
-    UserSession.objects.update_or_create(
-        session_key=session_key,
-        defaults={
-            "user": user,
-            "ip_address": ip,
-            "user_agent": ua,
-            "login_time": timezone.now(),
-            "last_activity": timezone.now(),
-        },
-    )
+        UserSession.objects.update_or_create(
+            session_key=session_key,
+            defaults={
+                "user": user,
+                "ip_address": ip,
+                "user_agent": ua,
+                "login_time": timezone.now(),
+                "last_activity": timezone.now(),
+            },
+        )
+    except Exception as e:
+        print(f"[LOGIN TRACKING NOTICE] Telemetry skipped: {e}")
 
 
 # 3) USER LOGOUT TRACKING

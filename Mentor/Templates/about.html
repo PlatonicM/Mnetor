@@ -1,239 +1,223 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Mission Control | Command Center{% endblock %}
+
+{% block title %}Mentor{% endblock title %}
 
 {% block extra_css %}
 <style>
-/* --- 1. Vibrant Design Tokens --- */
 :root {
-    --figma-bg: #F0F4F8;
-    --figma-primary: #4F46E5; 
-    --figma-success: #059669; 
-    --figma-accent: #6366f1;
-    --radius-figma: 30px;
-    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --primary-color: #4f46e5;
+  --primary-hover: #4338ca;
+  --success-color: #10b981;
+  --bg-slate: #f8fafc;
+  --card-radius: 24px;
 }
 
-body { background: radial-gradient(circle at top right, #e0f2fe, #f1f5f9, #f0fdf4); color: #0f172a; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-
-/* --- 2. Advanced Reveal Protocol --- */
-.reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s var(--spring-easing); }
-.reveal.visible { opacity: 1; transform: translateY(0); }
-
-/* --- 3. Cyber Surface Cards --- */
-.surface-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(20px);
-    border: 2px solid #ffffff;
-    border-radius: var(--radius-figma);
-    padding: 40px;
-    transition: all 0.5s var(--spring-easing);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-.surface-card:hover {
-    transform: translateY(-12px);
-    box-shadow: 0 30px 60px -12px rgba(79, 70, 229, 0.15);
-    border-color: var(--figma-primary);
+body {
+  background-color: var(--bg-slate);
+  color: #0f172a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* --- 4. Leader Node Alignment --- */
-.leader-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
+.about-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--card-radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  padding: 40px;
+  height: 100%;
 }
 
-.leader-avatar-frame {
-    width: 140px; height: 140px; margin: 0 auto 25px;
-    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-    background: white; padding: 6px; 
-    border: 3px solid var(--figma-primary);
-    transition: 0.7s var(--spring-easing);
-    animation: morph-slow 8s infinite alternate ease-in-out;
-    overflow: hidden;
-}
-@keyframes morph-slow {
-    0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
-    100% { border-radius: 63% 37% 32% 68% / 54% 71% 29% 46%; }
-}
-.surface-card:hover .leader-avatar-frame {
-    border-radius: 50%; transform: rotate(10deg) scale(1.1); border-color: var(--figma-success);
-}
-.leader-avatar { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
-
-.social-link-node {
-    width: 45px; height: 45px;
-    display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 14px; background: #f1f5f9; color: #475569;
-    transition: 0.3s var(--spring-easing); border: 1px solid #e2e8f0;
-}
-.social-link-node:hover { transform: translateY(-5px) scale(1.1); color: white; }
-.link-linkedin:hover { background: #0077b5; border-color: #0077b5; }
-.link-github:hover { background: #333; border-color: #333; }
-.link-twitter:hover { background: #000; border-color: #000; }
-
-/* --- 5. Ticker & Roadmap --- */
-.stat-val { font-size: 4.5rem; font-weight: 900; letter-spacing: -5px; line-height: 1; }
-.roadmap-visual { border-left: 3px solid #e2e8f0; padding-left: 50px; margin-left: 25px; }
-.roadmap-step { position: relative; margin-bottom: 60px; }
-.roadmap-step::before {
-    content: ''; position: absolute; left: -64px; top: 0;
-    width: 24px; height: 24px; border-radius: 50%;
-    background: white; border: 5px solid var(--figma-primary);
-    box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+.team-avatar-frame {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  border: 4px solid #ffffff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  object-fit: cover;
 }
 
-.fw-black { font-weight: 900 !important; }
-.font-mono { font-family: 'JetBrains Mono', monospace; }
+.social-icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  text-decoration: none !important;
+}
 
-@media (max-width: 992px) { .leader-grid { grid-template-columns: 1fr; } }
+.social-icon-btn:hover {
+  background: #4f46e5;
+  color: white;
+  transform: translateY(-2px);
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" /><br>
-
-<section class="story-section py-6 overflow-hidden">
-    <div class="container">
-        <div class="row align-items-center gy-5">
-            <div class="col-lg-7">
-                <div class="d-flex align-items-center gap-3 mb-4">
-                    <span class="status-led"></span>
-                    <span class="badge bg-primary-soft text-primary px-3 py-1 rounded-pill extra-small-bold border">About MentorLMS</span>
-                </div>
-                <h2 class="display-3 fw-black text-dark mb-4" style="letter-spacing: -4px; line-height: 0.85;">Our <span class="text-primary">Story</span></h2>
-                <div class="story-content pe-lg-5">
-                    <p class="lead fw-bold text-dark mb-3">MentorLMS was founded with a simple belief: everyone deserves access to quality education.</p>
-                    <p class="text-muted fs-5 mb-4 opacity-75">What started as a small platform with just 10 courses has grown into a global learning community. Today, we partner with industry experts to unlock human potential.</p>
-                    <div class="pulse-node shadow-2xl bg-dark p-4 rounded-4 d-inline-flex align-items-center gap-3 mt-4">
-                        <div class="pulse-dot"></div>
-                        <div>
-                            <small class="extra-small-bold text-primary d-block mb-1">LIVE NETWORK LOAD</small>
-                            <h3 class="mb-0 fw-black text-white font-mono"><span id="live-counter">15,482</span><small class="fs-6 opacity-50 ms-2">STUDENTS</small></h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-5">
-                <div class="swiper story-swiper rounded-4 shadow-2xl overflow-hidden">
-                    <div class="swiper-wrapper">
-                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1471&auto=format&fit=crop" class="img-fluid w-100" style="height: 500px; object-fit: cover;"></div>
-                        <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1470&auto=format&fit=crop" class="img-fluid w-100" style="height: 500px; object-fit: cover;"></div>
-                    </div>
-                </div>
-            </div>
+<section class="py-5">
+  <div class="container py-4" style="max-width: 1150px;">
+    <!-- Story Hero -->
+    <div class="row align-items-center g-5 mb-5 pb-4">
+      <div class="col-lg-6">
+        <div class="d-inline-flex align-items-center gap-2 bg-primary bg-opacity-10 text-primary rounded-pill px-4 py-2 mb-3 fw-bold small">
+          <i class="bi bi-info-circle-fill"></i> Our Mission & Story
         </div>
-    </div>
-</section><br><br>
+        <h1 class="display-4 fw-bold text-dark mb-4">Empowering the Next Generation of Tech Leaders</h1>
+        <p class="text-secondary fs-5 leading-relaxed mb-4">
+          Mentor was founded with a clear mission: to democratize high-quality technical education through real-world projects and direct 1-on-1 industry mentorship.
+        </p>
+        <p class="text-muted">
+          Our platform connects ambitious learners with seasoned senior engineers, cloud architects, and data scientists from top tech firms across the globe.
+        </p>
+      </div>
 
-<div class="container py-5" style="margin-top: -60px; position: relative; z-index: 10;">
+      <div class="col-lg-6">
+        <div class="about-card text-white p-5 position-relative overflow-hidden" style="background: linear-gradient(135deg, #0f172a, #1e1b4b) !important;">
+          <div class="display-1 fw-bold text-primary opacity-25 position-absolute top-0 end-0 me-3 mt-2">🎓</div>
+          <h3 class="fw-bold mb-4">Platform Impact at a Glance</h3>
+
+          <div class="row g-4">
+            <div class="col-6">
+              <div class="display-5 fw-bold text-success mb-1">10,000+</div>
+              <div class="text-white-50 small">Active Students</div>
+            </div>
+            <div class="col-6">
+              <div class="display-5 fw-bold text-warning mb-1">250+</div>
+              <div class="text-white-50 small">Expert Mentors</div>
+            </div>
+            <div class="col-6">
+              <div class="display-5 fw-bold text-info mb-1">50+</div>
+              <div class="text-white-50 small">Tech Tracks</div>
+            </div>
+            <div class="col-6">
+              <div class="display-5 fw-bold text-danger mb-1">98%</div>
+              <div class="text-white-50 small">Completion Rate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Values -->
+    <div class="text-center mb-5">
+      <span class="text-primary fw-bold text-uppercase small" style="letter-spacing: 1px;">Our Philosophy</span>
+      <h2 class="fw-bold text-dark display-6">Built on Quality & Integrity</h2>
+    </div>
+
+    <div class="row g-4 mb-5 pb-4">
+      <div class="col-md-4">
+        <div class="about-card text-center">
+          <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; font-size: 26px;">
+            <i class="bi bi-code-slash"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Real-World Code</h5>
+          <p class="text-muted small mb-0">Learn by building actual production SaaS applications rather than toy code examples.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="about-card text-center">
+          <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; font-size: 26px;">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Dedicated Mentorship</h5>
+          <p class="text-muted small mb-0">Direct 1-on-1 code reviews and career advice from experienced industry practitioners.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="about-card text-center">
+          <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; font-size: 26px;">
+            <i class="bi bi-shield-check"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Verified Credentials</h5>
+          <p class="text-muted small mb-0">Cryptographically verifiable certificates recognised by our 250+ partner hiring companies.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leadership & Key Mentors Section -->
+    <div class="text-center mb-5">
+      <span class="text-primary fw-bold text-uppercase small" style="letter-spacing: 1px;">Leadership & Mentors</span>
+      <h2 class="fw-bold text-dark display-6">Meet the Industry Pioneers</h2>
+    </div>
+
     <div class="row g-4 mb-5">
-        <div class="col-md-4 reveal"><div class="surface-card text-center shadow-lg"><div class="stat-val text-dark" id="success-rate">0</div><div class="extra-small-bold text-primary mt-3">Placement Rate</div></div></div>
-        <div class="col-md-4 reveal"><div class="surface-card text-center shadow-lg"><div class="stat-val text-dark">24<span class="stat-unit">/7</span></div><div class="extra-small-bold text-primary mt-3">Availability</div></div></div>
-        <div class="col-md-4 reveal"><div class="surface-card text-center shadow-lg"><div class="stat-val text-dark">40<span class="stat-unit">+</span></div><div class="extra-small-bold text-primary mt-3">Global Mentors</div></div></div>
-    </div>
-
-    <div class="py-5">
-        <h2 class="fw-black text-dark display-4 mb-5 reveal tracking-tighter">Meet Our Team</h2>
-        <p class="text-muted small mb-5 font-mono">The passionate people behind MentorLMS who make learning possible</p>
-        <div class="leader-grid">
-            <div class="reveal">
-                <div class="surface-card border-2 shadow-lg text-center">
-                    <div class="leader-avatar-frame"><img src="{% static 'assets/img/trainers/trainer-1.jpg' %}" class="leader-avatar"></div>
-                    <h4 class="fw-black text-dark mb-1">MRUNAL CHAUDHARI</h4>
-                    <span class="badge bg-primary text-white rounded-pill mb-4 extra-small-bold px-3">CEO || FOUNDER</span>
-                    <p class="text-muted small mb-5 font-mono">Pioneering structural logic for democratized high-frequency education node architecture.</p>
-                    <div class="d-flex justify-content-center gap-3">
-                        <a href="#" class="social-link-node link-linkedin"><i class="bi bi-linkedin fs-5"></i></a>
-                        <a href="#" class="social-link-node link-twitter"><i class="bi bi-twitter-x fs-5"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="reveal">
-                <div class="surface-card border-2 shadow-lg text-center">
-                    <div class="leader-avatar-frame"><img src="{% static 'assets/img/trainers/trainer-2.jpg' %}" class="leader-avatar"></div>
-                    <h4 class="fw-black text-dark mb-1">ACHAL MESHRAM</h4>
-                    <span class="badge bg-dark text-white rounded-pill mb-4 extra-small-bold px-3">CTO || PRODUCT LEAD</span>
-                    <p class="text-muted small mb-5 font-mono">Ensuring every module handshake meets global industrial production and code standards.</p>
-                    <div class="d-flex justify-content-center gap-3">
-                        <a href="#" class="social-link-node link-linkedin"><i class="bi bi-linkedin fs-5"></i></a>
-                        <a href="#" class="social-link-node link-github"><i class="bi bi-github fs-5"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="reveal">
-                <div class="surface-card border-2 shadow-lg text-center">
-                    <div class="leader-avatar-frame"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600" class="leader-avatar"></div>
-                    <h4 class="fw-black text-dark mb-1">DR. AKASH WANKHEDE</h4>
-                    <span class="badge bg-success text-white rounded-pill mb-4 extra-small-bold px-3">CHIEF AI ARCHITECT</span>
-                    <p class="text-muted small mb-5 font-mono">Deploying neural assistance layers to optimize personalized student learning paths.</p>
-                    <div class="d-flex justify-content-center gap-3">
-                        <a href="#" class="social-link-node link-linkedin"><i class="bi bi-linkedin fs-5"></i></a>
-                        <a href="#" class="social-link-node link-github"><i class="bi bi-github fs-5"></i></a>
-                    </div>
-                </div>
-            </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="about-card text-center p-4">
+          <img src="https://ui-avatars.com/api/?name=Alex+Morgan&background=4f46e5&color=fff" class="team-avatar-frame" alt="Alex Morgan">
+          <h5 class="fw-bold text-dark mb-1">Alex Morgan</h5>
+          <div class="text-primary extra-small fw-bold mb-2">Founder & Chief Architect</div>
+          <p class="text-muted extra-small mb-3">Ex-Google Principal Engineer with 14+ years building distributed cloud infrastructure.</p>
+          <div class="d-flex justify-content-center gap-2">
+            <a href="#" class="social-icon-btn"><i class="bi bi-linkedin"></i></a>
+            <a href="#" class="social-icon-btn"><i class="bi bi-github"></i></a>
+            <a href="#" class="social-icon-btn"><i class="bi bi-twitter-x"></i></a>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div class="py-5">
-        <h2 class="fw-black display-4 mb-5 reveal tracking-tighter">Execution Roadmap</h2>
-        <div class="roadmap-visual reveal">
-            <div class="roadmap-step">
-                <h6 class="text-primary fw-black font-mono extra-small-bold mb-2">PHASE 01 || 2024</h6>
-                <h3 class="fw-black text-dark">Genesis Start</h3>
-                <p class="text-muted w-75 font-mono opacity-75">Provisioning core cloud infrastructure and first production curriculum stacks.</p>
-            </div>
-            <div class="roadmap-step">
-                <h6 class="text-primary fw-black font-mono extra-small-bold mb-2">PHASE 02 || 2025</h6>
-                <h3 class="fw-black text-dark">Distributed Scaling</h3>
-                <p class="text-muted w-75 font-mono opacity-75">Global scaling to 40+ countries. Initializing Recruiter-Side API sync nodes.</p>
-            </div>
-            <div class="roadmap-step">
-                <h6 class="text-primary fw-black font-mono extra-small-bold mb-2">PHASE 03 || 2026</h6>
-                <h3 class="fw-black text-dark">Neural Assistance</h3>
-                <p class="text-muted w-75 font-mono opacity-75">Deploying AI-driven technical debugging agents for 24/7 project auditing and optimization.</p>
-            </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="about-card text-center p-4">
+          <img src="https://ui-avatars.com/api/?name=Sarah+Jenkins&background=10b981&color=fff" class="team-avatar-frame" alt="Sarah Jenkins">
+          <h5 class="fw-bold text-dark mb-1">Sarah Jenkins</h5>
+          <div class="text-success extra-small fw-bold mb-2">Head of Curriculum</div>
+          <p class="text-muted extra-small mb-3">Former Tech Lead at AWS specialising in Full-Stack Web Development & Microservices.</p>
+          <div class="d-flex justify-content-center gap-2">
+            <a href="#" class="social-icon-btn"><i class="bi bi-linkedin"></i></a>
+            <a href="#" class="social-icon-btn"><i class="bi bi-github"></i></a>
+          </div>
         </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="about-card text-center p-4">
+          <img src="https://ui-avatars.com/api/?name=Dr.+Marcus+Vance&background=7c3aed&color=fff" class="team-avatar-frame" alt="Dr. Marcus Vance">
+          <h5 class="fw-bold text-dark mb-1">Dr. Marcus Vance</h5>
+          <div class="text-primary extra-small fw-bold mb-2">AI & Data Science Lead</div>
+          <p class="text-muted extra-small mb-3">Ph.D. in Computer Science with focus on Machine Learning & Neural Network optimization.</p>
+          <div class="d-flex justify-content-center gap-2">
+            <a href="#" class="social-icon-btn"><i class="bi bi-linkedin"></i></a>
+            <a href="#" class="social-icon-btn"><i class="bi bi-globe"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="about-card text-center p-4">
+          <img src="https://ui-avatars.com/api/?name=Elena+Rostova&background=f43f5e&color=fff" class="team-avatar-frame" alt="Elena Rostova">
+          <h5 class="fw-bold text-dark mb-1">Elena Rostova</h5>
+          <div class="text-danger extra-small fw-bold mb-2">Director of Student Success</div>
+          <p class="text-muted extra-small mb-3">Career strategist helping engineers transition into high-growth roles at tech startups.</p>
+          <div class="d-flex justify-content-center gap-2">
+            <a href="#" class="social-icon-btn"><i class="bi bi-linkedin"></i></a>
+            <a href="#" class="social-icon-btn"><i class="bi bi-envelope-fill"></i></a>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
 
-<div class="container pb-5 reveal">
-    <div class="p-5 text-center shadow-2xl bg-dark text-white rounded-5" style="background: linear-gradient(135deg, #4f46e5 0%, #0f172a 100%);">
-        <h2 class="fw-black mb-3 display-3 tracking-tighter">Provision Your <span class="text-primary">Future</span></h2>
-        <p class="opacity-50 mb-5 fs-5 font-mono">Join the most rigorous technical courses on the MentorLMS</p>
-        <a href="{% url 'courses' %}" class="btn btn-light btn-lg px-5 rounded-pill fw-black py-4 shadow-2xl">ENROLL NOW</a>
+    <!-- Ready to Start Learning CTA Card -->
+    <div class="p-5 rounded-4 text-center text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
+      <h2 class="display-6 fw-bold mb-3">Ready to Accelerate Your Tech Career?</h2>
+      <p class="text-white-50 max-w-lg mx-auto mb-4" style="max-width: 600px;">
+        Join thousands of ambitious developers, engineers, and tech creators already building production-grade skills on Mentor.
+      </p>
+      <div class="d-flex justify-content-center gap-3">
+        <a href="{% url 'courses' %}" class="btn btn-light rounded-pill px-5 py-3 fw-bold text-primary shadow-sm">
+          Explore Courses
+        </a>
+        <a href="{% url 'contact' %}" class="btn btn-outline-light rounded-pill px-4 py-3 fw-semibold">
+          Contact Sales & Team
+        </a>
+      </div>
     </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Reveal Interaction
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) entry.target.classList.add('visible');
-      });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-    // Swiper
-    new Swiper('.story-swiper', { loop: true, autoplay: { delay: 3000 } });
-
-    // Counters
-    const successNode = document.getElementById('success-rate');
-    let start = 0;
-    const end = 92;
-    const timer = setInterval(() => {
-        start += 1;
-        successNode.innerText = start + '%';
-        if (start == end) clearInterval(timer);
-    }, 25);
-});
-</script>
+  </div>
+</section>
 {% endblock %}

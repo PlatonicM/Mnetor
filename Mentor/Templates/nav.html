@@ -1,332 +1,751 @@
 {% load static %}
 <header id="header" class="main-header">
-<style>
-  /* --- Design Tokens: Vivid Omega System --- */
-  :root {
-    --clr-primary: #4f46e5; /* Electric Indigo */
-    --clr-primary-hover: #4338ca;
-    --clr-primary-soft: rgba(79, 70, 229, 0.08);
-    --clr-accent: #f43f5e; /* Rose Neon */
-    --clr-slate-900: #0f172a;
-    --clr-slate-600: #475569;
-    --clr-slate-200: #e2e8f0;
-    --radius-figma: 14px;
-    --shadow-premium: 0px 15px 40px -12px rgba(79, 70, 229, 0.15);
-    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
+  <style>
+    /* --- Design Tokens: Vivid Omega System --- */
+    :root {
+      --clr-primary: #4f46e5;
+      /* Electric Indigo */
+      --clr-primary-hover: #4338ca;
+      --clr-primary-soft: rgba(79, 70, 229, 0.08);
+      --clr-accent: #f43f5e;
+      /* Rose Neon */
+      --clr-slate-900: #0f172a;
+      --clr-slate-600: #475569;
+      --clr-slate-200: #e2e8f0;
+      --radius-figma: 14px;
+      --shadow-premium: 0px 15px 40px -12px rgba(79, 70, 229, 0.15);
+      --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
 
-  .main-header {
-    width: 100%;
-    background: #ffffff;
-    border-bottom: 1px solid var(--clr-slate-200);
-    z-index: 9999;
-    position: sticky;
-    top: 0;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    padding: 0 24px;
-  }
+    .main-header {
+      width: 100%;
+      background: #ffffff;
+      border-bottom: 1px solid var(--clr-slate-200);
+      z-index: 9999;
+      position: sticky;
+      top: 0;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 0 32px;
+    }
 
-  .main-header.scrolled {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding: 2px 24px;
-    box-shadow: var(--shadow-premium);
-    border-bottom-color: rgba(79, 70, 229, 0.1);
-  }
+    .main-header.scrolled {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-premium);
+      border-bottom-color: rgba(79, 70, 229, 0.12);
+    }
 
-  .navbar-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 80px;
-    max-width: 1440px;
-    margin: 0 auto;
-    transition: 0.3s;
-  }
-  .main-header.scrolled .navbar-container { height: 70px; }
+    .navbar-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      transition: 0.3s;
+    }
 
-  /* --- BRAND NODE --- */
-  .nav-brand-premium {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    text-decoration: none !important;
-  }
-  .brand-logo-container {
-    background: linear-gradient(135deg, var(--clr-primary), #a855f7); /* Indigo to Purple */
-    color: white;
-    width: 44px; height: 44px;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
-    box-shadow: 0 8px 20px -4px rgba(79, 70, 229, 0.4);
-    transition: all 0.4s var(--spring-easing);
-  }
-  .brand-text {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 26px;
-    font-weight: 800;
-    color: var(--clr-slate-900);
-    letter-spacing: -1.5px;
-    line-height: 1;
-  }
-  .nav-brand-premium:hover .brand-logo-container { transform: scale(1.1) rotate(-5deg); filter: brightness(1.1); }
+    /* --- BRAND NODE --- */
+    .nav-brand-premium {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none !important;
+    }
 
-  /* --- NAVIGATION HUB --- */
-  .nav-menu { display: flex; align-items: center; gap: 8px; height: 100%; }
-  .nav-link-node {
-    color: var(--clr-slate-600);
-    font-weight: 700;
-    text-decoration: none !important;
-    font-size: 15px;
-    padding: 10px 18px;
-    position: relative;
-    transition: color 0.3s ease;
-    display: flex;
-    align-items: center;
-    height: 100%;
-  }
+    .brand-logo-container {
+      background: linear-gradient(135deg, var(--clr-primary), #7c3aed);
+      color: white;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 8px 20px -4px rgba(79, 70, 229, 0.4);
+      transition: all 0.4s var(--spring-easing);
+    }
 
-  .nav-link-node::after {
-    content: '';
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    width: 0;
-    height: 3px;
-    background: var(--clr-primary);
-    border-radius: 4px;
-    transition: all 0.3s var(--spring-easing);
-    transform: translateX(-50%);
-  }
+    .brand-text {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--clr-primary), #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -1.2px;
+      line-height: 1;
+    }
 
-  .nav-link-node:hover { color: var(--clr-primary); }
-  .nav-link-node:hover::after, 
-  .nav-link-node.active-node::after {
-    width: 24px;
-  }
-  .nav-link-node.active-node { color: var(--clr-primary); }
+    .nav-brand-premium:hover .brand-logo-container {
+      transform: scale(1.08) rotate(-4deg);
+    }
 
-  /* --- BADGE NODE --- */
-  .badge-node {
-    position: absolute; top: 4px; right: 4px; 
-    background: var(--clr-accent); /* Vibrant Rose */
-    color: white;
-    border-radius: 7px; font-size: 9px; 
-    width: 18px; height: 18px;
-    display: flex; align-items: center; justify-content: center; 
-    font-weight: 900; border: 2px solid #fff;
-    box-shadow: 0 4px 8px rgba(244, 63, 94, 0.3);
-  }
+    /* --- NAVIGATION HUB --- */
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 100%;
+    }
 
-  /* --- ICON ACTIONS --- */
-  .icon-btn-node {
-    position: relative; color: var(--clr-slate-600); font-size: 22px; 
-    width: 44px; height: 44px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    transition: 0.3s; text-decoration: none !important;
-  }
-  .icon-btn-node:hover { background: var(--clr-primary-soft); color: var(--clr-primary); }
-  #cart-handshake-node:hover { color: var(--clr-accent); background: rgba(244, 63, 94, 0.05); }
+    .nav-link-node {
+      color: var(--clr-slate-600);
+      font-weight: 700;
+      text-decoration: none !important;
+      font-size: 15px;
+      padding: 10px 18px;
+      position: relative;
+      transition: color 0.3s ease;
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
 
-  /* --- AVATAR --- */
-  .avatar-handshake {
-    width: 44px; height: 44px;
-    padding: 2px;
-    border-radius: 12px; /* Standardized to match other icons */
-    background: white;
-    border: 2px solid var(--clr-slate-200);
-    transition: 0.5s var(--spring-easing);
-    cursor: pointer;
-    overflow: hidden;
-  }
-  .avatar-handshake:hover { border-color: var(--clr-primary); transform: scale(1.05); }
-  .nav-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+    .nav-link-node::after {
+      content: '';
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      width: 0;
+      height: 3px;
+      background: var(--clr-primary);
+      border-radius: 4px;
+      transition: all 0.3s var(--spring-easing);
+      transform: translateX(-50%);
+    }
 
-  /* --- AUTH BUTTONS --- */
-  .btn-sign-in-node {
-    background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-hover));
-    border: none;
-    color: white !important;
-    padding: 10px 24px;
-    font-weight: 800;
-    border-radius: 12px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.25);
-  }
-  .btn-sign-in-node:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
-    filter: brightness(1.1);
-  }
+    .nav-link-node:hover {
+      color: var(--clr-primary);
+    }
 
-  @media (max-width: 1024px) { .nav-menu { display: none; } }
-</style>
+    .nav-link-node:hover::after,
+    .nav-link-node.active-node::after {
+      width: 24px;
+    }
 
-<div class="navbar-container">
-  <a href="{% url 'home' %}" class="nav-brand-premium">
+    .nav-link-node.active-node {
+      color: var(--clr-primary);
+    }
+
+    /* --- BADGE NODE --- */
+    .badge-node {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: var(--clr-accent);
+      color: white;
+      border-radius: 50%;
+      font-size: 9px;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      border: 2px solid #fff;
+      box-shadow: 0 4px 8px rgba(244, 63, 94, 0.3);
+    }
+
+    /* --- ICON ACTIONS --- */
+    .icon-btn-node {
+      position: relative;
+      color: var(--clr-slate-600);
+      font-size: 22px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s;
+      text-decoration: none !important;
+    }
+
+    .icon-btn-node:hover {
+      background: var(--clr-primary-soft);
+      color: var(--clr-primary);
+    }
+
+    #cart-handshake-node:hover {
+      color: var(--clr-accent);
+      background: rgba(244, 63, 94, 0.05);
+    }
+
+    /* --- AVATAR --- */
+    .avatar-handshake {
+      width: 44px;
+      height: 44px;
+      padding: 2px;
+      border-radius: 12px;
+      background: white;
+      border: 2px solid var(--clr-slate-200);
+      transition: 0.3s var(--spring-easing);
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .avatar-handshake:hover {
+      border-color: var(--clr-primary);
+      transform: scale(1.05);
+    }
+
+    .nav-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    /* --- AUTH BUTTONS --- */
+    .btn-sign-in-node {
+      background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-hover));
+      border: none;
+      color: white !important;
+      padding: 10px 24px;
+      font-weight: 800;
+      border-radius: 12px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(79, 70, 229, 0.25);
+    }
+
+    .btn-sign-in-node:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+    }
+
+    /* --- OTP INPUT BOXES --- */
+    .del-otp-digit-box {
+      width: 52px;
+      height: 58px;
+      font-size: 24px;
+      font-weight: 900;
+      text-align: center;
+      border: 2px solid var(--clr-slate-200);
+      border-radius: 14px;
+      background: #f8fafc;
+      color: #0f172a;
+      transition: all 0.2s ease;
+    }
+
+    .del-otp-digit-box:focus {
+      border-color: #f43f5e;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.15);
+      outline: none;
+    }
+
+    /* --- AUTO-OPEN HOVER DROPDOWN & HIGH Z-INDEX --- */
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-menu {
+      z-index: 10500 !important;
+    }
+
+    @media (min-width: 992px) {
+      .dropdown-hover-auto:hover .dropdown-menu {
+        display: block !important;
+        margin-top: 0 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) !important;
+      }
+
+      .dropdown-hover-auto .dropdown-menu {
+        display: block !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transform: translateY(10px) !important;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .nav-menu {
+        display: none;
+      }
+    }
+  </style>
+
+  <div class="navbar-container">
+    <a href="{% url 'home' %}" class="nav-brand-premium">
       <div class="brand-logo-container">
-          <i class="bi bi-mortarboard-fill"></i>
+        <i class="bi bi-mortarboard-fill"></i>
       </div>
-      <span class="brand-text">Mentor<span style="color: var(--clr-primary);">LMS</span></span>
-  </a>
+      <span class="brand-text">Mentor</span>
+    </a>
 
-  <div class="nav-menu">
-    <a href="{% url 'home' %}" class="nav-link-node {% if request.resolver_match.url_name == 'home' %}active-node{% endif %}">Home</a>
-    <a href="{% url 'courses' %}" class="nav-link-node {% if request.resolver_match.url_name == 'courses' %}active-node{% endif %}">Catalog</a>
-    <a href="{% url 'about' %}" class="nav-link-node {% if request.resolver_match.url_name == 'about' %}active-node{% endif %}">About</a>
-  </div>
+    <!-- Desktop Navigation Menu -->
+    <div class="nav-menu">
+      <a href="{% url 'home' %}"
+        class="nav-link-node {% if request.resolver_match.url_name == 'home' %}active-node{% endif %}">Home</a>
+      <a href="{% url 'courses' %}"
+        class="nav-link-node {% if request.resolver_match.url_name == 'courses' %}active-node{% endif %}">Catalog</a>
+      <a href="{% url 'blog_list' %}"
+        class="nav-link-node {% if request.resolver_match.url_name == 'blog_list' or request.resolver_match.url_name == 'blog_detail' %}active-node{% endif %}">Blog</a>
+      <a href="{% url 'about' %}"
+        class="nav-link-node {% if request.resolver_match.url_name == 'about' %}active-node{% endif %}">About</a>
+    </div>
 
-  <div class="d-flex align-items-center">
-    <div class="icon-cluster d-flex align-items-center gap-2">
+    <div class="d-flex align-items-center">
+      <div class="icon-cluster d-flex align-items-center gap-2">
         <a href="{% url 'cart' %}" class="icon-btn-node" id="cart-handshake-node">
           <i class="bi bi-bag-heart-fill"></i>
           <span class="badge-node" id="cart-count-badge">{{ cart_count|default:"0" }}</span>
         </a>
 
         {% if user.is_authenticated %}
-        <div class="dropdown">
-            <a href="#" class="icon-btn-node" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-bell-fill"></i>
-                <span class="badge-node bg-primary" style="background-color: var(--clr-primary) !important;" id="notif-count-badge">{{ unread_notifications_count|default:"0" }}</span>
+        <div class="dropdown dropdown-hover-auto">
+          <a href="#" class="icon-btn-node" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-bell-fill"></i>
+            {% if notif_unread_count > 0 %}
+            <span class="badge-node bg-danger" id="notif-count-badge">{{ notif_unread_count }}</span>
+            {% else %}
+            <span class="badge-node bg-primary" style="background-color: var(--clr-primary) !important;"
+              id="notif-count-badge">0</span>
+            {% endif %}
+          </a>
+          <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-3 mt-2"
+            style="border-radius: 20px; min-width: 320px; max-height: 420px; overflow-y: auto; background: #ffffff;">
+            <div class="d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom">
+              <h6 class="fw-bold text-dark mb-0 extra-small text-uppercase" style="letter-spacing: 0.5px;">Notifications</h6>
+              <span class="badge bg-primary-subtle text-primary rounded-pill extra-small fw-bold">{{ notif_unread_count|default:0 }} New</span>
+            </div>
+
+            <div class="notification-items-wrapper">
+              {% for n in recent_notifications %}
+              <a class="dropdown-item py-2 px-3 rounded-3 mb-1 border-bottom text-wrap" href="{{ n.url|default:'#' }}">
+                <div class="fw-bold text-dark small" style="font-size: 0.85rem;">{{ n.title }}</div>
+                <div class="text-muted extra-small text-truncate mb-1" style="font-size: 0.75rem;">{{ n.message|truncatechars:60 }}</div>
+                <div class="text-primary extra-small fw-semibold" style="font-size: 0.7rem;">{{ n.created_at|timesince }} ago</div>
+              </a>
+              {% empty %}
+              <div class="p-3 text-center text-muted extra-small">No new notifications</div>
+              {% endfor %}
+            </div>
+
+            <a class="dropdown-item py-2 px-3 rounded-3 text-center text-primary fw-bold extra-small mt-2"
+              href="{% url 'notifications' %}" style="letter-spacing: 0.5px; background: #f8fafc;">
+              VIEW ALL NOTIFICATIONS <i class="bi bi-arrow-right ms-1"></i>
             </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow-premium border-0 p-2 mt-3" style="border-radius: 18px; min-width: 280px;">
-                <!-- <li><h6 class="dropdown-header fw-black extra-small text-muted" style="font-size: 10px; letter-spacing: 1px;">NOTIFICATIONS</h6></li> -->
-                <!-- <li><hr class="dropdown-divider opacity-50"></li> -->
-                <li>
-                  <a class="dropdown-item py-2 text-center text-primary fw-bold extra-small" href="{% url 'notifications' %}" style="letter-spacing: 1px; font-size: 11px;">
-                    VIEW ALL NOTIFICATIONS <i class="bi bi-arrow-right ms-1"></i>
-                  </a>
-                </li>
-            </ul>
+          </div>
         </div>
 
-        <div class="dropdown ms-2">
-            <div class="avatar-handshake shadow-sm" data-bs-toggle="dropdown">
-                <img src="{% if user.profile_image %}{{ user.profile_image.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=4f46e5&color=fff{% endif %}" 
-                     class="nav-avatar-img" alt="{{ user.username }}">
-            </div>
-            <div class="dropdown-menu dropdown-menu-end shadow-premium border-0 p-2 mt-3" style="border-radius: 20px; min-width: 260px;">
-              <div class="px-4 py-3 bg-light rounded-4 mb-2">
-                  <p class="small fw-black mb-0 text-dark">{{ user.username|upper }}</p>
-                  <p class="text-muted mb-0 extra-small" style="font-size: 10px;">{{ user.email }}</p>
+        <div class="dropdown dropdown-hover-auto ms-2">
+          <div class="avatar-handshake shadow-sm" data-bs-toggle="dropdown">
+            <img src="{{ user_avatar_url }}" class="nav-avatar-img" alt="{{ user.username }}">
+          </div>
+          <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-3 mt-2"
+            style="border-radius: 20px; min-width: 270px; background: #ffffff;">
+
+            <!-- User Header -->
+            <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 mb-3 border">
+              <img src="{{ user_avatar_url }}" class="rounded-circle flex-shrink-0"
+                style="width: 42px; height: 42px; object-fit: cover;">
+              <div class="overflow-hidden">
+                <div class="fw-bold text-dark text-truncate small" style="font-size: 0.9rem; line-height: 1.2;">{{ user.get_full_name|default:user.username }}</div>
+                <div class="text-muted text-truncate extra-small mt-0.5" style="font-size: 0.75rem;">{{ user.email|default:"" }}</div>
               </div>
-              <a class="dropdown-item py-2 rounded-3" href="{% url 'profile' %}"><i class="bi bi-grid-1x2-fill me-2"></i> Progress View</a>
-              <a class="dropdown-item py-2 rounded-3" href="{% url 'mycourses' %}"><i class="bi bi-play-circle-fill me-2"></i> My Courses</a>
-              <div class="dropdown-divider opacity-50"></div>
-              <a class="dropdown-item py-2 rounded-3 text-danger" href="{% url 'logout' %}"><i class="bi bi-power me-2"></i> Logout Session</a>
             </div>
+
+            <!-- Profile Menu Items -->
+            <a class="dropdown-item py-2 px-3 rounded-3 mb-1 fw-semibold d-flex align-items-center gap-2"
+              href="{% url 'dashboard' %}">
+              <i class="bi bi-speedometer2 text-primary"></i> Dashboard
+            </a>
+            <a class="dropdown-item py-2 px-3 rounded-3 mb-1 fw-semibold d-flex align-items-center gap-2"
+              href="{% url 'mycourses' %}">
+              <i class="bi bi-journal-check text-primary"></i> My Curriculum
+            </a>
+            <!-- <a class="dropdown-item py-2 px-3 rounded-3 mb-1 fw-semibold d-flex align-items-center gap-2"
+              href="{% url 'hub' %}">
+              <i class="bi bi-grid-fill text-primary"></i> Learning Hub
+            </a> -->
+            <a class="dropdown-item py-2 px-3 rounded-3 mb-1 fw-semibold d-flex align-items-center gap-2"
+              href="{% url 'profile' %}">
+              <i class="bi bi-person-circle text-primary"></i> My Profile
+            </a>
+            <a class="dropdown-item py-2 px-3 rounded-3 mb-1 fw-semibold d-flex align-items-center gap-2 bg-primary bg-opacity-10 text-primary"
+              href="{% url 'admin_dashboard' %}">
+              <i class="bi bi-cpu-fill text-primary"></i> Admin
+            </a>
+            <a class="dropdown-item py-2 px-3 rounded-3 mb-1 fw-semibold d-flex align-items-center gap-2"
+              href="{% url 'profile_history' %}">
+              <i class="bi bi-clock-history text-primary"></i> Account History
+            </a>
+
+            <div class="dropdown-divider my-2 opacity-50"></div>
+
+            <a class="dropdown-item py-2 px-3 rounded-3 mb-1 fw-semibold text-danger d-flex align-items-center gap-2"
+              href="{% url 'logout' %}">
+              <i class="bi bi-power"></i> Logout
+            </a>
+
+            <div class="dropdown-divider my-2 opacity-50"></div>
+
+            <a class="dropdown-item py-2 px-3 rounded-3 fw-bold text-danger extra-small d-flex align-items-center gap-2"
+              href="#" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+              <i class="bi bi-trash3-fill"></i> Delete Account
+            </a>
+          </div>
         </div>
         {% else %}
         <div class="d-flex align-items-center gap-3 ms-2">
-            <a href="{% url 'login' %}" class="nav-link-node p-0" style="font-size: 14px;">Login</a>
-            <a href="{% url 'signup' %}" class="btn-sign-in-node text-decoration-none">Sign in</a>
+          <a href="{% url 'login' %}" class="btn-sign-in-node text-decoration-none">Login</a>
         </div>
         {% endif %}
-        
-        <i class="bi bi-list-nested fs-2 d-lg-none cursor-pointer ms-3" onclick="toggleMobileNav()" style="color: var(--clr-slate-900);"></i>
+
+        <!-- Mobile Offcanvas Toggler Button -->
+        <button class="btn border-0 p-2 ms-2 d-lg-none text-dark fs-4" type="button" data-bs-toggle="offcanvas"
+          data-bs-target="#mobileNavDrawer" aria-controls="mobileNavDrawer">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Offcanvas Drawer -->
+  <div class="offcanvas offcanvas-end border-0" tabindex="-1" id="mobileNavDrawer"
+    aria-labelledby="mobileNavDrawerLabel" style="border-top-left-radius: 24px; border-bottom-left-radius: 24px;">
+    <div class="offcanvas-header p-4 border-bottom">
+      <div class="d-flex align-items-center gap-2">
+        <div class="brand-logo-container" style="width: 36px; height: 36px; font-size: 18px;">
+          <i class="bi bi-mortarboard-fill"></i>
+        </div>
+        <span class="brand-text" style="font-size: 22px;">Mentor</span>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+
+    <div class="offcanvas-body p-4 d-flex flex-column justify-content-between">
+      <div>
+        {% if user.is_authenticated %}
+        <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-4 mb-4 border">
+          <img src="{{ user_avatar_url }}" class="rounded-circle flex-shrink-0"
+            style="width: 44px; height: 44px; object-fit: cover;">
+          <div class="overflow-hidden">
+            <div class="fw-bold text-dark text-truncate" style="font-size: 0.95rem;">{{ user.get_full_name|default:user.username }}</div>
+            <div class="text-muted text-truncate extra-small">{{ user.email }}</div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="extra-small text-muted text-uppercase fw-bold mb-2 ms-1">Navigation</div>
+        <div class="d-flex flex-column gap-1 mb-4">
+          <a href="{% url 'home' %}"
+            class="p-3 rounded-3 text-dark fw-bold text-decoration-none bg-light d-flex align-items-center gap-3">
+            <i class="bi bi-house-door-fill text-primary fs-5"></i> Home
+          </a>
+          <a href="{% url 'courses' %}"
+            class="p-3 rounded-3 text-dark fw-bold text-decoration-none d-flex align-items-center gap-3">
+            <i class="bi bi-grid-fill text-primary fs-5"></i> Course Catalog
+          </a>
+          <a href="{% url 'blog_list' %}"
+            class="p-3 rounded-3 text-dark fw-bold text-decoration-none d-flex align-items-center gap-3">
+            <i class="bi bi-journal-code text-primary fs-5"></i> Tech Blog
+          </a>
+          <a href="{% url 'about' %}"
+            class="p-3 rounded-3 text-dark fw-bold text-decoration-none d-flex align-items-center gap-3">
+            <i class="bi bi-info-circle-fill text-primary fs-5"></i> About Platform
+          </a>
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="extra-small text-muted text-uppercase fw-bold mb-2 ms-1">Student Portal</div>
+        <div class="d-flex flex-column gap-1">
+          <a href="{% url 'dashboard' %}"
+            class="p-2.5 rounded-3 text-dark fw-semibold text-decoration-none d-flex align-items-center gap-3">
+            <i class="bi bi-speedometer2 text-primary fs-5"></i> Dashboard
+          </a>
+          <a href="{% url 'mycourses' %}"
+            class="p-2.5 rounded-3 text-dark fw-semibold text-decoration-none d-flex align-items-center gap-3">
+            <i class="bi bi-journal-check text-primary fs-5"></i> My Curriculum
+          </a>
+          <a href="{% url 'hub' %}"
+            class="p-2.5 rounded-3 text-dark fw-semibold text-decoration-none d-flex align-items-center gap-3">
+            <i class="bi bi-layout-text-sidebar-reverse text-primary fs-5"></i> Learning Hub
+          </a>
+          <a href="{% url 'profile' %}"
+            class="p-2.5 rounded-3 text-dark fw-semibold text-decoration-none d-flex align-items-center gap-3">
+            <i class="bi bi-person-circle text-primary fs-5"></i> Profile
+          </a>
+          <a href="{% url 'admin_dashboard' %}"
+            class="p-2.5 rounded-3 text-primary fw-bold text-decoration-none d-flex align-items-center gap-3 bg-primary bg-opacity-10">
+            <i class="bi bi-cpu-fill text-primary fs-5"></i> Admin
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="pt-4 border-top">
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}"
+          class="btn btn-outline-danger w-100 py-3 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2">
+          <i class="bi bi-power"></i> Logout Account
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}"
+          class="btn btn-primary w-100 py-3 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2"
+          style="background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-hover)); border: none;">
+          <i class="bi bi-box-arrow-in-right"></i> Login / Register
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</header>
+
+{% if user.is_authenticated %}
+<!-- MODERN PERMANENT ACCOUNT DELETION MODAL -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+    <div class="modal-content border-0 shadow-2xl rounded-4 overflow-hidden" style="border-radius: 24px;">
+
+      <!-- Modal Header -->
+      <div class="modal-header border-0 text-white p-4"
+        style="background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center shadow-sm"
+            style="width: 44px; height: 44px;">
+            <i class="bi bi-shield-exclamation fs-4"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold mb-0 text-white" id="deleteAccountModalLabel"
+              style="font-size: 1.15rem; letter-spacing: -0.3px;">Delete Account</h5>
+            <span class="text-white-50 extra-small font-mono text-uppercase"
+              style="font-size: 0.7rem; letter-spacing: 0.5px;">Irreversible Action</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white opacity-75" data-bs-dismiss="modal"
+          aria-label="Close"></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body p-4 bg-white">
+        <!-- Step 1: Warning Notice -->
+        <div id="del-step-1">
+          <div class="alert border-0 rounded-4 p-3 mb-4 d-flex gap-3 align-items-start"
+            style="background: #FEF2F2; border: 1px solid #FCA5A5 !important; color: #991B1B;">
+            <i class="bi bi-exclamation-triangle-fill fs-4 flex-shrink-0 text-danger mt-1"></i>
+            <div class="small">
+              <strong class="d-block mb-1 text-danger">Permanent Data Purge Warning</strong>
+              Deleting your account will permanently erase your profile, enrolled courses, certificates, and learning
+              progress from our database.
+            </div>
+          </div>
+
+          <div class="text-center mb-4">
+            <p class="small text-muted mb-2">We will dispatch a <strong>Security Code</strong> to verify
+              ownership of your registered email:</p>
+            <span class="badge bg-light text-dark border px-3 py-2 fw-bold font-mono rounded-pill"
+              style="font-size: 0.85rem;">{{ user.email }}</span>
+          </div>
+
+          <button type="button"
+            class="btn btn-danger w-100 py-3 rounded-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
+            id="btn-request-delete-otp" onclick="requestDeleteOTP()"
+            style="background: linear-gradient(135deg, #EF4444, #DC2626); border: none; font-size: 0.95rem;">
+            <i class="bi bi-send-fill"></i> Send Deletion Code
+          </button>
+        </div>
+
+        <!-- Step 2: 4-Digit OTP Entry & Confirmation (Initially Hidden) -->
+        <div id="del-step-2" style="display: none;">
+          <div class="text-center mb-4">
+            <h6 class="fw-bold text-dark mb-1">Enter Security Verification Code</h6>
+            <p class="extra-small text-muted mb-0">Check your inbox. Code expires in: <span id="del-timer-display"
+                class="fw-bold text-danger">01:00</span></p>
+          </div>
+
+          <!-- 4 Digit Box Inputs -->
+          <div class="d-flex justify-content-center gap-3 mb-4">
+            <input type="text" maxlength="1" class="del-otp-digit-box" id="del-digit-1" autofocus autocomplete="off"
+              pattern="\d*">
+            <input type="text" maxlength="1" class="del-otp-digit-box" id="del-digit-2" autocomplete="off"
+              pattern="\d*">
+            <input type="text" maxlength="1" class="del-otp-digit-box" id="del-digit-3" autocomplete="off"
+              pattern="\d*">
+            <input type="text" maxlength="1" class="del-otp-digit-box" id="del-digit-4" autocomplete="off"
+              pattern="\d*">
+          </div>
+
+          <div id="del-alert-msg" class="alert d-none rounded-3 p-3 small mb-3"></div>
+
+          <button type="button"
+            class="btn btn-danger w-100 py-3 rounded-3 fw-bold shadow-sm mb-3 d-flex align-items-center justify-content-center gap-2"
+            id="btn-confirm-delete-account" onclick="confirmDeleteAccount()"
+            style="background: linear-gradient(135deg, #EF4444, #B91C1C); border: none; font-size: 0.95rem;">
+            <i class="bi bi-trash3-fill"></i> Confirm Permanent Deletion
+          </button>
+
+          <div class="text-center">
+            <button type="button" class="btn btn-link text-muted extra-small text-decoration-none fw-semibold"
+              onclick="requestDeleteOTP()">
+              <i class="bi bi-arrow-clockwise me-1"></i> Resend Verification Code
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
-</header>
-
-<!-- <script>
-  window.addEventListener('scroll', () => {
-    const header = document.getElementById('header');
-    header.classList.toggle('scrolled', window.scrollY > 40);
-  });
-
-  window.syncCart = function(newCount) {
-    const badge = document.getElementById('cart-count-badge');
-    if (badge) {
-      badge.innerText = newCount;
-      badge.classList.remove('ajax-pulse');
-      void badge.offsetWidth; 
-      badge.classList.add('ajax-pulse');
-    }
-  };
-</script> -->
-
-
+{% endif %}
 
 <script>
-  // --- Header Scroll Logic ---
   window.addEventListener('scroll', () => {
     const header = document.getElementById('header');
     if (header) header.classList.toggle('scrolled', window.scrollY > 40);
   });
 
-  // --- Live Cart Logic ---
-  // Call this function whenever a product is added or removed via AJAX
-  window.syncCart = function(newCount) {
+  window.syncCart = function (newCount) {
     const badge = document.getElementById('cart-count-badge');
     if (badge) {
       badge.innerText = newCount;
-      // Trigger CSS Pulse Animation
-      badge.classList.remove('ajax-pulse');
-      void badge.offsetWidth; 
-      badge.classList.add('ajax-pulse');
-      
-      // Hide badge if count is 0
       badge.style.display = newCount > 0 ? 'flex' : 'none';
     }
   };
 
-  // --- Live Notification Logic ---
-  // let notifications = [
-  //   { id: 1, text: "Course 'Python Pro' added to your library", time: "2m ago" },
-  //   { id: 2, text: "New mentor 'Zaid Shaikh' is now live", time: "1h ago" }
-  // ];
+  // --- ACCOUNT DELETION OTP JS HANDSHAKE ---
+  let delTimerInterval = null;
 
-  window.updateNotifications = function() {
-    const countBadge = document.getElementById('notif-count-badge');
-    const notifList = document.getElementById('notif-list');
-    
-    // Update Count
-    if (countBadge) {
-      countBadge.innerText = notifications.length;
-      countBadge.style.display = notifications.length > 0 ? 'flex' : 'none';
-    }
+  function requestDeleteOTP() {
+    const btn = document.getElementById('btn-request-delete-otp');
+    if (btn) btn.disabled = true;
 
-    // Render List
-    if (notifList) {
-      if (notifications.length === 0) {
-        notifList.innerHTML = '<li class="p-3 text-center text-muted small">No new notifications</li>';
-      } else {
-        notifList.innerHTML = notifications.map(n => `
-          <li class="p-3 border-bottom d-flex justify-content-between align-items-start notif-item" id="notif-${n.id}">
-            <div>
-              <div class="small fw-bold text-dark">${n.text}</div>
-              <div class="extra-small text-muted">${n.time}</div>
-            </div>
-            <button onclick="removeNotification(${n.id})" class="btn btn-sm text-danger p-0 ms-2">
-              <i class="bi bi-x-circle-fill"></i>
-            </button>
-          </li>
-        `).join('');
+    fetch("{% url 'send_delete_otp' %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/json"
       }
-    }
-  };
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (btn) btn.disabled = false;
+        if (data.success) {
+          document.getElementById('del-step-1').style.display = 'none';
+          document.getElementById('del-step-2').style.display = 'block';
+          setupDelOTPInputs();
+          startDelTimer(60);
+        } else {
+          alert(data.message || "Failed to send code.");
+        }
+      })
+      .catch(err => {
+        if (btn) btn.disabled = false;
+        alert("Network error sending deletion code.");
+      });
+  }
 
-  window.removeNotification = function(id) {
-    // Filter out the notification
-    notifications = notifications.filter(n => n.id !== id);
-    
-    // Animate removal in UI
-    const el = document.getElementById(`notif-${id}`);
-    if (el) {
-      el.style.opacity = '0';
-      el.style.transform = 'translateX(20px)';
-      setTimeout(() => updateNotifications(), 300);
-    } else {
-      updateNotifications();
-    }
-  };
+  function setupDelOTPInputs() {
+    const boxes = [
+      document.getElementById('del-digit-1'),
+      document.getElementById('del-digit-2'),
+      document.getElementById('del-digit-3'),
+      document.getElementById('del-digit-4')
+    ];
 
-  // Initialize on load
-  document.addEventListener('DOMContentLoaded', () => {
-    updateNotifications();
-  });
+    boxes[0].focus();
+
+    boxes.forEach((box, idx) => {
+      box.value = '';
+      box.addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (val.length === 1 && idx < 3) {
+          boxes[idx + 1].focus();
+        }
+        if (boxes.every(b => b.value.length === 1)) {
+          confirmDeleteAccount();
+        }
+      });
+
+      box.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !box.value && idx > 0) {
+          boxes[idx - 1].focus();
+        }
+      });
+    });
+  }
+
+  function startDelTimer(seconds) {
+    clearInterval(delTimerInterval);
+    let rem = seconds;
+    const display = document.getElementById('del-timer-display');
+
+    delTimerInterval = setInterval(() => {
+      rem--;
+      const m = String(Math.floor(rem / 60)).padStart(2, '0');
+      const s = String(rem % 60).padStart(2, '0');
+      if (display) display.innerText = `${m}:${s}`;
+
+      if (rem <= 0) {
+        clearInterval(delTimerInterval);
+        if (display) display.innerText = "00:00 (EXPIRED)";
+      }
+    }, 1000);
+  }
+
+  function confirmDeleteAccount() {
+    const d1 = document.getElementById('del-digit-1').value;
+    const d2 = document.getElementById('del-digit-2').value;
+    const d3 = document.getElementById('del-digit-3').value;
+    const d4 = document.getElementById('del-digit-4').value;
+    const code = `${d1}${d2}${d3}${d4}`;
+
+    const alertBox = document.getElementById('del-alert-msg');
+    const confirmBtn = document.getElementById('btn-confirm-delete-account');
+
+    if (code.length !== 4) {
+      if (alertBox) {
+        alertBox.className = "alert alert-warning rounded-4 p-3 small mb-3";
+        alertBox.innerText = "Please enter all 4 digits.";
+      }
+      return;
+    }
+
+    if (confirmBtn) confirmBtn.disabled = true;
+
+    fetch("{% url 'verify_delete_otp' %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ otp_code: code })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (confirmBtn) confirmBtn.disabled = false;
+        if (data.success) {
+          if (alertBox) {
+            alertBox.className = "alert alert-success rounded-4 p-3 small mb-3";
+            alertBox.innerText = "Account deleted! Redirecting...";
+          }
+          setTimeout(() => {
+            window.location.href = data.redirect_url || "/";
+          }, 1000);
+        } else {
+          if (alertBox) {
+            alertBox.className = "alert alert-danger rounded-4 p-3 small mb-3";
+            alertBox.innerText = data.message || "Invalid or expired code.";
+          }
+        }
+      })
+      .catch(err => {
+        if (confirmBtn) confirmBtn.disabled = false;
+        if (alertBox) {
+          alertBox.className = "alert alert-danger rounded-4 p-3 small mb-3";
+          alertBox.innerText = "Error completing account deletion.";
+        }
+      });
+  }
 </script>

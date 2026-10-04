@@ -1,256 +1,550 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Analytical Hub | MentorLMS{% endblock %}
+{% block title %}Pricing & Plans | Mentor{% endblock title %}
 
 {% block extra_css %}
 <style>
-/* --- Figma High-Fidelity Tokens --- */
-:root {
-  --figma-bg: #f3f4f6;
-  --figma-card: #ffffff;
-  --figma-primary: #6366f1;
-  --figma-primary-soft: #eef2ff;
-  --figma-secondary: #10b981;
-  --figma-text-main: #111827;
-  --figma-text-muted: #6b7280;
-  --figma-border: #e5e7eb;
-  --radius-figma: 16px;
-  --shadow-figma: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
+    :root {
+        --pricing-primary: #4f46e5;
+        --pricing-primary-hover: #4338ca;
+        --pricing-accent: #10b981;
+        --pricing-dark: #0f172a;
+        --pricing-bg: #f8fafc;
+    }
 
-body { background-color: var(--figma-bg); color: var(--figma-text-main); font-family: 'Inter', sans-serif; }
+    body {
+        background-color: var(--pricing-bg);
+    }
 
-/* --- Staggered Reveal --- */
-.reveal { opacity: 0; transform: translateY(20px); transition: 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
-.reveal.visible { opacity: 1; transform: translateY(0); }
+    .pricing-hero {
+        position: relative;
+        padding: 70px 0 50px;
+        background: radial-gradient(circle at 50% 0%, rgba(79, 70, 229, 0.08) 0%, rgba(248, 250, 252, 0) 70%);
+    }
 
-/* --- Navigation & Pulse --- */
-.glass-nav {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--figma-border);
-    border-radius: var(--radius-figma);
-    padding: 12px;
-    position: sticky; top: 24px;
-}
-.pulse-icon {
-    width: 8px; height: 8px; background: var(--figma-secondary);
-    border-radius: 50%; display: inline-block;
-    box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
-    animation: pulse-green 2s infinite;
-}
-@keyframes pulse-green { 0% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0); } }
+    .pricing-badge {
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--pricing-primary);
+        font-size: 13px;
+        font-weight: 700;
+        padding: 6px 16px;
+        border-radius: 50px;
+        display: inline-block;
+        border: 1px solid rgba(79, 70, 229, 0.2);
+    }
 
-/* --- Bento & Analytical Cards --- */
-.bento-card {
-    background: var(--figma-card); border: 1px solid var(--figma-border);
-    border-radius: var(--radius-figma); padding: 24px;
-    transition: all 0.3s ease;
-}
-.bento-card:hover { border-color: var(--figma-primary); transform: translateY(-2px); box-shadow: var(--shadow-figma); }
+    .toggle-container {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 50px;
+        padding: 5px;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
 
-.stat-trend { font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; }
-.trend-up { background: #d1fae5; color: #065f46; }
+    .toggle-btn {
+        border: none;
+        background: transparent;
+        padding: 8px 22px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #64748b;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
 
-/* --- Deployment Micro-Card --- */
-.deployment-card {
-    border: 1px solid var(--figma-border); border-radius: 14px;
-    background: #fff; overflow: hidden; transition: 0.3s;
-}
-.deployment-card:hover { border-color: var(--figma-primary); background: #fcfcff; }
+    .toggle-btn.active {
+        background: var(--pricing-primary);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
 
-/* --- Skill Matrix --- */
-.skill-bar-bg { height: 6px; background: #e5e7eb; border-radius: 10px; position: relative; }
-.skill-bar-fill { height: 100%; border-radius: 10px; background: var(--figma-primary); transition: 1.5s ease-out; width: 0; }
+    /* Pricing Card Styles */
+    .pricing-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        padding: 35px 30px;
+        position: relative;
+        transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
 
-/* --- Floating AI (AJAX Interface) --- */
-.ai-fab-modern {
-    position: fixed; bottom: 30px; right: 30px;
-    width: 60px; height: 60px; background: var(--figma-text-main);
-    color: white; border-radius: 18px; display: flex;
-    align-items: center; justify-content: center; font-size: 24px;
-    cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    z-index: 1000; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.ai-fab-modern:hover { transform: scale(1.1) rotate(5deg); background: var(--figma-primary); }
+    .pricing-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
+    }
+
+    .pricing-card.featured {
+        border: 2px solid var(--pricing-primary);
+        box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.18);
+        background: linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%);
+    }
+
+    .featured-badge {
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, var(--pricing-primary), #7c3aed);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        padding: 5px 18px;
+        border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+    }
+
+    .price-amount {
+        font-size: 46px;
+        font-weight: 800;
+        color: var(--pricing-dark);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        line-height: 1;
+    }
+
+    .price-period {
+        color: #64748b;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 25px 0 30px;
+        flex-grow: 1;
+    }
+
+    .feature-list li {
+        padding: 10px 0;
+        font-size: 14.5px;
+        color: #334155;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .feature-list li i {
+        font-size: 18px;
+    }
+
+    .feature-list li i.bi-check-circle-fill {
+        color: var(--pricing-accent);
+    }
+
+    .feature-list li i.bi-x-circle {
+        color: #cbd5e1;
+    }
+
+    /* Comparison Table */
+    .comparison-table-card {
+        background: #ffffff;
+        border-radius: 24px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    }
+
+    .comparison-table th {
+        background: #f8fafc;
+        font-weight: 700;
+        padding: 18px 24px;
+        font-size: 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .comparison-table td {
+        padding: 16px 24px;
+        font-size: 14.5px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* FAQ Accordion */
+    .accordion-pricing .accordion-item {
+        border: 1px solid #e2e8f0;
+        border-radius: 16px !important;
+        margin-bottom: 14px;
+        overflow: hidden;
+    }
+
+    .accordion-pricing .accordion-button {
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--pricing-dark);
+        background: #ffffff;
+        padding: 20px 24px;
+        box-shadow: none !important;
+    }
+
+    .accordion-pricing .accordion-button:not(.collapsed) {
+        background: #f5f3ff;
+        color: var(--pricing-primary);
+    }
+
+    .accordion-pricing .accordion-body {
+        padding: 20px 24px;
+        color: #475569;
+        font-size: 15px;
+        line-height: 1.6;
+    }
 </style>
 {% endblock extra_css %}
 
 {% block content %}
 
-<div class="ai-fab-modern shadow-lg" id="mentorLauncher">
-    <i class="bi bi-stars"></i>
-</div>
+<!-- Pricing Hero Section -->
+<section class="pricing-hero text-center">
+    <div class="container">
+        <span class="pricing-badge mb-3" data-aos="fade-down">
+            <i class="bi bi-rocket-takeoff-fill me-1"></i> Flexible Membership Plans
+        </span>
+        <h1 class="display-4 fw-extrabold text-dark mb-3"
+            style="font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -1.5px;" data-aos="fade-up">
+            Invest in Your Engineering Future
+        </h1>
+        <p class="lead text-muted max-w-2xl mx-auto mb-4" style="max-width: 650px; font-size: 1.15rem;"
+            data-aos="fade-up" data-aos-delay="100">
+            Gain unlimited access to production tracks, 1-on-1 code reviews, and cloud labs. Upgrade or cancel anytime
+            with zero lock-in.
+        </p>
 
-<div class="container-fluid px-lg-5 py-4">
-    <div class="row g-4">
-        
-        <div class="col-lg-2">
-            <div class="glass-nav reveal">
-                <div class="p-3 mb-3 border-bottom">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="pulse-icon"></span>
-                        <span class="fw-bold small text-uppercase">Live Engine</span>
-                    </div>
-                    <small class="text-muted">ID: {{ user.username|upper }}</small>
-                </div>
-                <nav class="d-flex flex-column gap-1">
-                    <a href="#" class="nav-item-figma active"><i class="bi bi-bar-chart-fill me-2"></i> Analytics</a>
-                    <a href="{% url 'courses' %}" class="nav-item-figma"><i class="bi bi-plus-square me-2"></i> Deploy</a>
-                    <a href="#" class="nav-item-figma"><i class="bi bi-lightning-charge me-2"></i> Labs</a>
-                    <a href="#" class="nav-item-figma"><i class="bi bi-shield-check me-2"></i> Verified</a>
-                    <hr class="my-3 opacity-10">
-                    <a href="{% url 'logout' %}" class="nav-item-figma text-danger"><i class="bi bi-power me-2"></i> Exit</a>
-                </nav>
+        <!-- Billing Toggle -->
+        <div class="d-flex align-items-center justify-content-center gap-3 mb-5" data-aos="fade-up"
+            data-aos-delay="150">
+            <div class="toggle-container">
+                <button type="button" class="toggle-btn active" id="btnMonthly" onclick="setBilling('monthly')">Monthly
+                    Billing</button>
+                <button type="button" class="toggle-btn" id="btnAnnually" onclick="setBilling('annually')">Annual
+                    Billing</button>
             </div>
+            <span
+                class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold"
+                style="font-size: 12px;">
+                Save 20% Yearly
+            </span>
         </div>
-
-        <div class="col-lg-7">
-            <div class="row g-3 mb-4">
-                <div class="col-md-4 reveal" style="animation-delay: 0.1s;">
-                    <div class="bento-card">
-                        <small class="text-muted fw-bold text-uppercase mb-2 d-block">Completion Rate</small>
-                        <div class="d-flex align-items-end gap-2">
-                            <h2 class="fw-bold mb-0">74.8%</h2>
-                            <span class="stat-trend trend-up mb-1">+5.2%</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 reveal" style="animation-delay: 0.2s;">
-                    <div class="bento-stat p-0 h-100 border-0">
-                        <div class="bento-card h-100 bg-white border-primary">
-                            <small class="text-primary fw-bold text-uppercase mb-2 d-block">Lab Uptime</small>
-                            <h2 class="fw-bold mb-0">12h 45m</h2>
-                            <small class="text-muted">Total active session</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 reveal" style="animation-delay: 0.3s;">
-                    <div class="bento-card">
-                        <small class="text-muted fw-bold text-uppercase mb-2 d-block">Knowledge XP</small>
-                        <h2 class="fw-bold mb-0">4.2k</h2>
-                        <div class="skill-bar-bg mt-2"><div class="skill-bar-fill bg-warning" style="width: 60%"></div></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="reveal" style="animation-delay: 0.4s;">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold mb-0">Active Deployments ({{ courses|length }})</h5>
-                    <div class="d-flex gap-2">
-                        <input type="text" id="course-filter" class="form-control form-control-sm border-0 shadow-sm" placeholder="Filter parameters..." style="border-radius: 8px;">
-                    </div>
-                </div>
-
-                <div class="row g-3">
-                    {% if courses %}
-                        {% for mc in courses %}
-                        <div class="col-12 course-card-item">
-                            <div class="deployment-card shadow-sm">
-                                <div class="row g-0 align-items-center">
-                                    <div class="col-md-2">
-                                        <img src="{{ mc.course.image.url }}" class="w-100" style="height: 100px; object-fit: cover; opacity: 0.9;" alt="">
-                                    </div>
-                                    <div class="col-md-10 p-3 px-4">
-                                        <div class="row align-items-center">
-                                            <div class="col-md-4">
-                                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 10px;">Deployment Name</small>
-                                                <span class="fw-bold text-truncate d-block">{{ mc.course.name }}</span>
-                                            </div>
-                                            <div class="col-md-3 text-center">
-                                                <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 10px;">Efficiency</small>
-                                                <span class="text-primary fw-extrabold">{{ mc.progress }}%</span>
-                                            </div>
-                                            <div class="col-md-5 d-flex gap-2">
-                                                <a href="/course/{{ mc.course.id }}/" class="btn btn-dark rounded-pill flex-grow-1 fw-bold btn-sm">Access Lab</a>
-                                                <form method="POST" action="{% url 'remove_from_dashboard' mc.course.id %}">
-                                                    {% csrf_token %}
-                                                    <button class="btn btn-outline-danger border-0 rounded-circle btn-sm"><i class="bi bi-x-circle"></i></button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3">
-            <div class="reveal" style="animation-delay: 0.5s;">
-                <div class="bento-card mb-4">
-                    <h6 class="fw-bold mb-3 small text-uppercase">Skill Proficiency</h6>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between small mb-1"><span>Backend Systems</span><span class="fw-bold">88%</span></div>
-                        <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="88%"></div></div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between small mb-1"><span>Frontend/UX</span><span class="fw-bold">42%</span></div>
-                        <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="42%" style="background: var(--figma-secondary);"></div></div>
-                    </div>
-                    <div class="mb-0">
-                        <div class="d-flex justify-content-between small mb-1"><span>Security Protocol</span><span class="fw-bold">15%</span></div>
-                        <div class="skill-bar-bg"><div class="skill-bar-fill" data-width="15%" style="background: var(--figma-accent);"></div></div>
-                    </div>
-                </div>
-
-                <div class="bento-card">
-                    <h6 class="fw-bold mb-3 small text-uppercase">System Suggestions</h6>
-                    <div class="p-3 bg-light rounded-3 mb-0">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="bi bi-cpu text-primary"></i>
-                            <span class="small fw-bold">Optimization Identified</span>
-                        </div>
-                        <p class="text-muted mb-0" style="font-size: 12px; line-height: 1.5;">
-                            User shows high retention in <b>Python</b> logic. We recommend jumping to <b>Module 4: Async Programming</b> to skip foundational review.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
-</div>
+</section>
 
-{% endblock %}
+<!-- Pricing Cards Grid -->
+<section class="pb-5">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+
+            <!-- Tier 1: Starter -->
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="pricing-card">
+                    <div class="mb-3">
+                        <div class="p-3 rounded-4 d-inline-block mb-3" style="background: #f1f5f9; color: #475569;">
+                            <i class="bi bi-journal-code fs-3"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1">Starter Explorer</h4>
+                        <p class="text-muted small">Perfect for beginners exploring foundational tracks.</p>
+                    </div>
+
+                    <div class="d-flex align-items-baseline gap-1 my-3">
+                        <span class="price-amount">$0</span>
+                        <span class="price-period">/ forever free</span>
+                    </div>
+
+                    <ul class="feature-list">
+                        <li><i class="bi bi-check-circle-fill"></i> Access to all free intro courses</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Public community forum discussions</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Basic progress telemetry</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Standard resolution video streaming</li>
+                        <li class="text-muted"><i class="bi bi-x-circle"></i> 1-on-1 mentor code reviews</li>
+                        <li class="text-muted"><i class="bi bi-x-circle"></i> Production cloud lab sandbox</li>
+                        <li class="text-muted"><i class="bi bi-x-circle"></i> Verified LinkedIn certificates</li>
+                    </ul>
+
+                    <a href="{% url 'courses' %}" class="btn btn-outline-dark rounded-pill py-3 fw-bold w-100">
+                        Start Learning Free
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tier 2: Pro (Featured Card) -->
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="250">
+                <div class="pricing-card featured">
+                    <span class="featured-badge">MOST POPULAR</span>
+
+                    <div class="mb-3">
+                        <div class="p-3 rounded-4 d-inline-block mb-3"
+                            style="background: rgba(79, 70, 229, 0.1); color: var(--pricing-primary);">
+                            <i class="bi bi-lightning-charge-fill fs-3"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1">Pro Engineer</h4>
+                        <p class="text-muted small">For ambitious developers seeking full mentorship & labs.</p>
+                    </div>
+
+                    <div class="d-flex align-items-baseline gap-1 my-3">
+                        <span class="price-amount" id="pricePro">$29</span>
+                        <span class="price-period" id="periodPro">/ month</span>
+                    </div>
+
+                    <ul class="feature-list">
+                        <li><i class="bi bi-check-circle-fill"></i> <strong>Unlimited access</strong> to 100+ tracks
+                        </li>
+                        <li><i class="bi bi-check-circle-fill"></i> Live cloud lab sandbox & IDE</li>
+                        <li><i class="bi bi-check-circle-fill"></i> 1-on-1 mentor code feedback</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Verified certificates with LinkedIn badge</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Priority Discord community channel</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Offline video downloads</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Portfolio lab project reviews</li>
+                    </ul>
+
+                    <a href="{% url 'cart' %}" class="btn btn-primary rounded-pill py-3 fw-bold w-100 shadow-lg"
+                        style="background: linear-gradient(135deg, var(--pricing-primary), #7c3aed); border: none;">
+                        Get Started with Pro <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tier 3: Enterprise / Teams -->
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="pricing-card">
+                    <div class="mb-3">
+                        <div class="p-3 rounded-4 d-inline-block mb-3" style="background: #e0e7ff; color: #3730a3;">
+                            <i class="bi bi-building-fill fs-3"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1">Team Enterprise</h4>
+                        <p class="text-muted small">Tailored for engineering teams, startups, and companies.</p>
+                    </div>
+
+                    <div class="d-flex align-items-baseline gap-1 my-3">
+                        <span class="price-amount" id="priceEnt">$99</span>
+                        <span class="price-period" id="periodEnt">/ seat / month</span>
+                    </div>
+
+                    <ul class="feature-list">
+                        <li><i class="bi bi-check-circle-fill"></i> Everything included in Pro tier</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Dedicated technical account manager</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Custom team learning roadmaps</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Centralized team analytics & reports</li>
+                        <li><i class="bi bi-check-circle-fill"></i> SAML SSO & LMS integrations</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Private team Discord channel</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Invoicing & flexible payment terms</li>
+                    </ul>
+
+                    <a href="{% url 'contact' %}" class="btn btn-outline-primary rounded-pill py-3 fw-bold w-100">
+                        Contact Sales Team
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Plan Feature Matrix -->
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container">
+        <div class="text-center max-w-xl mx-auto mb-5">
+            <h2 class="fw-bold text-dark mb-2" style="font-family: 'Plus Jakarta Sans', sans-serif;">Compare Full Plan
+                Features</h2>
+            <p class="text-muted">A detailed breakdown of capabilities across all membership tiers.</p>
+        </div>
+
+        <div class="comparison-table-card table-responsive" data-aos="fade-up">
+            <table class="table comparison-table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 40%;">Feature Capability</th>
+                        <th style="width: 20%; text-align: center;">Starter</th>
+                        <th style="width: 20%; text-align: center; background: #f5f3ff; color: var(--pricing-primary);">
+                            Pro Tier</th>
+                        <th style="width: 20%; text-align: center;">Enterprise</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Course Library Access</strong></td>
+                        <td class="text-center">Free Tracks Only</td>
+                        <td class="text-center fw-bold text-primary" style="background: #faf5ff;">Full 100+ Catalog</td>
+                        <td class="text-center fw-bold">Full Catalog + Custom</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cloud Lab Sandbox Environments</strong></td>
+                        <td class="text-center text-muted"><i class="bi bi-dash-lg"></i></td>
+                        <td class="text-center text-success fw-bold" style="background: #faf5ff;"><i
+                                class="bi bi-check-circle-fill me-1"></i> Unlimited</td>
+                        <td class="text-center text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>
+                            Unlimited Dedicated</td>
+                    </tr>
+                    <tr>
+                        <td><strong>1-on-1 Mentor Code Reviews</strong></td>
+                        <td class="text-center text-muted"><i class="bi bi-dash-lg"></i></td>
+                        <td class="text-center text-success fw-bold" style="background: #faf5ff;"><i
+                                class="bi bi-check-circle-fill me-1"></i> Included</td>
+                        <td class="text-center text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>
+                            Priority SLAs</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LinkedIn Verified Certificates</strong></td>
+                        <td class="text-center text-muted"><i class="bi bi-dash-lg"></i></td>
+                        <td class="text-center text-success fw-bold" style="background: #faf5ff;"><i
+                                class="bi bi-check-circle-fill me-1"></i> Yes</td>
+                        <td class="text-center text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>
+                            Co-branded</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Community Support</strong></td>
+                        <td class="text-center">Public Forum</td>
+                        <td class="text-center fw-bold" style="background: #faf5ff;">Pro Discord</td>
+                        <td class="text-center fw-bold">Private Dedicated Channel</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Corporate Admin Dashboard</strong></td>
+                        <td class="text-center text-muted"><i class="bi bi-dash-lg"></i></td>
+                        <td class="text-center text-muted" style="background: #faf5ff;"><i class="bi bi-dash-lg"></i>
+                        </td>
+                        <td class="text-center text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>
+                            Included</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Frequently Asked Questions -->
+<!-- <section class="py-5">
+    <div class="container" style="max-width: 850px;">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="fw-bold text-dark mb-2" style="font-family: 'Plus Jakarta Sans', sans-serif;">Frequently Asked
+                Questions</h2>
+            <p class="text-muted">Have questions about subscription billing or features? We're here to help.</p>
+        </div>
+
+        <div class="accordion accordion-pricing" id="pricingFAQ" data-aos="fade-up" data-aos-delay="100">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        Can I switch between monthly and annual plans at any time?
+                    </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#pricingFAQ">
+                    <div class="accordion-body">
+                        Yes! You can seamlessly upgrade or switch your billing frequency inside your account settings.
+                        When upgrading to annual billing, your remaining monthly balance will automatically be credited
+                        toward your annual subscription.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#faq2">
+                        How do 1-on-1 mentor code reviews work?
+                    </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                    <div class="accordion-body">
+                        When you submit a lab project track or curriculum assignment, a senior engineer from our mentor
+                        team reviews your repository line-by-line and provides direct feedback on code quality,
+                        security, and performance within 24 hours.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#faq3">
+                        Is there a money-back guarantee?
+                    </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                    <div class="accordion-body">
+                        Absolutely. We offer a 14-day no-questions-asked refund guarantee on all Pro membership plans.
+                        If you feel Mentor isn't the right fit for your learning goals, contact support for an instant
+                        full refund.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#faq4">
+                        What payment methods do you accept?
+                    </button>
+                </h2>
+                <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                    <div class="accordion-body">
+                        We accept all major credit/debit cards (Visa, MasterCard, American Express), UPI, NetBanking,
+                        and PayPal. Enterprise subscriptions can also be processed via bank wire transfer or purchase
+                        orders.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section> -->
+
+<!-- Guarantee CTA Banner -->
+<section class="py-5 mb-4">
+    <div class="container">
+        <div class="card border-0 rounded-4 p-5 text-center text-white shadow-lg"
+            style="background: linear-gradient(135deg, var(--pricing-dark), #1e1b4b);">
+            <div class="max-w-xl mx-auto">
+                <div class="p-3 bg-white bg-opacity-10 rounded-circle d-inline-block mb-3">
+                    <i class="bi bi-shield-check text-success fs-1"></i>
+                </div>
+                <h2 class="fw-bold mb-3" style="font-family: 'Plus Jakarta Sans', sans-serif;">Try Pro Risk-Free for 14
+                    Days</h2>
+                <p class="text-light opacity-75 mb-4" style="font-size: 1.1rem;">
+                    Accelerate your career with real labs and expert mentorship today. Zero risk with our 100%
+                    money-back guarantee.
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{% url 'courses' %}" class="btn btn-light rounded-pill px-4 py-3 fw-bold text-dark">
+                        Explore All Courses
+                    </a>
+                    <a href="{% url 'contact' %}" class="btn btn-outline-light rounded-pill px-4 py-3 fw-bold">
+                        Talk to an Advisor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock content %}
 
 {% block extra_js %}
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. Reveal Elements
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if(entry.isIntersecting) {
-                entry.target.classList.add("visible");
-                // Trigger Skill Bars once visible
-                const bars = entry.target.querySelectorAll('.skill-bar-fill');
-                bars.forEach(bar => {
-                    if(bar.dataset.width) bar.style.width = bar.dataset.width;
-                });
-            }
-        });
-    }, { threshold: 0.1 });
+    function setBilling(type) {
+        const btnMonthly = document.getElementById('btnMonthly');
+        const btnAnnually = document.getElementById('btnAnnually');
+        const pricePro = document.getElementById('pricePro');
+        const periodPro = document.getElementById('periodPro');
+        const priceEnt = document.getElementById('priceEnt');
+        const periodEnt = document.getElementById('periodEnt');
 
-    document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
-
-    // 2. Real-time Search Filter
-    const searchInput = document.getElementById('course-filter');
-    searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        document.querySelectorAll('.course-card-item').forEach(card => {
-            const name = card.innerText.toLowerCase();
-            card.style.display = name.includes(query) ? 'block' : 'none';
-        });
-    });
-
-    // 3. AI Mentor Interaction
-    document.getElementById('mentorLauncher').addEventListener('click', () => {
-        const msg = "System Diagnostics: \n\n• Current Path: Technical Architecture \n• Efficiency: 74.8% \n• Recommended: Finish Python Lambda Lab.";
-        alert(msg);
-    });
-});
+        if (type === 'annually') {
+            btnMonthly.classList.remove('active');
+            btnAnnually.classList.add('active');
+            pricePro.innerText = '$24';
+            periodPro.innerText = '/ month (billed yearly)';
+            priceEnt.innerText = '$79';
+            periodEnt.innerText = '/ seat / month (billed yearly)';
+        } else {
+            btnAnnually.classList.remove('active');
+            btnMonthly.classList.add('active');
+            pricePro.innerText = '$29';
+            periodPro.innerText = '/ month';
+            priceEnt.innerText = '$99';
+            periodEnt.innerText = '/ seat / month';
+        }
+    }
 </script>
-{% endblock %}
+{% endblock extra_js %}

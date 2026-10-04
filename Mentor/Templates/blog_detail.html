@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ post.title }} | Mentor Blog{% endblock title %}
+
+{% block extra_css %}
+<style>
+:root {
+  --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --bg-slate: #f8fafc;
+}
+
+body {
+  background-color: var(--bg-slate);
+  color: #0f172a;
+}
+
+.article-container {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.article-hero-img {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 28px;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12);
+}
+
+.article-content {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #334155;
+}
+
+.article-content h4 {
+  margin-top: 2.2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<article class="py-5">
+  <div class="container article-container">
+    
+    <!-- Navigation Back Link -->
+    <div class="mb-4">
+      <a href="{% url 'blog_list' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold">
+        <i class="bi bi-arrow-left me-1"></i> Back to All Articles
+      </a>
+    </div>
+
+    <!-- Article Header -->
+    <div class="mb-4">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-1 rounded-pill extra-small">
+          {{ post.category }}
+        </span>
+        <span class="text-muted extra-small">• {{ post.read_time }}</span>
+        <span class="text-muted extra-small">• {{ post.date }}</span>
+      </div>
+
+      <h1 class="fw-extrabold text-dark display-5 mb-4" style="letter-spacing: -1px; line-height: 1.2;">
+        {{ post.title }}
+      </h1>
+
+      <!-- Author Pod -->
+      <div class="d-flex align-items-center gap-3 p-3 bg-white rounded-4 border shadow-sm">
+        <img src="{{ post.avatar }}" class="rounded-circle border" style="width: 48px; height: 48px;" alt="{{ post.author }}">
+        <div>
+          <h6 class="fw-bold text-dark mb-0">{{ post.author }}</h6>
+          <span class="text-muted extra-small">{{ post.author_title }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Image -->
+    <div class="mb-5">
+      <img src="{{ post.image }}" class="article-hero-img" alt="{{ post.title }}">
+    </div>
+
+    <!-- Article Body -->
+    <div class="article-content bg-white p-4 p-md-5 rounded-4 border shadow-sm">
+      {{ post.content|safe }}
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="d-flex align-items-center justify-content-between pt-4 mt-5 border-top">
+      <a href="{% url 'blog_list' %}" class="btn btn-outline-primary rounded-pill px-4 fw-bold">
+        <i class="bi bi-arrow-left me-1"></i> Back to Blog Index
+      </a>
+      <a href="{% url 'courses' %}" class="btn btn-primary rounded-pill px-4 fw-bold">
+        Explore Related Courses <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+  </div>
+</article>
+{% endblock content %}

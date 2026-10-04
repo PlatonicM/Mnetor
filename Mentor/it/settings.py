@@ -1,8 +1,12 @@
 from pathlib import Path
 import os
 from django.contrib.messages import constants as messages
+import dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env
+dotenv.load_dotenv(BASE_DIR / ".env")
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -10,7 +14,9 @@ SECRET_KEY = 'django-insecure-f2_zmt0xg+shbbp-j+z0so7=^zuzjkg^b5i=0_h4$sofwg%xk-
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
+NEXT_PUBLIC_GOOGLE_CLIENT_ID = os.environ.get("NEXT_PUBLIC_GOOGLE_CLIENT_ID", "")
 
 
 # Applications
@@ -78,24 +84,33 @@ CHANNEL_LAYERS = {
 }
 
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Database: Seamless MongoDB Localhost & SQLite Fallback Configuration
+MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017/mentor_db")
+MONGODB_NAME = os.environ.get("MONGODB_NAME", "mentor_db")
 
-# DATABASES = { 
-#         'default': { 
-#             'ENGINE': 'django.db.backends.postgresql', 
-#             'NAME': 'mentor', 
-#             'USER': 'postgres', 
-#             'PASSWORD': 'pass123', 
-#             'HOST': 'localhost', 
-#             'PORT': '5432', 
-#     } 
-# }
+try:
+    import django_mongodb_backend
+    DB_ENGINE = 'django_mongodb_backend'
+except ImportError:
+    DB_ENGINE = 'django.db.backends.sqlite3'
+
+if DB_ENGINE == 'django_mongodb_backend':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django_mongodb_backend',
+            'NAME': MONGODB_NAME,
+            'CLIENT': {
+                'host': MONGODB_URI,
+            }
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password Validators
@@ -129,37 +144,21 @@ MESSAGE_TAGS = {
 }
 
 
-
-# Email (SMTP)
+# Email (SMTP) Configuration from .env
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
+EMAIL_HOST = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("MAIL_PORT", 587))
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-EMAIL_HOST_USER = 'mrunalchaudhari666@gmail.com'
-EMAIL_HOST_PASSWORD = 'oejagjaqkcmhpejg'
-DEFAULT_FROM_EMAIL = 'MentorLMS <mrunalchaudhari666@gmail.com>'
-
-
-# Email (SMTP)
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_USE_TLS = True
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_HOST_USER = 'mrunalchaudhari666@gmail.com'
-# EMAIL_HOST_PASSWORD = 'oejagjaqkcmhpejg'            # App Password ONLY
-
-# EMAIL_HOST_USER = 'akashwankhede686@gmail.com'
-# EMAIL_HOST_PASSWORD = 'cdgqroxcvgfyzos'
-
-
-
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
+EMAIL_HOST_USER = os.environ.get("MAIL_USERNAME", "agentforge29@gmail.com")
+EMAIL_HOST_PASSWORD = os.environ.get("MAIL_PASSWORD", "wtfhjypfptprbjnk")
+DEFAULT_FROM_EMAIL = os.environ.get("MAIL_FROM", EMAIL_HOST_USER)
 CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", DEFAULT_FROM_EMAIL)
 
 
 # Misc
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django_mongodb_backend.fields.ObjectIdAutoField'
+SILENCED_SYSTEM_CHECKS = ['mongodb.fields.auto.E001']
 DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
 
 ADMINS = [

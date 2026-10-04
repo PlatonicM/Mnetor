@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Terms of Service | Mentor Platform{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background: #f8fafc;">
+  <div class="container py-4" style="max-width: 950px;">
+    
+    <!-- Header -->
+    <div class="text-center mb-5">
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-2 rounded-pill mb-3">Terms & Governance</span>
+      <h1 class="display-5 fw-bold text-dark mb-3">Terms of Service</h1>
+      <p class="text-secondary small mb-0">Last Updated: October 2026 • Effective Date: October 1, 2026</p>
+    </div>
+
+    <!-- Main Content Card -->
+    <div class="bg-white border rounded-4 p-4 p-md-5 shadow-sm">
+      <div class="mb-4">
+        <h4 class="fw-bold text-dark mb-3">1. Agreement to Terms</h4>
+        <p class="text-secondary leading-relaxed small">
+          By accessing or using the Mentor Platform ("Platform"), creating an account, or purchasing course enrollment, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not access or use our services.
+        </p>
+      </div>
+
+      <hr class="my-4 opacity-50">
+
+      <div class="mb-4">
+        <h4 class="fw-bold text-dark mb-3">2. User Accounts & Responsibilities</h4>
+        <p class="text-secondary leading-relaxed small mb-2">When creating an account on Mentor, you agree to:</p>
+        <ul class="text-secondary small leading-relaxed ps-3">
+          <li class="mb-2">Provide accurate, current, and complete account information.</li>
+          <li class="mb-2">Maintain the security of your password and authentication credentials.</li>
+          <li class="mb-2">Accept responsibility for all activities that occur under your account.</li>
+        </ul>
+      </div>
+
+      <hr class="my-4 opacity-50">
+
+      <div class="mb-4">
+        <h4 class="fw-bold text-dark mb-3">3. Course Access & Intellectual Property</h4>
+        <p class="text-secondary leading-relaxed small">
+          Upon enrolling in a course track, Mentor grants you a limited, non-exclusive, non-transferable license to access and view course content for your personal, non-commercial educational use. All course video materials, text guides, lab assignments, and branding remain the exclusive intellectual property of Mentor and its instructors.
+        </p>
+      </div>
+
+      <hr class="my-4 opacity-50">
+
+      <div class="mb-4">
+        <h4 class="fw-bold text-dark mb-3">4. Academic Code of Conduct & Lab Submissions</h4>
+        <p class="text-secondary leading-relaxed small">
+          Students are expected to adhere to high standards of academic integrity. When submitting lab assignments for mentor review, you certify that all submitted code repository work represents your original effort or properly cited open-source references.
+        </p>
+      </div>
+
+      <hr class="my-4 opacity-50">
+
+      <div class="mb-4">
+        <h4 class="fw-bold text-dark mb-3">5. Refund & Cancellation Policy</h4>
+        <p class="text-secondary leading-relaxed small">
+          Course purchases are eligible for a full refund within 7 days of purchase provided less than 25% of the course modules have been completed. Refund requests can be initiated by contacting our support team at support@mentor.com.
+        </p>
+      </div>
+
+      <hr class="my-4 opacity-50">
+
+      <div>
+        <h4 class="fw-bold text-dark mb-3">6. Governing Law & Contact</h4>
+        <p class="text-secondary leading-relaxed small mb-3">
+          These Terms are governed by the laws of India. For any inquiries or legal notices regarding these Terms, please reach out to us:
+        </p>
+        <div class="p-3 bg-light rounded-3 border d-flex align-items-center gap-3">
+          <i class="bi bi-file-earmark-text-fill text-primary fs-3"></i>
+          <div>
+            <div class="fw-bold text-dark small">Mentor Legal Team</div>
+            <div class="text-muted extra-small">Email: legal@mentor.com • IT Park Phase 01, Nagpur, MH-440022</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back Shortcut -->
+    <div class="text-center mt-4">
+      <a href="{% url 'home' %}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold small">
+        <i class="bi bi-arrow-left me-1"></i> Return to Home
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -5,9 +5,11 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>{% block title %}Mentor | LMS{% endblock title %}</title>
+    <title>{% block title %}Mentor{% endblock title %}</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap"
+        rel="stylesheet">
 
     <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
     <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
@@ -19,71 +21,179 @@
     <style>
         :root {
             /* --- Vivid Omega Palette --- */
-            --clr-primary: #4f46e5;       /* Electric Indigo */
-            --clr-primary-hover: #4338ca; /* Deep Indigo */
-            --clr-primary-soft: #f5f3ff;  /* Soft Lavender */
-            --clr-accent: #f43f5e;        /* Vivid Rose */
+            --clr-primary: #4f46e5;
+            /* Electric Indigo */
+            --clr-primary-hover: #4338ca;
+            /* Deep Indigo */
+            --clr-primary-soft: #f5f3ff;
+            /* Soft Lavender */
+            --clr-accent: #f43f5e;
+            /* Vivid Rose */
             --clr-accent-glow: rgba(244, 63, 94, 0.4);
-            
+
             /* --- Refined Industrial Slates --- */
             --clr-slate-50: #f8fafc;
             --clr-slate-100: #f1f5f9;
             --clr-slate-200: #e2e8f0;
             --clr-slate-700: #475569;
             --clr-slate-800: #1e293b;
-            --clr-slate-900: #0f172a; /* Midnight */
-            
+            --clr-slate-900: #0f172a;
+            /* Midnight */
+
             --radius-xl: 20px;
             --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
             --shadow-vivid: 0 20px 40px -15px rgba(79, 70, 229, 0.15);
         }
 
-        body { 
-            background: var(--clr-slate-50); 
-            font-family: 'Inter', sans-serif; 
-            overflow-x: hidden; 
-            color: var(--clr-slate-800); 
+        body {
+            background: var(--clr-slate-50);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            color: var(--clr-slate-800);
         }
 
         /* --- GLOBAL TELEMETRY --- */
-        .fw-black { font-weight: 900; }
-        .extra-small { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; }
-        .text-primary { color: var(--clr-primary) !important; }
+        .fw-black {
+            font-weight: 900;
+        }
+
+        .extra-small {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 800;
+        }
+
+        .text-primary {
+            color: var(--clr-primary) !important;
+        }
 
         /* --- TOAST HANDSHAKE --- */
         #social-toast {
-            position: fixed; bottom: 30px; left: 30px; z-index: 10000;
-            background: var(--clr-slate-900); color: #10b981;
-            padding: 14px 24px; border-radius: 16px; font-family: 'JetBrains Mono', monospace;
-            font-size: 12px; border-left: 5px solid var(--clr-primary);
-            transform: translateX(-150%); transition: 0.5s var(--spring-easing);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 10000;
+            background: var(--clr-slate-900);
+            color: #10b981;
+            padding: 14px 24px;
+            border-radius: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            border-left: 5px solid var(--clr-primary);
+            transform: translateX(-150%);
+            transition: 0.5s var(--spring-easing);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
         }
-        #social-toast.active { transform: translateX(0); }
 
-        /* --- PRELOADER --- */
+        #social-toast.active {
+            transform: translateX(0);
+        }
+
+        /* --- PRELOADER & BRANDING --- */
         #preloader {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 9999; background: #fff; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-        .loader-orb {
-            width: 60px; height: 60px; border: 5px solid var(--clr-slate-100);
-            border-top-color: var(--clr-primary); border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.6, 0.2, 0.4, 0.8) infinite;
+
+        .preloader-wrapper {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .ring-outer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top-color: #4f46e5;
+            border-bottom-color: #7c3aed;
+            border-radius: 50%;
+            animation: spinClockwise 1.2s linear infinite;
+        }
+
+        .ring-inner {
+            position: absolute;
+            width: 72%;
+            height: 72%;
+            border: 3px solid transparent;
+            border-left-color: #10b981;
+            border-right-color: #6366f1;
+            border-radius: 50%;
+            animation: spinCounterClockwise 0.9s linear infinite;
+        }
+
+        .preloader-brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #ffffff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 18px rgba(79, 70, 229, 0.4);
+            z-index: 2;
+            animation: pulseGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes spinClockwise {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spinCounterClockwise {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(-360deg);
+            }
+        }
+
+        @keyframes pulseGlow {
+            0% {
+                transform: scale(0.96);
+                box-shadow: 0 0 12px rgba(79, 70, 229, 0.3);
+            }
+
+            100% {
+                transform: scale(1.05);
+                box-shadow: 0 0 24px rgba(79, 70, 229, 0.6);
+            }
+        }
 
         /* --- KINETIC LINK PROTOCOL --- */
-        .footer-link { 
-            color: var(--clr-slate-600); 
-            text-decoration: none; 
-            transition: all 0.3s ease; 
-            display: inline-block; 
+        .footer-link {
+            color: var(--clr-slate-600);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
             font-size: 14px;
             position: relative;
             padding: 2px 0;
         }
+
         .footer-link::after {
             content: '';
             position: absolute;
@@ -94,53 +204,219 @@
             background-color: var(--clr-primary);
             transition: all 0.3s var(--spring-easing);
         }
-        .footer-link:hover { color: var(--clr-primary); transform: translateX(5px); }
-        .footer-link:hover::after { width: 20px; }
 
-        /* --- FOOTER HUB --- */
-        #footer { background: #fff; border-top: 1px solid var(--clr-slate-200); padding: 80px 0 0; }
-        
-        .social-btn {
-            width: 44px; height: 44px; border-radius: 12px; background: var(--clr-slate-50);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--clr-slate-700); border: 1px solid var(--clr-slate-200);
-            transition: all 0.4s var(--spring-easing);
+        .footer-link:hover {
+            color: var(--clr-primary);
+            transform: translateX(5px);
         }
-        .social-btn:hover { color: white; transform: translateY(-5px) scale(1.05); box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3); }
-        .node-x:hover { background: #000; border-color: #000; }
-        .node-ig:hover { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); border-color: transparent; }
-        .node-li:hover { background: #0077b5; border-color: #0077b5; }
-        .node-wa:hover { background: #25d366; border-color: #25d366; }
+
+        .footer-link:hover::after {
+            width: 20px;
+        }
+
+        /* --- FOOTER HUB & 5-LEVEL PANEL SYSTEM --- */
+        #footer {
+            background: #ffffff;
+            border-top: 1px solid var(--clr-slate-200);
+            padding: 70px 0 0;
+            font-size: 14px;
+        }
+
+        #footer,
+        #footer *,
+        #footer a,
+        #footer h5,
+        #footer h6,
+        #footer span,
+        #footer p,
+        #footer button,
+        #footer input {
+            text-transform: none !important;
+        }
+
+        .footer-5panel-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 2rem;
+        }
+
+        @media (min-width: 576px) {
+            .footer-5panel-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 992px) {
+            .footer-5panel-grid {
+                grid-template-columns: 1.2fr 0.95fr 0.95fr 1.05fr 0.95fr;
+                gap: 1.5rem;
+            }
+        }
+
+        .footer-card-subscribe {
+            background: #f8fafc;
+            border: 1px solid var(--clr-slate-200);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        .footer-card-subscribe:hover {
+            border-color: rgba(79, 70, 229, 0.3);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.08);
+        }
+
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--clr-slate-50);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--clr-slate-700);
+            border: 1px solid var(--clr-slate-200);
+            transition: all 0.4s var(--spring-easing);
+            font-size: 15px;
+        }
+
+        .social-btn:hover {
+            color: white;
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .node-x:hover {
+            background: #000;
+            border-color: #000;
+        }
+
+        .node-ig:hover {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            border-color: transparent;
+        }
+
+        .node-li:hover {
+            background: #0077b5;
+            border-color: #0077b5;
+        }
+
+        .node-wa:hover {
+            background: #25d366;
+            border-color: #25d366;
+        }
 
         /* --- STATUS MONITOR --- */
-        .status-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 5px; animation: pulse 2s infinite; box-shadow: 0 0 12px #10b981; }
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.3); } }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 12px #10b981;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: scale(1.3);
+            }
+        }
 
         .back-to-top {
-            position: fixed; visibility: hidden; opacity: 0; right: 25px; bottom: 25px;
-            background: var(--clr-slate-900); color: white; width: 50px; height: 50px;
-            border-radius: 15px; transition: 0.4s; z-index: 996;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: fixed;
+            visibility: hidden;
+            opacity: 0;
+            right: 25px;
+            bottom: 25px;
+            background: var(--clr-slate-900);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            transition: 0.4s;
+            z-index: 996;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
-        .back-to-top.active { visibility: visible; opacity: 1; }
-        .back-to-top:hover { 
-            background: var(--clr-primary); 
-            transform: translateY(-5px); 
-            box-shadow: 0 15px 30px rgba(79, 70, 229, 0.4); 
+
+        .back-to-top.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .back-to-top:hover {
+            background: var(--clr-primary);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(79, 70, 229, 0.4);
             color: #fff;
         }
 
-        .bg-success-soft { background: rgba(16, 185, 129, 0.1) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .bg-success-soft {
+            background: rgba(16, 185, 129, 0.1) !important;
+            color: #10b981 !important;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        /* --- GLOBAL RESPONSIVE MOBILE UTILITIES --- */
+        @media (max-width: 576px) {
+            .container, .container-fluid {
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+            }
+
+            .display-4, .display-5 {
+                font-size: 2.1rem !important;
+            }
+
+            .display-6 {
+                font-size: 1.75rem !important;
+            }
+
+            .table-responsive {
+                border: 0 !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .back-to-top {
+                right: 16px !important;
+                bottom: 16px !important;
+                width: 44px !important;
+                height: 44px !important;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div id="social-toast">> Handshake: Initializing Secure Link...</div>
+    <div id="social-toast">> Handshake: Reloading...</div>
 
     <div id="preloader">
-        <div class="loader-orb"></div>
-        <p class="mt-3 fw-bold text-primary extra-small" style="letter-spacing: 2px;">Synchronizing_Node</p>
+        <div class="preloader-wrapper mb-3">
+            <div class="ring-outer"></div>
+            <div class="ring-inner"></div>
+            <div class="preloader-brand-icon">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="fw-bold fs-4"
+                style="font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.5px; background: linear-gradient(135deg, #4f46e5, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Mentor</span>
+        </div>
+        <p class="mb-0 fw-bold text-muted extra-small text-uppercase" style="letter-spacing: 2.5px; font-size: 11px;">
+            Realoding...</p>
     </div>
 
     {% include 'nav.html' %}
@@ -151,87 +427,171 @@
 
     <footer id="footer">
         <div class="container">
-            <div class="row gy-5 mb-5">
-                <div class="col-lg-4" data-aos="fade-right">
-                    <div class="footer-brand mb-3 fw-black fs-2 text-dark" style="letter-spacing: -2px;">Mentor<span class="text-primary">LMS</span></div>
-                    <p class="text-muted pe-lg-5" style="font-size: 15px; line-height: 1.7;">Building the next generation of architects through project-based deployments and industrial-grade curriculum.</p>
-                    
-                    <div class="d-flex gap-3 mt-4">
-                        <a href="#" target="_blank" class="social-btn node-x" onclick="handshake('X_NODE')"> <i class="bi bi-twitter-x"></i> </a>
-                        <a href="#" target="_blank" class="social-btn node-ig" onclick="handshake('IG_NODE')"> <i class="bi bi-instagram"></i></a>
-                        <a href="#" target="_blank" class="social-btn node-li" onclick="handshake('LI_NODE')"><i class="bi bi-linkedin"></i></a>
-                        <a href="#" target="_blank" class="social-btn node-wa" onclick="handshake('WA_NODE')"><i class="bi bi-whatsapp"></i></a>
+            <!-- 5 Level Panel Footer Grid (5-Way Plan Layout) -->
+            <div class="footer-5panel-grid mb-5">
+                <!-- Panel 1: Brand & Overview -->
+                <div data-aos="fade-right">
+                    <div class="d-flex align-items-center gap-2.5 mb-3">
+                        <div
+                            style="background: linear-gradient(135deg, var(--clr-primary), #7c3aed); color: white; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 6px 16px -4px rgba(79, 70, 229, 0.4);">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+                        <span class="fw-bold fs-3 ms-2"
+                            style="font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.8px; background: linear-gradient(135deg, var(--clr-primary), #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Mentor</span>
+                    </div>
+                    <p class="text-muted mb-3" style="font-size: 13.5px; line-height: 1.6;">
+                        Empowering software engineers, cloud architects, and tech creators through real-world project
+                        tracks and 1-on-1 industry mentorship.
+                    </p>
+
+                    <!-- Real Working Social Links -->
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="https://github.com/PlatonicM/Mnetor" target="_blank" class="social-btn node-x"
+                            title="github"><i class="bi bi-github"></i></a>
+                        <a href="https://www.linkedin.com/in/mrunal-chaudhari03/" target="_blank"
+                            class="social-btn node-li" title="linkedin"><i class="bi bi-linkedin"></i></a>
+                        <a href="https://x.com" target="_blank" class="social-btn node-x" title="twitter / x"><i
+                                class="bi bi-twitter-x"></i></a>
+                        <a href="https://youtube.com" target="_blank" class="social-btn node-ig" title="youtube"><i
+                                class="bi bi-youtube"></i></a>
+                        <!-- <a href="https://discord.com" target="_blank" class="social-btn node-li" title="discord"><i
+                                class="bi bi-discord"></i></a> -->
+                        <a href="https://instagram.com" target="_blank" class="social-btn node-ig" title="instagram"><i
+                                class="bi bi-instagram"></i></a>
                     </div>
                 </div>
 
-                <div class="col-lg-2 col-6" data-aos="fade-up" data-aos-delay="100">
-                    <h6 class="extra-small mb-4 text-dark" style="color: var(--clr-primary) !important;">Quick Links</h6>
+                <!-- Panel 2: Platform Navigation -->
+                <div data-aos="fade-up" data-aos-delay="100">
+                    <h6 class="fw-bold mb-3 text-dark" style="font-size: 0.92rem;">Platform</h6>
                     <nav class="nav flex-column gap-2">
-                        <a href="{% url 'courses' %}" class="footer-link fw-bold">All Tracks</a>
-                        <!-- <a href="{% url 'events' %}" class="footer-link fw-bold">Workshops</a> -->
-                        <a href="{% url 'about' %}" class="footer-link fw-bold">About Us</a>
-                        <a href="{% url 'contact' %}" class="footer-link fw-bold">Contact Us</a>
+                        <a href="{% url 'home' %}" class="footer-link fw-semibold">Home</a>
+                        <a href="{% url 'courses' %}" class="footer-link fw-semibold">Course Catalog</a>
+                        <a href="{% url 'about' %}" class="footer-link fw-semibold">About us</a>
+                        <a href="{% url 'pricing' %}" class="footer-link fw-semibold">Pricing & Plans</a>
+                        <a href="{% url 'trainers' %}" class="footer-link fw-semibold">Mentors & Trainers</a>
+                        <a href="{% url 'events' %}" class="footer-link fw-semibold">Workshops & Events</a>
                     </nav>
                 </div>
 
-                <div class="col-lg-3 col-6" data-aos="fade-up" data-aos-delay="200">
-                    <h6 class="extra-small mb-4 text-dark" style="color: var(--clr-primary) !important;">Contact Us</h6>
-                    <div class="nav flex-column gap-3">
-                        <div class="d-flex align-items-start gap-2">
-                            <i class="bi bi-geo-alt-fill text-primary"></i>
-                            <span class="small fw-semibold text-muted">IT Park Phase 01, Nagpur, MH-440022</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-telephone-fill text-primary"></i>
-                            <a href="tel:+917030087366" class="footer-link fw-bold">+91 70300 87366</a>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-envelope-at-fill text-primary"></i>
-                            <a href="mailto:support@mentorlms.com" class="footer-link fw-bold">support@mentorlms.com</a>
-                        </div>
+                <!-- Panel 3: Student Portal -->
+                <div data-aos="fade-up" data-aos-delay="150">
+                    <h6 class="fw-bold mb-3 text-dark" style="font-size: 0.92rem;">Student Portal</h6>
+                    <nav class="nav flex-column gap-2">
+                        <a href="{% url 'dashboard' %}" class="footer-link fw-semibold">Student Dashboard</a>
+                        <a href="{% url 'mycourses' %}" class="footer-link fw-semibold">My Curriculum</a>
+                        <a href="{% url 'hub' %}" class="footer-link fw-semibold">Learning Hub</a>
+                        <a href="{% url 'submit_lab' %}" class="footer-link fw-semibold">Submit lab Project</a>
+                        <a href="{% url 'notifications' %}" class="footer-link fw-semibold">Notification</a>
+                        <a href="{% url 'contact' %}" class="footer-link fw-semibold">Help</a>
+                    </nav>
+                </div>
+
+                <!-- Panel 4: Quick Subscribe (Compact 5th Panel Card) -->
+                <div data-aos="fade-up" data-aos-delay="200">
+                    <div class="footer-card-subscribe">
+                        <h6 class="fw-bold mb-2 text-dark" style="font-size: 0.92rem;">
+                            <i class="bi bi-envelope-paper-fill text-primary me-1"></i> Quick Subscribe
+                        </h6>
+                        <p class="text-muted small mb-3" style="font-size: 12.5px; line-height: 1.5;">Get weekly course
+                            drops, free labs, and developer insights.</p>
+                        <form id="footerSubscribeForm">
+                            {% csrf_token %}
+                            <div class="input-group input-group-sm mb-2">
+                                <input type="email" name="email" id="footerSubscribeEmail"
+                                    class="form-control rounded-start-pill ps-3 border-secondary border-opacity-25"
+                                    placeholder="Enter email address..." required style="font-size: 0.82rem;">
+                                <button type="submit" class="btn btn-primary rounded-end-pill px-3 fw-bold"
+                                    style="font-size: 0.82rem;">
+                                    Join <i class="bi bi-arrow-right-short ms-0.5"></i>
+                                </button>
+                            </div>
+                        </form>
+                        <div id="footerSubscribeAlert" class="small fw-bold mt-1 text-success d-none"
+                            style="font-size: 11.5px;"></div>
                     </div>
                 </div>
 
-                <div class="col-lg-3 col-12" data-aos="fade-up" data-aos-delay="300">
-                    <h6 class="extra-small mb-4 text-dark" style="color: var(--clr-primary) !important;">Legal</h6>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <nav class="nav flex-column gap-2">
-                                <a href="#" class="footer-link fw-bold">Privacy</a>
-                                <a href="#" class="footer-link fw-bold">Terms</a>
-                            </nav>
+                <!-- Panel 5: Contact & Location -->
+                <div data-aos="fade-up" data-aos-delay="250">
+                    <h6 class="fw-bold mb-3 text-dark" style="font-size: 0.92rem;">Contact & Location</h6>
+                    <div class="nav flex-column gap-2.5 mb-3" style="font-size: 13px;">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-geo-alt-fill text-primary mt-1"></i>
+                            <span class="fw-semibold text-muted">IT Park Phase 01, Nagpur, MH-440022</span>
                         </div>
-                        <div class="col-6">
-                            <nav class="nav flex-column gap-2">
-                                <a href="#" class="footer-link fw-bold">FAQ</a>
-                                <a href="#" class="footer-link fw-bold">Partners</a>
-                            </nav>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-telephone-fill text-primary"></i>
+                            <a href="tel:+917030087366" class="footer-link fw-semibold">+91 70300 87366</a>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-envelope-at-fill text-primary"></i>
+                            <a href="mailto:agentforge29@gmail.com"
+                                class="footer-link fw-semibold">agentforge29@gmail.com</a>
                         </div>
                     </div>
-                    <div class="mt-4 p-3 rounded-4 bg-light border border-dashed shadow-sm">
-                        <h6 class="extra-small mb-1 text-primary" style="font-size: 9px;">Office Hours</h6>
-                        <p class="text-dark small mb-0 fw-bold">MON - FRI: 09:00 - 06:00 IST</p>
+                    <div class="p-2 rounded-3 bg-light border shadow-none" style="font-size: 11.5px;">
+                        <div class="fw-semibold text-dark mb-0"><i class="bi bi-clock-history text-primary me-1"></i>
+                            Hours: Mon - Sat 9am-6pm</div>
                     </div>
                 </div>
             </div>
 
-            <div class="py-4 border-top d-md-flex align-items-center justify-content-between">
-                <div class="extra-small fw-bold text-muted">
-                    &copy; 2026 <span class="text-dark fw-black">MentorLMS</span> All rights reserved
+            <!-- Footer Bottom Bar -->
+            <div class="py-4 border-top d-md-flex align-items-center justify-content-between gap-3">
+                <div class="small fw-semibold text-muted mb-2 mb-md-0" style="font-size: 12.5px;">
+                    &copy; 2026 <span class="text-dark fw-bold">Mentor</span>. All rights reserved.
+                    <!-- <i class="bi bi-geo-alt me-1 text-primary"></i> IT Park Phase 01, Nagpur, MH -->
                 </div>
-                <div class="d-flex align-items-center gap-4 mt-3 mt-md-0">
-                    <div class="d-flex gap-3">
-                        <a href="#" class="footer-social-icon text-muted hover-primary"><i class="bi bi-github fs-5"></i></a>
-                        <a href="#" class="footer-social-icon text-muted hover-primary"><i class="bi bi-discord fs-5"></i></a>
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <div class="d-flex gap-3 small fw-semibold" style="font-size: 12.5px;">
+                        <a href="{% url 'privacy_policy' %}" class="footer-link">Privacy Policy</a>
+                        <a href="{% url 'terms_of_service' %}" class="footer-link">Terms of Service</a>
+                        <a href="{% url 'contact' %}" class="footer-link">Help Center</a>
                     </div>
-                    <div class="px-3 py-1 bg-success-soft rounded-pill d-flex align-items-center">
-                        <span class="status-dot"></span> 
-                        <span class="extra-small" style="font-size: 9px; font-weight: 900;">MentorLMS Active</span>
-                    </div>
+                    <!-- <div class="px-3 py-1 bg-success-soft rounded-pill d-flex align-items-center ms-md-2">
+                        <span class="status-dot"></span>
+                        <span class="small text-success fw-bold" style="font-size: 11px;">systems operational</span>
+                    </div> -->
                 </div>
             </div>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const footerForm = document.getElementById('footerSubscribeForm');
+            const footerAlert = document.getElementById('footerSubscribeAlert');
+            if (footerForm) {
+                footerForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('footerSubscribeEmail').value;
+                    const csrfToken = footerForm.querySelector('[name=csrfmiddlewaretoken]').value;
+                    try {
+                        const response = await fetch("{% url 'subscribe_ajax' %}", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded",
+                                "X-CSRFToken": csrfToken
+                            },
+                            body: new URLSearchParams({ email: email })
+                        });
+                        const data = await response.json();
+                        footerAlert.classList.remove('d-none');
+                        if (data.status === 'success' || data.message) {
+                            footerAlert.innerText = '✓ Subscribed successfully! Check your inbox.';
+                            footerForm.reset();
+                        } else {
+                            footerAlert.innerText = data.error || 'Subscription failed. Try again.';
+                        }
+                    } catch (err) {
+                        footerAlert.classList.remove('d-none');
+                        footerAlert.innerText = 'Connection error. Try again.';
+                    }
+                });
+            }
+        });
+    </script>
 
     <a href="#" class="back-to-top shadow-lg"><i class="bi bi-arrow-up-short fs-3"></i></a>
 
@@ -264,4 +624,5 @@
     </script>
     {% block extra_js %}{% endblock extra_js %}
 </body>
+
 </html>

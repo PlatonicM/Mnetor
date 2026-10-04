@@ -1,224 +1,333 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Academic Catalog | MentorLMS{% endblock %}
+{% block title %}Mentor{% endblock %}
 
 {% block extra_css %}
 <style>
-/* --- Engineering Design Tokens --- */
-:root {
-  --clr-primary: #6366f1;
-  --clr-primary-dark: #4f46e5;
-  --clr-success: #10b981;
-  --clr-slate-50: #f8fafc;
-  --clr-slate-200: #e2e8f0;
-  --clr-slate-600: #475569;
-  --clr-slate-900: #0f172a;
-  --radius-figma: 28px;
-  --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+  :root {
+    --clr-primary: #4f46e5;
+    --clr-primary-hover: #4338ca;
+    --clr-primary-soft: rgba(79, 70, 229, 0.08);
+    --clr-success: #10b981;
+    --clr-slate-50: #f8fafc;
+    --clr-slate-100: #f1f5f9;
+    --clr-slate-200: #e2e8f0;
+    --clr-slate-600: #475569;
+    --clr-slate-900: #0f172a;
+    --radius-figma: 24px;
+    --spring-easing: cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
-body { background-color: var(--clr-slate-50); font-family: 'Plus Jakarta Sans', sans-serif; color: var(--clr-slate-900); }
+  body {
+    background-color: var(--clr-slate-50);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--clr-slate-900);
+  }
 
-.reveal { opacity: 0; transform: translateY(40px); transition: 1s var(--spring-easing); }
-.reveal.visible { opacity: 1; transform: translateY(0); }
+  .catalog-hero {
+    background: radial-gradient(circle at 90% 10%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
+      radial-gradient(circle at 10% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 45%);
+    padding: 60px 0 40px;
+    border-bottom: 1px solid var(--clr-slate-200);
+  }
 
-/* --- Catalog Grid --- */
-.catalog-grid {
+  .catalog-search-bar {
+    background: #ffffff;
+    border: 2px solid var(--clr-slate-200);
+    border-radius: 50px;
+    padding: 6px 8px 6px 22px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+  }
+
+  .catalog-search-bar:focus-within {
+    border-color: var(--clr-primary);
+    box-shadow: 0 12px 35px rgba(79, 70, 229, 0.15);
+  }
+
+  .filter-pill {
+    background: #ffffff;
+    border: 1px solid var(--clr-slate-200);
+    color: var(--clr-slate-600);
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 13.5px;
+    text-decoration: none !important;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+  }
+
+  .filter-pill:hover,
+  .filter-pill.active {
+    background: var(--clr-primary);
+    color: #ffffff !important;
+    border-color: var(--clr-primary);
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.3);
+  }
+
+  .catalog-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 32px;
-}
+    gap: 30px;
+  }
 
-@media (max-width: 1100px) { .catalog-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 768px) { .catalog-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 1100px) {
+    .catalog-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
 
-/* --- Course Card Node --- */
-.course-card-premium {
+  @media (max-width: 768px) {
+    .catalog-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* --- COURSE CARD NODE --- */
+  .course-card-premium {
     background: #ffffff;
     border: 1px solid var(--clr-slate-200);
     border-radius: var(--radius-figma);
     overflow: hidden;
-    transition: all 0.5s var(--spring-easing);
+    transition: all 0.35s ease;
     height: 100%;
     display: flex;
     flex-direction: column;
-    position: relative;
-}
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.02);
+  }
 
-.course-card-premium:hover {
-    transform: translateY(-12px);
-    box-shadow: 0 40px 80px -15px rgba(99, 102, 241, 0.15);
+  .course-card-premium:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 50px -10px rgba(79, 70, 229, 0.12);
     border-color: var(--clr-primary);
-}
+  }
 
-.course-img-wrapper { 
-    height: 180px; 
-    position: relative; 
-    overflow: hidden; 
-    background: var(--clr-slate-900); 
-}
-.course-img-wrapper img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; transition: 0.8s var(--spring-easing); }
-.course-card-premium:hover .course-img-wrapper img { transform: scale(1.1); opacity: 1; }
+  .course-img-wrapper {
+    height: 190px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  }
 
-/* --- Mentor Identity Node --- */
-.mentor-id-card {
-    background: var(--clr-slate-50); 
-    border-radius: 20px;
-    padding: 16px; 
-    margin-bottom: 20px; 
-    border: 1px solid var(--clr-slate-200);
-    transition: 0.3s ease;
-}
-.course-card-premium:hover .mentor-id-card { background: #fff; border-color: var(--clr-primary-soft); }
+  .course-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
 
-.mentor-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.mentor-avatar { width: 44px; height: 44px; border-radius: 12px; border: 2px solid white; object-fit: cover; transition: 0.4s var(--spring-easing); }
-.course-card-premium:hover .mentor-avatar { transform: rotate(-6deg) scale(1.1); }
+  .course-card-premium:hover .course-img-wrapper img {
+    transform: scale(1.06);
+  }
 
-.mentor-name-text { font-size: 13px; font-weight: 800; color: var(--clr-slate-900); line-height: 1.2; }
-.mentor-id-badge { font-size: 9px; color: var(--clr-primary); font-weight: 700; text-transform: uppercase; }
-
-/* --- Stats and Prices --- */
-.stats-grid {
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 12px;
-    padding: 16px 0; 
-    border-top: 1px dashed var(--clr-slate-200);
-}
-.stat-node { font-size: 11px; font-weight: 700; color: var(--clr-slate-600); display: flex; align-items: center; gap: 8px; }
-.stat-node i { color: var(--clr-primary); transition: 0.3s; }
-.course-card-premium:hover .stat-node i { transform: scale(1.2); }
-
-.price-box { 
-    font-size: 1.7rem; 
-    font-weight: 900; 
-    color: var(--clr-success); /* Amount Green Color */
-    letter-spacing: -1.5px; 
-    text-shadow: 0 10px 20px rgba(16, 185, 129, 0.1);
-}
-
-/* --- Premium Buttons (Fix size/hover) --- */
-.btn-group-sync { 
-    display: flex; 
-    gap: 2px; 
-    border-radius: 16px; 
-    overflow: hidden; 
-    height: 52px; /* Fixed height */
-}
-
-.btn-primary-tech { 
-    background: var(--clr-slate-900); 
-    color: #fff; 
-    padding: 0 25px; 
-    font-weight: 800; 
-    text-decoration: none; 
-    font-size: 11px; 
+  .course-category-pill {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(15, 23, 42, 0.82);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    padding: 4px 14px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    flex-grow: 1; 
+  }
+
+  .mentor-info-row {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+
+  .stats-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-top: 1px dashed var(--clr-slate-200);
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 700;
+  }
+
+  .btn-enroll-action {
+    background: linear-gradient(135deg, var(--clr-primary), var(--clr-primary-hover));
+    color: #ffffff !important;
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-weight: 800;
+    font-size: 13.5px;
+    text-decoration: none !important;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.25);
+  }
+
+  .btn-enroll-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(79, 70, 229, 0.38);
+  }
+
+  .btn-cart-action {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--clr-slate-200);
+    background: #ffffff;
+    color: var(--clr-slate-900);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.4s var(--spring-easing); 
-}
-.btn-primary-tech:hover { background: var(--clr-primary); color: white; padding-right: 35px; }
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
 
-.btn-cart-tech { 
-    background: var(--clr-slate-900); 
-    color: #fff; 
-    width: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-left: 1px solid rgba(255,255,255,0.1); 
-    transition: all 0.4s var(--spring-easing); 
-}
-.btn-cart-tech:hover { background: var(--clr-success); color: white; transform: scale(1.1); }
-.btn-cart-tech.bg-success { background: var(--clr-success) !important; }
+  .btn-cart-action:hover {
+    border-color: var(--clr-primary);
+    color: var(--clr-primary);
+    background: #eef2ff;
+  }
 
-.course-body { padding: 28px; flex-grow: 1; display: flex; flex-direction: column; }
-.course-title {
-    font-size: 1.25rem; font-weight: 800; line-height: 1.3;
-    margin-bottom: 15px; color: var(--clr-slate-900);
-    height: 2.6em; overflow: hidden;
-}
+  .btn-cart-action.added {
+    background: var(--clr-success) !important;
+    border-color: var(--clr-success) !important;
+    color: #ffffff !important;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="py-5 bg-white border-bottom">
-    <div class="container text-center reveal">
-        <h1 class="display-3 fw-black text-slate-900" style="letter-spacing: -4px;">Courses <span class="text-primary">Catalog</span></h1>
-        <p class="text-muted">Engineering protocols and industrial-grade software modules.</p>
-    </div>
-</div>
+<!-- CATALOG HERO -->
+<section class="catalog-hero">
+  <div class="container" style="max-width: 1200px;">
+    <div class="row align-items-center justify-content-between g-4">
+      <div class="col-lg-6">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-1.5 rounded-pill extra-small mb-3">
+          <i class="bi bi-mortarboard-fill me-1"></i> Industry Certified Course Tracks
+        </span>
+        <h1 class="fw-extrabold display-5 text-dark mb-2" style="letter-spacing: -1.5px;">Course <span
+            class="text-primary">Catalog</span></h1>
+        <p class="text-muted mb-0">Master full-stack architecture, cloud engineering, and AI pipelines with senior industry mentors.</p>
+      </div>
 
+      <!-- Search Filter Input -->
+      <div class="col-lg-5">
+        <form method="GET" action="{% url 'courses' %}" class="catalog-search-bar d-flex align-items-center">
+          <i class="bi bi-search text-muted fs-5 me-2"></i>
+          <input type="text" name="search" value="{{ search_query|default:'' }}" class="form-control border-0 p-0 shadow-none fw-semibold"
+            placeholder="Search courses, frameworks, skills..." style="font-size: 14px; background: transparent;">
+          <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-nowrap ms-2" style="font-size: 13px;">
+            Search
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN CATALOG CONTENT -->
 <section class="py-5">
-  <div class="container">
-    
-    <div class="control-panel reveal mb-5 p-3 bg-white border rounded-4 d-flex justify-content-between align-items-center">
-        <!-- <div class="d-flex align-items-center gap-3">
-            <div class="bg-primary text-white p-2 rounded-3 shadow-sm"><i class="bi bi-filter-right fs-5"></i></div>
-            <select class="form-select border-0 bg-light extra-small fw-bold" style="width: 200px; font-size: 11px;">
-                <option>ALL PROTOCOLS</option>
-                <option>SYSTEM ARCHITECTURE</option>
-                <option>BACKEND LOGIC</option>
-            </select>
-        </div> -->
-        <div class="badge bg-primary text-white px-4 py-2 rounded-pill fw-black" style="font-size: 10px;">
-            {{ courses|length }} ACTIVE COURSES 
-        </div>
+  <div class="container" style="max-width: 1200px;">
+
+    <!-- Filter Pills Row -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-5">
+      <div class="d-flex align-items-center gap-2 overflow-x-auto py-1">
+        <a href="{% url 'courses' %}" class="filter-pill {% if not active_category or active_category == 'all' %}active{% endif %}">
+          All Courses
+        </a>
+        <a href="{% url 'courses' %}?category=software-engineering" class="filter-pill {% if active_category == 'software-engineering' %}active{% endif %}">
+          Software Engineering
+        </a>
+        <a href="{% url 'courses' %}?category=cloud-devops" class="filter-pill {% if active_category == 'cloud-devops' %}active{% endif %}">
+          Cloud & DevOps
+        </a>
+        <a href="{% url 'courses' %}?category=data-ai" class="filter-pill {% if active_category == 'data-ai' %}active{% endif %}">
+          AI & Data Engineering
+        </a>
+      </div>
+
+      <div class="text-muted small fw-bold">
+        Showing <span class="text-dark">{{ courses|length }}</span> Tracks
+      </div>
     </div>
 
+    <!-- Catalog Cards Grid -->
     <div class="catalog-grid">
       {% for course in courses %}
-        <div class="reveal">
-          <article class="course-card-premium">
-            <div class="course-img-wrapper">
-                <span class="level-badge" style="position: absolute; top: 15px; left: 15px; z-index: 5; background: #fff; padding: 5px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-                    {{ course.level|default:"ELITE" }}
-                </span>
-                <img src="{% if course.image %}{{ course.image.url }}{% else %}{% static 'assets/img/default.jpg' %}{% endif %}" alt="{{ course.name }}">
-            </div>
-
-            <div class="course-body">
-                <span class="course-category">{{ course.category|upper }}</span>
-                <h5 class="course-title fw-black"><a href="{% url 'course_detail' course.id %}" class="text-decoration-none text-dark">{{ course.name }}</a></h5>
-                
-                <div class="mentor-id-card">
-                    <div class="mentor-meta">
-                        <img src="https://ui-avatars.com/api/?name={{ course.instructor }}&background=6366f1&color=fff" class="mentor-avatar">
-                        <div class="d-flex flex-column">
-                            <span class="mentor-name-text">{{ course.instructor }}</span>
-                            <span class="mentor-id-badge">ID: #ARC-{{ forloop.counter|add:100 }}</span>
-                        </div>
-                    </div>
-                    <div class="skill-cluster d-flex gap-1">
-                        <span class="skill-tag">Expertise: 8+ Yrs</span>
-                        <span class="skill-tag">Cloud Native</span>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-node"><i class="bi bi-hdd-network"></i> {{ course.lessons.count }} Units</div>
-                    <div class="stat-node"><i class="bi bi-clock-history"></i> 14.5 Hours</div>
-                    <div class="stat-node"><i class="bi bi-star-fill text-warning"></i> 4.9 Rating</div>
-                    <div class="stat-node"><i class="bi bi-patch-check-fill text-success"></i> VERIFIED</div>
-                </div>
-
-                <div class="action-footer mt-auto pt-4 d-flex align-items-center justify-content-between">
-                    <div class="price-box">₹{{ course.price }}</div>
-                    <div class="btn-group-sync">
-                        <a href="{% url 'course_detail' course.id %}" class="btn-primary-tech">Enroll Now</a>
-                        <button class="btn-cart-tech add-to-cart-btn {% if course.id in cart_course_ids %}bg-success{% endif %}" data-id="{{ course.id }}">
-                            <i class="bi {% if course.id in cart_course_ids %}bi-bag-check-fill{% else %}bi-cart-plus{% endif %}"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-          </article>
+      <article class="course-card-premium">
+        <div class="course-img-wrapper">
+          <span class="course-category-pill">{{ course.category|default:"Software Engineering" }}</span>
+          {% if course.image_url %}
+            <img src="{{ course.image_url }}" alt="{{ course.name }}">
+          {% elif course.image and course.image.url %}
+            <img src="{{ course.image.url }}" alt="{{ course.name }}">
+          {% elif course.image %}
+            <img src="{{ course.image }}" alt="{{ course.name }}">
+          {% else %}
+            <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80" alt="{{ course.name }}">
+          {% endif %}
         </div>
+
+        <div class="p-4 d-flex flex-column flex-grow-1">
+          <h5 class="fw-bold text-dark mb-3" style="font-size: 1.15rem; line-height: 1.35; height: 2.7em; overflow: hidden;">
+            <a href="{% url 'course_detail' course.id %}" class="text-decoration-none text-dark hover-primary">
+              {{ course.name }}
+            </a>
+          </h5>
+
+          <!-- Mentor Info Pod -->
+          <div class="mentor-info-row d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2.5">
+              <img src="https://ui-avatars.com/api/?name={{ course.instructor|default:'Mentor Staff' }}&background=4f46e5&color=fff"
+                class="rounded-circle border" style="width: 38px; height: 38px;" alt="Mentor Avatar">
+              <div>
+                <div class="fw-bold text-dark extra-small" style="font-size: 13px;">{{ course.instructor|default:"Senior Staff Mentor" }}</div>
+                <span class="text-muted extra-small d-block">Industry Instructor</span>
+              </div>
+            </div>
+            <span class="badge bg-success bg-opacity-10 text-success rounded-pill extra-small fw-bold">Verified</span>
+          </div>
+
+          <!-- Stats Bar -->
+          <div class="stats-bar">
+            <span><i class="bi bi-journal-code text-primary me-1"></i> Full Track</span>
+            <span><i class="bi bi-star-fill text-warning me-1"></i> 4.9 (500+)</span>
+            <span><i class="bi bi-patch-check-fill text-success me-1"></i> Certificate</span>
+          </div>
+
+          <!-- Action Footer -->
+          <div class="mt-auto d-flex align-items-center justify-content-between pt-2">
+            <div>
+              <span class="text-muted extra-small d-block fw-bold">Tuition Fee</span>
+              <span class="fw-extrabold fs-4 text-primary font-mono" style="letter-spacing: -0.5px;">₹{{ course.price }}</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn-cart-action add-to-cart-btn {% if course.id in cart_course_ids %}added{% endif %}"
+                data-id="{{ course.id }}" title="Add to Bag">
+                <i class="bi {% if course.id in cart_course_ids %}bi-bag-check-fill{% else %}bi-bag-plus-fill{% endif %} fs-5"></i>
+              </button>
+              <a href="{% url 'course_detail' course.id %}" class="btn-enroll-action">
+                View Track
+              </a>
+            </div>
+          </div>
+        </div>
+      </article>
+      {% empty %}
+      <div class="col-12 text-center py-5">
+        <div class="p-5 bg-white rounded-4 border">
+          <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
+          <h4 class="fw-bold text-dark">No Course Tracks Found</h4>
+          <p class="text-muted small">Try searching with different keywords or reset category filters.</p>
+          <a href="{% url 'courses' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold">View All Courses</a>
+        </div>
+      </div>
       {% endfor %}
     </div>
   </div>

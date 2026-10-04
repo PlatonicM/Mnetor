@@ -182,6 +182,19 @@ class Invoice(models.Model):
         return self.invoice_number
 
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    profile_image = models.ImageField(upload_to="profiles/", blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+
+    class Meta:
+        db_table = "UserProfile"
+
+    def __str__(self):
+        return f"UserProfile for {self.user.username}"
+
+
 # INSTRUCTOR + REVIEW + KYC
 class InstructorProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="instructor_profile")
@@ -565,3 +578,21 @@ class Submission(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
     # You could trigger a notification or a specialized XP log here
+
+
+class EmailOTP(models.Model):
+    email = models.EmailField(db_index=True)
+    otp_code = models.CharField(max_length=4)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_verified = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "EmailOTP"
+        ordering = ["-created_at"]
+
+    def is_valid(self):
+        return not self.is_verified and timezone.now() <= self.expires_at
+
+    def __str__(self):
+        return f"{self.email} - {self.otp_code}"

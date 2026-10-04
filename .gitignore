@@ -1,0 +1,48 @@
+# Python / Django
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+secrets.json
+
+# Database & Storage
+*.sqlite3
+*.db
+mongodb_data/
+db.sqlite3
+
+# Django Static / Media
+media/
+staticfiles/
+staticfiles_build/
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Node / Frontend Build Tools (if applicable)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

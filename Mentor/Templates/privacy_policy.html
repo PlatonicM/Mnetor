@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Privacy Policy | Mentor Platform{% endblock %}
+
+{% block content %}
+<div class="py-5" style="background: #f8fafc;">
+  <div class="container py-4" style="max-width: 950px;">
+    
+    <!-- Header -->
+    <div class="text-center mb-5">
+      <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-2 rounded-pill mb-3">Legal & Trust</span>
+      <h1 class="display-5 fw-bold text-dark mb-3">Privacy Policy</h1>
+      <p class="text-secondary small mb-0">Last Updated: October 2026 • Effective Date: October 1, 2026</p>
+    </div>
+
+    <!-- Main Content Card -->
+    <div class="bg-white border rounded-4 p-4 p-md-5 shadow-sm">
+      <div class="mb-4">
+        <h4 class="fw-bold text-dark mb-3">1. Introduction</h4>
+        <p class="text-secondary leading-relaxed small">
+          At Mentor Platform ("we", "our", or "us"), we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your data when you visit our website, enroll in course tracks, or interact with our learning management services.
+        </p>
+      </div>
+
+      <hr class="my-4 opacity-50">
+
+      <div class="mb-4">
+        <h4 class="fw-bold text-dark mb-3">2. Information We Collect</h4>
+        <p class="text-secondary leading-relaxed small mb-2">We collect information that you voluntarily provide to us when creating an account, enrolling in courses, or submitting lab assignments:</p>
+        <ul class="text-secondary small leading-relaxed ps-3">
+          <li class="mb-2"><strong>Personal Identity Data:</strong> Name, email address, profile avatar, and account authentication credentials.</li>
+          <li class="mb-2"><strong>Academic & Telemetry Data:</strong> Course enrollment history, lesson progress, quiz scores, certificate issuance records, and lab repository links.</li>
+          <li class="mb-2"><strong>Transaction Data:</strong> Order history, billing invoices, and payment status (note: full credit card credentials are processed securely via encrypted third-party payment gateways).</li>
+        </ul>
+      </div>
+
+      <hr class="my-4 opacity-50">
+
+      <div class="mb-4">
+        <h4 class="fw-bold text-dark mb-3">3. How We Use Your Information</h4>
+        <p class="text-secondary leading-relaxed small mb-2">We utilize collected data solely for legitimate educational and administrative purposes:</p>
+        <ul class="text-secondary small leading-relaxed ps-3">
+          <li class="mb-2">To provision and synchronize your course curriculum progress.</li>
+          <li class="mb-2">To issue verifiable digital certificates upon course completion.</li>
+          <li class="mb-2">To enable 1-on-1 mentor reviews of your project lab submissions.</li>
+          <li class="mb-2">To send essential account updates, real-time OTP verifications, and newsletter insights.</li>
+        </ul>
+      </div>
+
+      <hr class="my-4 opacity-50">
+
+      <div class="mb-4">
+        <h4 class="fw-bold text-dark mb-3">4. Data Protection & Security</h4>
+        <p class="text-secondary leading-relaxed small">
+          We implement industrial-grade security measures including SSL/TLS encryption, secure password hashing, 2FA OTP verification, and strict database access controls to prevent unauthorized access, alteration, or disclosure of your personal data.
+        </p>
+      </div>
+
+      <hr class="my-4 opacity-50">
+
+      <div class="mb-4">
+        <h4 class="fw-bold text-dark mb-3">5. User Rights & Account Erasure</h4>
+        <p class="text-secondary leading-relaxed small">
+          You maintain full ownership of your data. You may request account deletion at any time through your account settings or by requesting a deletion OTP. Permanently deleting your account removes all associated profile data, enrolled tracks, and certificates from active storage.
+        </p>
+      </div>
+
+      <hr class="my-4 opacity-50">
+
+      <div>
+        <h4 class="fw-bold text-dark mb-3">6. Contact Privacy Officer</h4>
+        <p class="text-secondary leading-relaxed small mb-3">
+          If you have questions regarding this Privacy Policy or wish to exercise your data rights, please contact our Privacy Team:
+        </p>
+        <div class="p-3 bg-light rounded-3 border d-flex align-items-center gap-3">
+          <i class="bi bi-shield-lock-fill text-primary fs-3"></i>
+          <div>
+            <div class="fw-bold text-dark small">Mentor Privacy Officer</div>
+            <div class="text-muted extra-small">Email: privacy@mentor.com • IT Park Phase 01, Nagpur, MH-440022</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back Shortcut -->
+    <div class="text-center mt-4">
+      <a href="{% url 'home' %}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold small">
+        <i class="bi bi-arrow-left me-1"></i> Return to Home
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

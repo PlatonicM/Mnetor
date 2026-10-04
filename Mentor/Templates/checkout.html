@@ -1,299 +1,434 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Provisioning Access | Command Center{% endblock %}
+{% block title %}Checkout | Mentor{% endblock %}
 
 {% block extra_css %}
 <style>
-/* --- 1. Industrial Design Tokens --- */
-:root {
-    --figma-bg: #F0F4F8;
-    --figma-primary: #4F46E5; 
-    --figma-success: #059669; 
-    --figma-error: #F43F5E;
-    --figma-border: #E2E8F0;
-    --clr-slate-900: #0f172a;
-    --radius-figma: 28px;
-    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+    /* --- Modern Checkout System --- */
+    :root {
+        --card-bg: #FFFFFF;
+        --card-border: #E2E8F0;
+        --brand-gradient: linear-gradient(135deg, var(--clr-primary), #7c3aed);
+    }
 
-body { background: radial-gradient(circle at top right, #f0fdf4, #f1f5f9); font-family: 'Inter', sans-serif; color: var(--clr-slate-900); }
+    body {
+        background: #F8FAFC;
+        color: #0F172A;
+    }
 
-/* --- 2. Architecture Calibration --- */
-.checkout-grid {
-    display: grid;
-    grid-template-columns: 1fr 420px;
-    gap: 40px;
-    align-items: start;
-    padding-bottom: 50px;
-}
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 32px;
+        align-items: start;
+        padding-bottom: 60px;
+    }
 
-/* --- 3. Checkout Nodes --- */
-.checkout-node {
-    background: rgba(255, 255, 255, 0.9); 
-    backdrop-filter: blur(20px);
-    border: 2px solid #ffffff;
-    border-radius: var(--radius-figma); 
-    padding: 40px;
-    transition: all 0.4s var(--spring-easing);
-    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
-}
+    .checkout-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.04);
+    }
 
-/* --- 4. Terminal Console (Live Feedback) --- */
-.terminal-node {
-    display: none; background: #0f172a; color: #10b981; 
-    padding: 24px; border-radius: 20px; margin-bottom: 30px;
-    font-family: 'JetBrains Mono', monospace; font-size: 12px;
-    border-left: 5px solid var(--figma-primary);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-    position: relative; overflow: hidden;
-}
+    .form-label-modern {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        display: block;
+    }
 
-/* --- 5. Summary Profile Pod --- */
-.avatar-handshake-wrapper {
-    width: 70px; height: 70px; padding: 4px;
-    background: white; border: 2px solid var(--figma-primary);
-    border-radius: 18px; transition: 0.6s var(--spring-easing);
-}
-.avatar-handshake-wrapper:hover { transform: rotate(-5deg) scale(1.1); border-color: var(--figma-success); }
+    .form-control-modern {
+        border: 2px solid #E2E8F0;
+        padding: 14px 18px;
+        border-radius: 14px;
+        font-weight: 600;
+        transition: all 0.25s ease;
+        background: #FFFFFF;
+        color: #0F172A;
+        font-size: 0.95rem;
+    }
 
-/* --- 6. Pricing Logic --- */
-.meta-card { 
-    background: rgba(255, 255, 255, 0.5); 
-    border-radius: 22px; padding: 28px; margin-bottom: 30px; 
-    border: 1px solid var(--figma-border); 
-}
+    .form-control-modern:focus {
+        border-color: var(--clr-primary);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+        outline: none;
+    }
 
-.price-row { 
-    display: flex; justify-content: space-between; padding: 15px 0; 
-    border-bottom: 1px dashed var(--figma-border); 
-    font-size: 14px;
-}
+    .terminal-node {
+        display: none;
+        background: #0F172A;
+        color: #10B981;
+        padding: 18px 24px;
+        border-radius: 16px;
+        margin-bottom: 24px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        border-left: 4px solid var(--clr-primary);
+    }
 
-.grand-total-box { 
-    background: linear-gradient(135deg, #1e293b, #0f172a); 
-    color: white; padding: 32px; border-radius: 24px; margin-top: 35px;
-    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.4);
-}
+    .summary-user-pod {
+        background: #F8FAFC;
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 24px;
+        border: 1px solid #E2E8F0;
+    }
 
-/* --- 7. Industrial Forms --- */
-.form-label-tech { font-size: 10px; font-weight: 900; color: var(--figma-primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; display: block; }
-.form-control-tech { 
-    border: 2px solid var(--figma-border); padding: 18px; border-radius: 16px; font-weight: 700; 
-    transition: 0.3s; background: #ffffff; font-family: 'Inter', sans-serif;
-}
-.form-control-tech:focus { border-color: var(--figma-primary); box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.1); outline: none; }
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px dashed #E2E8F0;
+        font-size: 0.9rem;
+    }
 
-.fw-black { font-weight: 900 !important; }
-.font-mono { font-family: 'JetBrains Mono', monospace; }
+    .grand-total-box {
+        background: linear-gradient(135deg, #0F172A, #1E293B);
+        color: #FFFFFF;
+        padding: 24px;
+        border-radius: 20px;
+        margin-top: 24px;
+    }
 
-@media (max-width: 1100px) { .checkout-grid { grid-template-columns: 1fr; } }
+    .btn-pay-now {
+        background: var(--brand-gradient);
+        color: #FFFFFF;
+        width: 100%;
+        padding: 16px;
+        border-radius: 14px;
+        border: none;
+        font-weight: 800;
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 24px rgba(99, 102, 241, 0.35);
+        cursor: pointer;
+    }
+
+    .btn-pay-now:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(99, 102, 241, 0.45);
+    }
+
+    @media (max-width: 992px) {
+        .checkout-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="py-5 container-fluid px-lg-5">
-    
-    <div class="mb-5 reveal">
-        <div class="d-flex justify-content-between align-items-center">
+<div class="container px-lg-4 py-5">
+
+    <!-- Hero Header -->
+    <div class="mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div>
-                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill font-mono fw-black mb-3" style="font-size: 10px; letter-spacing: 1px;">
-                    <i class="bi bi-shield-lock-fill me-1"></i> SSL_SECURE_VAULT_ACTIVE
+                <span class="badge bg-success-subtle text-success px-3 py-1.5 rounded-pill fw-bold small mb-2">
+                    <i class="bi bi-shield-check me-1"></i> 256-Bit SSL Encrypted Checkout
                 </span>
-                <h1 class="fw-black m-0 tracking-tighter" style="font-size: 3.5rem;">FINAL <span class="text-primary">HANDSHAKE</span></h1>
+                <h1 class="fw-extrabold mb-1" style="font-size: 2.25rem; letter-spacing: -0.8px;">Checkout</h1>
             </div>
-            <div class="text-end d-none d-lg-block bg-white p-3 rounded-4 border shadow-sm">
-                <small class="form-label-tech mb-1">ORDER_ID</small>
-                <div class="h5 fw-black font-mono text-dark mb-0" id="orderIDDisplay">ORD-SYNCING...</div>
+            <div class="bg-white px-3 py-2 rounded-4 border shadow-sm text-end">
+                <span class="text-muted extra-small d-block text-uppercase fw-bold">Order ID</span>
+                <span class="fw-bold font-mono text-primary" id="orderIDDisplay">ORD-SYNCING...</span>
             </div>
         </div>
     </div>
 
     <div class="checkout-grid">
-        <div class="reveal">
-            <div id="statusTerminal" class="terminal-node mb-4">
-                <div id="terminalLog">> READY FOR IDENTITY VERIFICATION...</div>
+
+        <!-- Left Column: Payment Form -->
+        <div>
+            <div id="statusTerminal" class="terminal-node">
+                <div id="terminalLog">> Initializing secure payment gateway...</div>
             </div>
 
-            <div class="checkout-node border-primary border-top-0" style="border-top: 6px solid var(--figma-primary) !important;">
-                <h5 class="fw-black mb-5 tracking-tight"><i class="bi bi-credit-card-2-front me-2 text-primary"></i>PAYMENT GATEWAY (CC)</h5>
-                
+            <div class="checkout-card">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h5 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-credit-card-fill text-primary"></i> Payment Details
+                    </h5>
+                    <div class="d-flex align-items-center gap-2 text-muted fs-5">
+                        <i class="bi bi-credit-card-2-front"></i>
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                </div>
+
                 <form id="payment-handshake-form">
                     {% csrf_token %}
-                    <div class="row g-4">
+                    <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label-tech">CARDHOLDER NAME</label>
-                            <input type="text" name="card_name" required class="form-control-tech w-100 font-mono" value="{{ user.get_full_name|upper }}" placeholder="VERIFIED NAME REQUIRED">
+                            <label class="form-label-modern">Cardholder Name</label>
+                            <input type="text" name="card_name" required class="form-control-modern w-100"
+                                value="{{ user.get_full_name|default:user.username }}"
+                                placeholder="Enter full name on card">
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label-tech">ACCOUNT NUMBER</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-2 border-end-0 px-3 text-primary"><i class="bi bi-lock"></i></span>
-                                <input type="text" id="cardNum" required class="form-control-tech border-start-0 flex-grow-1 font-mono" placeholder="0000 0000 0000 0000" maxlength="19">
+                            <label class="form-label-modern">Card Number</label>
+                            <div class="position-relative">
+                                <input type="text" id="cardNum" required
+                                    class="form-control-modern w-100 pe-5 font-mono" placeholder="4532 •••• •••• 8921"
+                                    maxlength="19">
+                                <span class="position-absolute top-50 end-0 translate-middle-y me-3 text-muted">
+                                    <i class="bi bi-credit-card fs-5"></i>
+                                </span>
                             </div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label-tech">VALIDATION EXPIRY</label>
-                            <input type="text" id="cardExp" required class="form-control-tech w-100 font-mono" placeholder="MM / YY" maxlength="7">
+                            <label class="form-label-modern">Expiry Date</label>
+                            <input type="text" id="cardExp" required class="form-control-modern w-100 font-mono"
+                                placeholder="MM / YY" maxlength="7">
                         </div>
+
                         <div class="col-md-6">
-                            <label class="form-label-tech">SECURITY TOKEN (CVV)</label>
-                            <input type="password" maxlength="3" required class="form-control-tech w-100 font-mono" placeholder="•••">
+                            <label class="form-label-modern">Security Code (CV)</label>
+                            <input type="password" maxlength="4" required class="form-control-modern w-100 font-mono"
+                                placeholder="•••">
                         </div>
                     </div>
 
-                    <div class="mt-5">
-                        <button type="submit" class="btn btn-primary w-100 py-4 rounded-pill fw-black shadow-lg" id="procBtn" style="font-size: 16px; letter-spacing: 2px;">
-                            PAY AMOUNT <i class="bi bi-lightning-charge-fill ms-2"></i>
+                    <div class="mt-4 pt-2">
+                        <button type="submit" class="btn-pay-now" id="procBtn">
+                            Pay ₹{{ final_total }} Now <i class="bi bi-lock-fill"></i>
                         </button>
-                        <div class="d-flex align-items-center justify-content-center gap-3 mt-4">
-                            <i class="bi bi-shield-check text-success fs-5"></i>
-                            <p class="text-muted extra-small mb-0 font-mono">ENCRYPTED VIA HIGH-SECURITY HSM MODULE</p>
+                        <div class="d-flex align-items-center justify-content-center gap-2 mt-3 text-muted extra-small">
+                            <i class="bi bi-shield-fill-check text-success"></i>
+                            <span>Guaranteed Safe & Secure Checkout</span>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
 
-        <aside class="reveal" style="animation-delay: 0.15s;">
-            <div class="checkout-node">
-                <h6 class="fw-black mb-4 font-mono text-primary tracking-widest" style="font-size: 12px;">ORDER SUMMARY</h6>
-                
-                <div class="meta-card shadow-sm">
-                    <div class="d-flex align-items-center gap-4">
-                        <div class="avatar-handshake-wrapper shadow-sm">
-                            <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=4F46E5&color=fff&size=128" class="w-100 h-100 rounded-3">
+        <!-- Right Column: Order Summary -->
+        <aside>
+            <div class="checkout-card">
+                <h5 class="fw-bold mb-4 text-dark">Order Summary</h5>
+
+                <div class="summary-user-pod">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold fs-5"
+                            style="width: 46px; height: 46px; background: var(--brand-gradient);">
+                            {{ user.username|first|upper }}
                         </div>
                         <div class="overflow-hidden">
-                            <span class="form-label-tech mb-1" style="color: var(--clr-slate-600);">AUTHORIZED STUDENT </span>
-                            <h5 class="fw-black text-dark mb-0 text-truncate">{{ user.username|upper }}</h5>
-                            <span class="badge bg-primary bg-opacity-10 text-primary font-mono" style="font-size: 8px;">COURSE_ID: #{{ user.id|add:1092 }}</span>
+                            <span class="extra-small text-muted d-block text-uppercase fw-bold">Student Account</span>
+                            <h6 class="fw-bold text-dark mb-0 text-truncate">{{ user.get_full_name|default:user.username }}</h6>
+                            <span class="text-muted extra-small">{{ user.email }}</span>
                         </div>
-                    </div>
-                    <div class="mt-4 pt-4 border-top">
-                        <div class="mb-3 d-flex justify-content-between">
-                            <span class="form-label-tech" style="color: var(--clr-slate-600);">SYCN TIMESTAMP</span>
-                            <span class="fw-black font-mono small" id="nodeDate">--/--/--</span>
-                        </div>
-                       <!--  <div class="d-flex justify-content-between">
-                            <span class="form-label-tech" style="color: var(--clr-slate-600);">NETWORK STATUS</span>
-                            <span class="text-success small fw-black font-mono">LINK_STABLE</span>
-                        </div> -->
                     </div>
                 </div>
 
-                <div class="px-2">
-                    <div class="price-row font-mono">
-                        <span class="text-muted">BASE AMOUNT</span>
-                        <span class="fw-black text-dark">₹{{ total }}</span>
+                <!-- Enrolled Tracks Collapsible Dropdown -->
+                <div class="mb-4">
+                    <div class="accordion border-0 rounded-3 shadow-sm overflow-hidden" id="selectedTracksAccordion">
+                        <div class="accordion-item border">
+                            <h2 class="accordion-header" id="headingTracks">
+                                <button class="accordion-button fw-bold text-dark py-3 px-3 bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTracks" aria-expanded="true" aria-controls="collapseTracks" style="font-size: 0.9rem;">
+                                    <div class="d-flex align-items-center justify-content-between w-100 pe-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-journal-code text-primary fs-5"></i>
+                                            <span>Selected Tracks</span>
+                                        </div>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 extra-small">{{ items|length }} Track{% if items|length != 1 %}s{% endif %}</span>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapseTracks" class="accordion-collapse collapse show" aria-labelledby="headingTracks" data-bs-parent="#selectedTracksAccordion">
+                                <div class="accordion-body p-0 border-top bg-light">
+                                    <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                                        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                            <thead class="bg-white border-bottom sticky-top">
+                                                <tr class="text-muted extra-small text-uppercase fw-bold">
+                                                    <th scope="col" class="ps-3 py-2 text-center" style="width: 40px;">#</th>
+                                                    <th scope="col" class="py-2">Track Details</th>
+                                                    <th scope="col" class="pe-3 py-2 text-end" style="width: 90px;">Price</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white">
+                                                {% for item in items %}
+                                                <tr>
+                                                    <td class="ps-3 py-2.5 text-center align-middle text-muted fw-bold font-mono" style="font-size: 0.8rem;">
+                                                        {{ forloop.counter }}
+                                                    </td>
+                                                    <td class="py-2.5">
+                                                        <div class="d-flex align-items-center gap-2.5">
+                                                            {% if item.image %}
+                                                            <img src="{{ item.image.url }}" class="rounded-3 border flex-shrink-0" style="width: 40px; height: 40px; object-fit: cover;" alt="{{ item.name }}"
+                                                                 onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'bg-primary bg-opacity-10 text-primary rounded-3 border d-flex align-items-center justify-content-center flex-shrink-0\' style=\'width: 40px; height: 40px;\'><i class=\'bi bi-journal-code fs-5\'></i></div>';">
+                                                            {% else %}
+                                                            <div class="bg-primary bg-opacity-10 text-primary rounded-3 border d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
+                                                                <i class="bi bi-journal-code fs-5"></i>
+                                                            </div>
+                                                            {% endif %}
+                                                            <div class="flex-grow-1 overflow-hidden">
+                                                                <div class="fw-bold text-dark lh-sm mb-1 text-wrap" style="font-size: 0.88rem; word-break: break-word;">{{ item.name }}</div>
+                                                                {% if item.category %}
+                                                                <div>
+                                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill extra-small px-2 py-0.5" style="font-size: 10px;">
+                                                                        {{ item.category }}
+                                                                    </span>
+                                                                </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="pe-3 py-2.5 text-end align-middle">
+                                                        <span class="fw-bold text-primary font-mono" style="font-size: 0.95rem;">₹{{ item.price }}</span>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="price-row font-mono">
-                        <span class="text-muted">GST(18%)</span>
-                        <span class="fw-black text-dark">₹{{ gst }}</span>
+                </div>
+
+                <div class="px-1">
+                    <div class="price-row">
+                        <span class="text-muted">Subtotal</span>
+                        <span class="fw-bold text-dark font-mono">₹{{ total }}</span>
                     </div>
-                    <div class="price-row font-mono border-0">
-                        <span class="text-muted">PLATFORM Fee</span>
-                        <span class="fw-black text-primary">+ ₹3.00</span>
+                    <div class="price-row">
+                        <span class="text-muted">GST (18%)</span>
+                        <span class="fw-bold text-dark font-mono">₹{{ gst }}</span>
+                    </div>
+                    <div class="price-row border-0">
+                        <span class="text-muted">Platform Fee</span>
+                        <span class="fw-bold text-success">FREE</span>
                     </div>
                 </div>
 
                 <div class="grand-total-box">
-                    <div class="d-flex justify-content-between align-items-end">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <small class="form-label-tech text-white-50 opacity-50 font-mono">TOTAL AMOUNT</small>
-                            <div class="display-5 fw-black m-0 font-mono" id="finalTotalDisplay" style="letter-spacing: -3px;">₹{{ final_total }}</div>
+                            <small class="text-white-50 text-uppercase fw-semibold" style="font-size: 0.75rem;">Total Amount</small>
+                            <div class="fs-2 fw-black text-white mt-1" id="finalTotalDisplay"
+                                style="letter-spacing: -1px;">₹{{ final_total }}</div>
                         </div>
-                        <div class="text-end">
-                            <div class="spinner-grow text-success" style="width: 15px; height: 15px;" role="status"></div>
-                        </div>
+                        <i class="bi bi-patch-check-fill fs-2 text-success"></i>
                     </div>
                 </div>
 
-                <div class="mt-4 pt-4 text-center">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" height="20" class="opacity-25 grayscale px-2">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" height="20" class="opacity-25 grayscale px-2">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" height="20" class="opacity-25 grayscale px-2">
+                <div class="mt-4 pt-3 text-center border-top">
+                    <div class="d-flex align-items-center justify-content-center gap-3 text-muted opacity-75">
+                        <i class="bi bi-credit-card-2-back fs-4" title="Cards"></i>
+                        <i class="bi bi-bank fs-4" title="NetBanking"></i>
+                        <i class="bi bi-qr-code-scan fs-4" title="UPI Payment"></i>
+                        <i class="bi bi-shield-lock-fill fs-4 text-success" title="SSL Encrypted"></i>
+                    </div>
                 </div>
             </div>
         </aside>
     </div>
-</section>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. Telemetry Generation Protocol
-    const orderID = "ORD-" + Math.random().toString(36).substr(2, 9).toUpperCase();
-    const authID = "AUTH-" + Math.random().toString(36).substr(2, 12).toUpperCase();
-    
-    document.getElementById('orderIDDisplay').innerText = orderID;
-    document.getElementById('nodeDate').innerText = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+    document.addEventListener("DOMContentLoaded", () => {
+        // Generate Order ID
+        const orderID = "ORD-" + Math.random().toString(36).substr(2, 8).toUpperCase();
+        const orderDisplay = document.getElementById('orderIDDisplay');
+        if (orderDisplay) orderDisplay.innerText = orderID;
 
-    // 2. Input Masking Protocol
-    document.getElementById('cardNum').addEventListener('input', (e) => {
-        e.target.value = e.target.value.replace(/[^\d]/g, '').replace(/(.{4})/g, '$1 ').trim();
-    });
-    document.getElementById('cardExp').addEventListener('input', (e) => {
-        e.target.value = e.target.value.replace(/[^\d]/g, '').replace(/(.{2})/g, '$1 / ').replace(/\s\/\s$/, '').trim();
-    });
+        // Card formatting masks
+        const cardNum = document.getElementById('cardNum');
+        if (cardNum) {
+            cardNum.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[^\d]/g, '').replace(/(.{4})/g, '$1 ').trim();
+            });
+        }
 
-    // 3. Secure Handshake Form Protocol
-    document.getElementById('payment-handshake-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('procBtn');
-        const term = document.getElementById('statusTerminal');
-        const log = document.getElementById('terminalLog');
+        const cardExp = document.getElementById('cardExp');
+        if (cardExp) {
+            cardExp.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[^\d]/g, '').replace(/(.{2})/g, '$1 / ').replace(/\s\/\s$/, '').trim();
+            });
+        }
 
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> INITIALIZING_SYNC...';
-        term.style.display = 'block';
+        // Submit Handler
+        const paymentForm = document.getElementById('payment-handshake-form');
+        if (paymentForm) {
+            paymentForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const btn = document.getElementById('procBtn');
+                const term = document.getElementById('statusTerminal');
+                const log = document.getElementById('terminalLog');
 
-        // Simulated Sequential Console Handshake
-        const steps = [
-            '> ESTABLISHING SECURE TUNNEL...',
-            '> RSA_4096 HANDSHAKE VERIFIED',
-            '> INJECTING NODE_AUTH: ' + authID,
-            '> ALLOCATING CLOUD ASSETS...',
-            '> FINALIZING TRANSACTION...',
-            '> SYNC_SUCCESSFUL: REDIRECTING...'
-        ];
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processing Payment...';
+                term.style.display = 'block';
 
-        steps.forEach((msg, i) => {
-            setTimeout(() => {
-                log.innerHTML = msg;
-                if (i === steps.length - 1) {
-                    executeActualCheckout(btn, log);
+                const steps = [
+                    '> Connecting to bank servers...',
+                    '> Verifying payment authorization...',
+                    '> Finalizing transaction...',
+                    '> Success! Enrolling into course tracks...'
+                ];
+
+                steps.forEach((msg, i) => {
+                    setTimeout(() => {
+                        log.innerText = msg;
+                        if (i === steps.length - 1) {
+                            executeActualCheckout(btn, log);
+                        }
+                    }, (i + 1) * 450);
+                });
+            });
+        }
+
+        function executeActualCheckout(btn, log) {
+            fetch("{% url 'checkout_process' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
-            }, i * 600);
-        });
-    });
-
-    function executeActualCheckout(btn, log) {
-        fetch("{% url 'checkout_process' %}", {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = data.redirect_url;
-            } else {
-                log.innerHTML = '> CRITICAL_ERROR: ' + data.message;
-                log.style.color = '#F43F5E';
+            })
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(errData => {
+                        throw new Error(errData.message || 'Payment processing failed');
+                    }).catch(() => {
+                        throw new Error('Server status ' + res.status);
+                    });
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    log.innerText = '> Error: ' + (data.message || 'Payment processing failed');
+                    log.style.color = '#EF4444';
+                    btn.disabled = false;
+                    btn.innerHTML = 'Try Payment Again <i class="bi bi-arrow-right"></i>';
+                }
+            })
+            .catch(err => {
+                log.innerText = '> Error: ' + (err.message || 'Payment processing failed. Please try again.');
+                log.style.color = '#EF4444';
                 btn.disabled = false;
-                btn.innerText = 'RE-INITIALIZE PROTOCOL';
-            }
-        });
-    }
-
-    // Entrance reveal
-    document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
-});
+                btn.innerHTML = 'Try Payment Again <i class="bi bi-arrow-right"></i>';
+            });
+        }
+    });
 </script>
 {% endblock %}

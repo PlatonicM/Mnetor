@@ -1,181 +1,468 @@
-# 🎓 Mentor LMS — Learning Management System
+# 🎓Mentor — Next-Gen Learning Platform
 
-[![Django](https://img.shields.io/badge/Django-6.0-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
-[![Python](https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Channels](https://img.shields.io/badge/WebSockets-Django_Channels-000000?style=for-the-badge&logo=socketdotio&logoColor=white)](https://channels.readthedocs.io/)
-[![WeasyPrint](https://img.shields.io/badge/PDF_Generation-WeasyPrint_67.0-4CAF50?style=for-the-badge)](https://weasyprint.org/)
-[![Database](https://img.shields.io/badge/Database-SQLite%20%7C%20PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-
-**Mentor LMS** is an enterprise-grade, high-performance Learning Management System built with Django 6.0 and Python 3.14. Designed for scale, it integrates real-time WebSocket notifications, dynamic PDF certificate & invoice rendering, multi-tiered instructor operations, interactive progress tracking, and secure transaction workflows.
+[![Django 6.0](https://img.shields.io/badge/Framework-Django_6.0-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![Python 3.14](https://img.shields.io/badge/Language-Python_3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Database Architecture](https://img.shields.io/badge/Database-SQLite_%7C_MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![WebSockets](https://img.shields.io/badge/Realtime-Django_Channels-000000?style=for-the-badge&logo=socketdotio&logoColor=white)](https://channels.readthedocs.io/)
+[![PDF Engine](https://img.shields.io/badge/Engine-ReportLab_%7C_WeasyPrint-4CAF50?style=for-the-badge)](https://weasyprint.org/)
+[![Security](https://img.shields.io/badge/Security-AES--256_%7C_HMAC_Verification-DC2626?style=for-the-badge&logo=shield&logoColor=white)](#-security--authorization-matrix)
 
 ---
 
-## 🏗️ System Architecture
+## 📌 Table of Contents
+1. [Overview](#-overview)
+2. [Platform Screenshots](#-platform-screenshots)
+3. [System Architecture Topology](#-system-architecture-topology)
+4. [Algorithm Flowchart](#-algorithm-flowchart)
+5. [SDLC (Software Development Life Cycle)](#-sdlc-software-development-life-cycle)
+6. [Component Sequence Flowchart](#-component-sequence-flowchart)
+7. [Entity-Relationship (ER) Schema](#-entity-relationship-er-schema)
+8. [Database Architecture & Hybrid Storage](#-database-architecture--hybrid-storage)
+9. [Class Diagram & Domain Entities](#-class-diagram--domain-entities)
+10. [Admin Command Center Flowchart](#-admin-command-center-flowchart)
+11. [Student & Learner Lifecycle Sequence](#-student--learner-lifecycle-sequence)
+12. [Certificate Verification Topology](#-certificate-verification-topology)
+13. [Key Features & System Capabilities](#-key-features--system-capabilities)
+14. [Installation & Operational Setup](#-installation--operational-setup)
+15. [Security & Authorization Matrix](#-security--authorization-matrix)
+16. [About The Author](#-about-the-author)
+17. [License](#-license)
+
+---
+
+## 🚀 Overview
+
+**Mentor** is an enterprise-grade high-performance Learning Management & Executive Education Ecosystem built on **Django 6.0**, **Python 3.14**, **ReportLab Vector Graphics**, and a hybrid **SQLite + MongoDB** persistence engine. 
+
+Designed with modern slate and indigo aesthetic design systems, Mentor delivers 1-on-1 mentorship, dynamic course video delivery, automated OTP authentication, cryptographic certificate generation, live sales analytics, and automated multi-channel notifications.
+
+---
+
+## 🖼️ Platform Screenshots
+
+| Page View | Interface Preview |
+| :--- | :--- |
+| **🏠 Hero Section** | <img src="assets/screenshots/hero.png" width="480" alt="Hero Section" /> |
+| **📚 Courses Catalog** | <img src="assets/screenshots/courses.png" width="480" alt="Courses Catalog" /> |
+| **📰 Blog & Articles** | <img src="assets/screenshots/blog.png" width="480" alt="Blog Page" /> |
+| **ℹ️ About Mentor** | <img src="assets/screenshots/about.png" width="480" alt="About Page" /> |
+| **🔑 Secure Login** | <img src="assets/screenshots/login.png" width="480" alt="Login Page" /> |
+| **📊 Student Dashboard** | <img src="assets/screenshots/dashboard.png" width="480" alt="Student Dashboard" /> |
+| **🚀 Learning Hub** | <img src="assets/screenshots/hub.png" width="480" alt="Learning Hub" /> |
+
+---
+
+## 🏗️ System Architecture Topology
 
 ```mermaid
 graph TD
-    Client["🌐 Client (Browser / PWA)"] --> |HTTP / REST| WebServer["⚡ Web Server (Daphne / Waitress / Gunicorn)"]
-    Client --> |WebSockets| Channels["📡 Django Channels Engine"]
+    subgraph Client_Layer["Client Layer"]
+        A["🌐 Web Browser / Desktop"]
+        B["📱 Mobile Web App"]
+    end
+
+    subgraph Gateway_App["Gateway & Application Server"]
+        C["🛡️ CSRF & Auth Middleware"]
+        D["⚙️ Django 6.0 Core WSGI/ASGI"]
+        E["🔑 RBAC & Admin Guard"]
+    end
+
+    subgraph Business_Logic["Business Logic & Engines"]
+        F["🎓 Course & Video Stream Engine"]
+        G["📜 Cryptographic Certificate Engine"]
+        H["📊 Analytics & Matplotlib Visualizer"]
+        I["✉️ Email OTP & Mailer Queue"]
+    end
+
+    subgraph Persistence["Persistence Layer"]
+        J[("🗄️ SQLite Primary DB")]
+        K[("🍃 MongoDB Document Store")]
+        L["📁 Media Storage System"]
+    end
+
+    A --> C
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    E --> G
+    E --> H
+    E --> I
+    F --> J
+    F --> K
+    G --> L
+    H --> J
+    I --> J
+
+    classDef client fill:#4f46e5,color:#fff,stroke:#3730a3,stroke-width:2px;
+    classDef app fill:#0f172a,color:#fff,stroke:#1e293b,stroke-width:2px;
+    classDef db fill:#059669,color:#fff,stroke:#047857,stroke-width:2px;
+    classDef bg fill:#7c3aed,color:#fff,stroke:#5b21b6,stroke-width:2px;
+
+    class A,B client;
+    class C,D,E app;
+    class F,G,H,I bg;
+    class J,K,L db;
+```
+
+---
+
+## ⚡ Algorithm Flowchart
+
+```mermaid
+flowchart TD
+    subgraph OTP_Engine["1. OTP Authentication & Verification Algorithm"]
+        A1[User Requests Login] --> A2{User Credentials Valid?}
+        A2 -- No --> A3[Return 401 Unauthorized Error]
+        A2 -- Yes --> A4[Generate Cryptographic 6-Digit Token]
+        A4 --> A5[Store Hashed OTP in DB with 10-Min Expiry]
+        A5 --> A6[Dispatch Async SMTP Email to User]
+        A6 --> A7[User Submits Input Code]
+        A7 --> A8{Is Code Valid & Unexpired?}
+        A8 -- Valid --> A9[Mark OTP Used & Issue Auth Cookie]
+        A8 -- Invalid --> A10[Increment Failure Counter & Block Access]
+    end
+
+    subgraph Pricing_Engine["2. Dynamic Course Pricing Algorithm"]
+        B1[Fetch Course Record from MongoDB/SQLite] --> B2{User Has Active Coupon?}
+        B2 -- Yes --> B3["Apply Discount Token"]
+        B2 -- No --> B4{Course In Flash Sale?}
+        B4 -- Yes --> B5["Apply Seasonal Discount Rate"]
+        B4 -- No --> B6[Set Standard Catalog Price]
+        B3 --> B7[Compute Final Cart Total & Invoice Tax]
+        B5 --> B7
+        B6 --> B7
+    end
+
+    subgraph Cert_Engine["3. Vector Certificate & QR Signing Algorithm"]
+        C1[Student Completes Track Modules] --> C2[Generate Cryptographic Code]
+        C2 --> C3["Create Public Verification Path"]
+        C3 --> C4[Generate High-Resolution Vector QR Code Payload]
+        C4 --> C5[Initialize ReportLab PDF Canvas Stream]
+        C5 --> C6[Draw Custom Typography, Badges & Embedded QR Code]
+        C6 --> C7[Compile High-Res Vector PDF File & Store in Media]
+    end
+```
+
+---
+
+## 🔄 SDLC (Software Development Life Cycle)
+
+```mermaid
+graph LR
+    subgraph SDLC_Pipeline["SDLC Engineering Pipeline"]
+        Phase1["1. Requirements & Scope"] --> Phase2["2. System Architecture & Hybrid DB"]
+        Phase2 --> Phase3["3. Slate & Indigo UI/UX System"]
+        Phase3 --> Phase4["4. Django 6.0 Core & App Dev"]
+        Phase4 --> Phase5["5. Matplotlib & PDF Vector Engines"]
+        Phase5 --> Phase6["6. Security Audit & RBAC Guards"]
+        Phase6 --> Phase7["7. Automated Verification & Deployment"]
+        Phase7 --> Phase8["8. Operations, Analytics & Monitoring"]
+    end
+
+    classDef phase fill:#0f172a,color:#fff,stroke:#4f46e5,stroke-width:2px;
+    class Phase1,Phase2,Phase3,Phase4,Phase5,Phase6,Phase7,Phase8 phase;
+```
+
+---
+
+## 🔄 Component Sequence Flowchart
+
+```mermaid
+flowchart TD
+    Start([User Arrives at Platform]) --> CheckAuth{Is Authenticated?}
     
-    WebServer --> Django["🐍 Django 6.0 Core Framework"]
-    Channels --> Redis["🔴 Redis Channel Layer"]
+    CheckAuth -- No --> AuthChoice{Action?}
+    AuthChoice -- Login --> LoginProcess[Submit Credentials] --> OTPGen[Generate 6-Digit OTP] --> VerifyOTP{OTP Valid?}
+    VerifyOTP -- Yes --> GrantSession[Create User Session] --> DashboardRedirect[Redirect to Dashboard]
+    VerifyOTP -- No --> AuthChoice
     
-    Django --> AuthNode["🔐 Security & Auth (RBAC / Session Middleware)"]
-    Django --> CurriculumNode["📚 Curriculum Engine (Courses, Lessons, Progress)"]
-    Django --> CommerceNode["💳 Transaction Engine (Cart, Orders, Invoices)"]
-    Django --> MentorHub["👨‍🏫 Mentor Ops & KYC Engine"]
+    AuthChoice -- Browse Courses --> ViewHome[Home Page / Catalog]
     
-    CurriculumNode --> PDFEngine["📄 WeasyPrint PDF Renderer (Certificates & Invoices)"]
-    Django --> DB[("🗄️ Database (SQLite / PostgreSQL)")]
+    CheckAuth -- Yes --> RoleCheck{User Role?}
     
-    Cron["⏱️ Background Cron Tasks"] --> |Event Reminders| Django
+    RoleCheck -- "Admin User" --> AdminGate["Grant Command Center Access"] --> AdminDashboard["View Revenue, Sales & CRUD Courses"]
+    RoleCheck -- "Student / Learner" --> StudentDash[Student Dashboard]
+    
+    StudentDash --> Enroll[Enroll in Track] --> Checkout["Checkout & Payment"] --> OrderPaid["Generate Order & Invoice PDF"]
+    OrderPaid --> StreamCourse[Access Video Player & Labs]
+    StreamCourse --> PassExam[Complete Track Modules] --> IssueCert[Generate QR-Signed Certificate]
 ```
 
 ---
 
-## ✨ Enterprise Features
+## 📐 Entity-Relationship (ER) Schema
 
-### 🔐 1. Identity & Security Architecture
-* **Dual-Tier Authentication System**:
-  * **Standard User Node**: Accessible via web authentication (`/identity/login/`).
-  * **Superuser Security Protocol**: Admin accounts (`is_superuser=True`) are isolated from the web login page and restricted strictly to the secure Admin Command Center (`/admin/`).
-* **Active Session Middleware**: Real-time session monitoring and multi-device session invalidation.
-* **Role-Based Access Control (RBAC)**: Fine-grained permissions for Students, Instructors, and System Administrators.
+```mermaid
+erDiagram
+    USER ||--o{ ORDER : places
+    USER ||--o{ MY_COURSE : enrolls
+    USER ||--o{ CERTIFICATE : earns
+    USER ||--o{ NOTIFICATION : receives
+    USER ||--o| INSTRUCTOR_PROFILE : creates
 
-### 📚 2. Curriculum & Learning Engine
-* **Course Catalog & Lesson Hierarchy**: Structured courses with video support, rich descriptions, and lesson order management.
-* **Interactive Progress Telemetry**: Real-time progress percentage calculation per enrolled student based on completed lesson tracking.
-* **Dynamic PDF Certificate Generation**: Instant PDF generation powered by WeasyPrint with unique verification identifiers.
-* **Certificate Verification Engine**: Public validation endpoint (`/verify/cert/<cert_id>/`) for third-party certificate authenticity checks.
+    COURSES ||--o{ ORDER_ITEM : contained_in
+    COURSES ||--o{ MY_COURSE : assigned_to
+    COURSES ||--o{ LESSON : contains
+    COURSES ||--o{ COURSE_RATING : receives
 
-### 💳 3. E-Commerce & Transaction Pipeline
-* **Shopping Cart & Direct Checkout**: Full-featured cart management (`add_to_cart`, `remove_from_cart`) and streamlined checkout workflows.
-* **Automated Invoice Generation**: On-the-fly PDF invoice generation (`/invoice/download/<order_id>/`) for completed purchases.
-* **Multi-Currency Transaction Support**: Configurable currency models with order status tracking (`PENDING`, `PAID`, `FAILED`, `REFUNDED`).
+    ORDER ||--|{ ORDER_ITEM : includes
+    ORDER ||--o| INVOICE : generates
 
-### 👨‍🏫 4. Mentor Operations & KYC Verification
-* **Instructor Onboarding Workflow**: Application form for prospective instructors with document verification.
-* **KYC Document Compliance**: Upload and administrative audit pipeline for instructor KYC documents (`KYCDocument`).
-* **Instructor Analytics & Reviews**: Interactive analytics charts and student review submission handshakes.
+    USER {
+        int id PK
+        string email UK
+        string username
+        boolean is_staff
+        boolean is_superuser
+        datetime date_joined
+    }
 
-### 📡 5. Real-Time Signals & Event Cluster
-* **WebSocket Signal Broadcasts**: Asynchronous real-time notification dispatch powered by **Django Channels** and Redis.
-* **Event Management Cluster**: Live events, seat reservations, and instant `.ics` calendar file exports (`event_ics`).
-* **Scheduled Background Reminders**: Automated event reminder dispatches running via `django-cron` background tasks.
+    COURSES {
+        int id PK
+        string name
+        string category
+        decimal price
+        string instructor
+        string image_url
+    }
 
----
+    ORDER {
+        int id PK
+        int user_id FK
+        decimal total
+        string status
+        datetime created_at
+    }
 
-## 📂 Project Structure
-
-```
-Mentor/
-├── env/                            # Python Virtual Environment (Python 3.14)
-└── Mentor/                         # Django Application Root
-    ├── manage.py                   # Django CLI utility (Includes GLib warning suppression)
-    ├── db.sqlite3                  # SQLite Database Instance
-    ├── requirements.txt            # Python Dependencies
-    ├── classapp/                   # Core Application Module
-    │   ├── models.py               # Data Models (Courses, Lessons, Orders, KYC, etc.)
-    │   ├── views.py                # Business Logic & Controllers (2600+ lines)
-    │   ├── urls.py                 # Route Endpoints & API Handshakes
-    │   ├── forms.py                # Form Validation Protocols
-    │   ├── consumers.py            # WebSocket Channels Consumers
-    │   ├── middleware.py           # Custom Active Session Middleware
-    │   ├── admin_dashboard_views.py # Analytics & Command Center Views
-    │   ├── templates/              # HTML5 Dynamic Templates
-    │   └── static/                 # Static Assets (CSS, JS, Fonts, Images)
-    └── it/                         # Project Configuration Module
-        ├── __init__.py             # C-level stderr warning suppression
-        ├── settings.py             # Global Django Settings
-        ├── urls.py                 # Root URL Router
-        ├── asgi.py                 # ASGI Config (Django Channels & WebSockets)
-        └── wsgi.py                 # WSGI Config (Production HTTP Serving)
+    CERTIFICATE {
+        int id PK
+        int user_id FK
+        int course_id FK
+        string certificate_code UK
+        datetime issued_at
+    }
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## 💾 Database Architecture & Hybrid Storage
 
-| Domain | Technology | Description |
-| :--- | :--- | :--- |
-| **Backend Framework** | **Django 6.0** | Enterprise Web Architecture |
-| **Language** | **Python 3.14** | Modern Python Runtime |
-| **WebSockets** | **Django Channels 4.3** | Real-time Asynchronous Telemetry |
-| **PDF Processing** | **WeasyPrint 67.0 / ReportLab 4.4** | Server-side PDF Certificate & Invoice Generation |
-| **Database** | **SQLite 3 / PostgreSQL** | Relational Data Storage |
-| **Production Server** | **Daphne (ASGI) / Waitress (WSGI)** | Production-ready HTTP & WebSocket Serving |
-| **Frontend Utilities** | **Bootstrap 5, AOS, Swiper** | Responsive UI Design |
+Mentor utilizes a **Hybrid Multi-Database Architecture** to optimize relational integrity alongside high-throughput document persistence:
 
----
-
-## 🚀 Quick Start & Installation
-
-### 1. Prerequisites
-Ensure you have **Python 3.14+** installed.
-
-### 2. Environment Setup
-Clone the repository and enter the project directory:
-```bash
-git clone https://github.com/PlatonicM/Mentor.git
-cd Mentor/Mentor
-```
-
-Activate the virtual environment:
-```powershell
-# Windows PowerShell
-..\env\Scripts\activate
-```
-*(If PowerShell blocks script execution, run: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process`)*
-
-### 3. Database Migration
-Apply database migrations:
-```bash
-..\env\Scripts\python.exe manage.py migrate
-```
-
-### 4. Create Superuser (Admin)
-```bash
-..\env\Scripts\python.exe manage.py createsuperuser
-```
-
-### 5. Launch Server
-
-#### 🔹 Development Server:
-```bash
-..\env\Scripts\python.exe manage.py runserver
-```
-
-#### 🔹 Production Server (Recommended - Daphne ASGI):
-```bash
-..\env\Scripts\daphne.exe -b 127.0.0.1 -p 8000 it.asgi:application
-```
-
-#### 🔹 Production Server (Waitress WSGI):
-```bash
-..\env\Scripts\waitress-serve.exe --port=8000 it.wsgi:application
-```
-
----
-
-## 🔑 Default Credentials & Access Endpoints
-
-| Portal | Endpoint | Allowed Roles | Default Admin Credentials |
+| Data Store | Purpose | Components Managed | Storage Path |
 | :--- | :--- | :--- | :--- |
-| **Admin Command Center** | [`/admin/`](http://127.0.0.1:8000/admin/) | Superusers Only | **User:** `mentor`<br>**Pass:** `Pass@123` |
-| **Learner Web Interface** | [`/identity/login/`](http://127.0.0.1:8000/identity/login/) | Students & Instructors | **User:** `rutika`<br>**Pass:** `Pass@123` |
-| **Public Homepage** | [`/`](http://127.0.0.1:8000/) | Public | N/A |
-| **Certificate Verification** | [`/verify/cert/<id>/`](http://127.0.0.1:8000/verify/cert/1/) | Public Validation | N/A |
+| **Relational (SQLite / PostgreSQL)** | Core ACID Transactions | Users, Auth, Orders, Invoices, Certificates, Ratings | `db.sqlite3` |
+| **Document (MongoDB)** | High-Volume Course Collections & System Logs | Course Management, Extended Analytics | `mongodb_data/` |
+| **File Engine** | Vector PDFs & Assets | QR Verification Badges, Generated Invoices | `media/` & `staticfiles_build/` |
 
 ---
 
-## 🔒 Security Best Practices
+## 🧩 Class Diagram & Domain Entities
 
-1. **Superuser Isolation**: Standard website login forms (`/identity/login/`) reject superuser credentials to enforce administrative access strictly through administrative multi-factor channels.
-2. **Environment Variables**: Configure sensitive keys (`SECRET_KEY`, `EMAIL_HOST_PASSWORD`, database credentials) using `.env` files via `python-dotenv`.
-3. **C-Level Warning Redirection**: Built-in GLib/GIO low-level C-stderr redirection in `it/__init__.py` prevents Windows UWP shell probing warnings from polluting server output.
+```mermaid
+classDiagram
+    class User {
+        +String username
+        +String email
+        +Boolean is_staff
+        +Boolean is_superuser
+        +get_full_name()
+    }
+
+    class Courses {
+        +String name
+        +String category
+        +Decimal price
+        +String instructor
+        +String image_url
+        +get_discounted_price()
+    }
+
+    class Order {
+        +User user
+        +Decimal total
+        +String status
+        +DateTime created_at
+        +mark_as_paid()
+    }
+
+    class Certificate {
+        +User user
+        +Courses course
+        +String certificate_code
+        +DateTime issued_at
+        +generate_qr_code()
+    }
+
+    class CertificateEngine {
+        +generate_pdf(certificate)
+        +embed_qr_code(canvas, code)
+    }
+
+    User "1" -- "*" Order : places
+    User "1" -- "*" Certificate : holds
+    Courses "1" -- "*" Certificate : grants
+    CertificateEngine ..> Certificate : compiles
+```
 
 ---
 
-## 📜 License & Governance
+## 🛠️ Admin Command Center Flowchart
 
-Licensed under the [MIT License](LICENSE). Built for enterprise learning environments.
+```mermaid
+graph LR
+    A[Admin Login] --> B{Email Check}
+    B -- "Admin Email" --> C["Access Command Center"]
+    B -- "Other Email" --> D[403 Forbidden]
+    
+    C --> E[Live Revenue Spline Chart]
+    C --> F[Top Performance Tracks]
+    C --> G[MongoDB Course Management CRUD]
+    
+    G --> H[Add Course]
+    G --> I[Edit Track details]
+    G --> J[Delete Track]
+    G --> K[Filter by Category & Search]
+```
+
+---
+
+## 👤 Student & Learner Lifecycle Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Student
+    participant Browser
+    participant Django as Django Auth & App
+    participant DB as SQLite DB
+    participant Mail as Email Service
+
+    Student->>Browser: Enter Email & Password
+    Browser->>Django: POST /login/
+    Django->>DB: Query User Record
+    DB-->>Django: User Verified
+    Django->>Mail: Send 6-Digit OTP Email
+    Mail-->>Student: Deliver OTP Code
+    Student->>Browser: Submit OTP Code
+    Browser->>Django: POST /verify-otp/
+    Django->>Browser: Set HTTP Session Cookie
+    Browser-->>Student: Display Dashboard & Enrolled Courses
+```
+
+---
+
+## 📜 Certificate Verification Topology
+
+```mermaid
+flowchart LR
+    A["Employer / Verifier Scan QR Code"] --> B["GET /verify-certificate/CODE/"]
+    B --> C{DB Lookup Code}
+    C -- "Valid Code" --> D[Display Verified Certificate Page]
+    D --> E[Show Student Name, Course & Issue Date]
+    D --> F["Provide 1-Click 'Add to LinkedIn' Button"]
+    C -- "Invalid Code" --> G["Display 'Certificate Not Found' 404 Guard"]
+```
+
+---
+
+## ✨ Key Features & System Capabilities
+
+- **🔐 Strict Access Security**: Command Center access (`/command-center/dashboard/`) restricted to administrator accounts and system superusers with built-in 403 authorization guards.
+- **📊 Real-time Operational Analytics**: Figma-inspired Spline Bar Charts powered by Matplotlib for monthly earnings and top performing course tracks.
+- **📜 Vector Certificate Generator**: Custom ReportLab PDF compilation with cryptographic QR verification codes and 1-click LinkedIn profile integration.
+- **🛒 Complete E-Commerce Engine**: Interactive shopping cart, instant checkout, auto-generated PDF invoices, and payment tracking.
+- **🎨 Modern Slate & Indigo Aesthetic**: Clean `#ffffff` light-mode Django admin styling, responsive navigation, and mobile-first container layouts.
+
+---
+
+## 📦 Installation & Operational Setup
+
+### 1. Clone & Prepare Environment
+```bash
+git clone https://github.com/PlatonicM/Mnetor.git
+cd Mentor/Mentor
+python -m venv env
+source env/bin/activate  # On Windows: env\Scripts\activate
+```
+
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Database Migrations & Superuser
+```bash
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+### 4. Run Server
+```bash
+python manage.py runserver
+```
+Navigate to `http://127.0.0.1:8000/` in your web browser.
+
+---
+
+## 🛡️ Security & Authorization Matrix
+
+| User Role | Access Level | Granted Paths |
+| :--- | :--- | :--- |
+| **Super Admin** | Full Control | `/admin/`, `/command-center/dashboard/`, `/command-center/sales-chart/` |
+| **Instructor** | Course Management | `/instructor/dashboard/`, `/instructor/create-event/` |
+| **Enrolled Student** | Learning Portal | `/dashboard/`, `/my-courses/`, `/course-player/`, `/verify-certificate/` |
+| **Anonymous Visitor** | Public Access | `/`, `/courses/`, `/about/`, `/contact/`, `/pricing/` |
+
+---
+
+## 👨‍💻 About The Author
+
+<div align="center">
+  <h3><strong>Mrunal Chaudhari</strong></h3>
+  <p><em>Full-Stack Software Engineer & Distributed Systems Architect</em></p>
+
+  <a href="https://www.linkedin.com/in/mrunal-chaudhari03/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
+  <a href="https://github.com/PlatonicM"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>
+</div>
+
+<br/>
+
+**Mrunal Chaudhari** is a passionate Full-Stack Engineer specializing in Python/Django web ecosystems, cloud native infrastructure, microservices, and database architecture. He builds high-availability platforms, interactive learning management systems, and automated cloud workflows.
+
+---
+
+## 📄 License
+
+This project is open-source software licensed under the **[MIT License](LICENSE)**.
+
+```text
+MIT License
+
+Copyright (c) 2026 Mrunal Chaudhari (PlatonicM)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+<p align="center">
+  Made by <strong>Mrunal Chaudhari❤️</strong> (<a href="https://github.com/PlatonicM">@PlatonicM</a>)
+</p>

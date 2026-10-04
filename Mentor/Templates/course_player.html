@@ -177,25 +177,25 @@ body { background-color: #f1f5f9; font-family: 'Plus Jakarta Sans', sans-serif; 
                     <div>
                         {% if prev_id %}
                         <a href="/course/{{ course.id }}/lesson/{{ prev_id }}/" class="btn-premium-nav bg-light text-dark border text-decoration-none">
-                            <i class="bi bi-chevron-left"></i> Unit_Back
+                            <i class="bi bi-chevron-left me-1"></i> Previous Lesson
                         </a>
                         {% endif %}
                     </div>
                     
                     <div class="d-none d-md-flex">
                         <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2 extra-small">
-                            <i class="bi bi-shield-check me-1"></i> SECURE_STREAM_OK
+                            <i class="bi bi-shield-check me-1"></i> Stream Ready
                         </span>
                     </div>
 
                     <div>
                         {% if next_id %}
                         <a href="/course/{{ course.id }}/lesson/{{ next_id }}/" class="btn-premium-nav btn-nav-next text-decoration-none">
-                            Next Node <i class="bi bi-arrow-right-short ms-1 fs-5"></i>
+                            Next Lesson <i class="bi bi-arrow-right-short ms-1 fs-5"></i>
                         </a>
                         {% else %}
                         <a href="{% url 'course_detail' course.id %}" class="btn-premium-nav btn-nav-next text-decoration-none" style="background: var(--clr-primary);">
-                            Protocol Complete <i class="bi bi-award-fill ms-1"></i>
+                            Course Overview <i class="bi bi-award-fill ms-1"></i>
                         </a>
                         {% endif %}
                     </div>

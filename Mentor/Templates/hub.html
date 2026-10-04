@@ -1,221 +1,249 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Command Center | Analytical Hub{% endblock %}
+{% block title %}Learning Hub | Mentor{% endblock title %}
 
 {% block extra_css %}
 <style>
-/* --- Design Tokens --- */
 :root {
-    --adm-bg: #F8FAFC;
-    --adm-glass: rgba(255, 255, 255, 0.8);
-    --adm-primary: #6366F1;
-    --adm-secondary: #10B981;
-    --adm-text-main: #0F172A;
-    --adm-border: rgba(226, 232, 240, 0.8);
-    --radius-figma: 24px;
-    --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --hub-primary: #4f46e5;
+    --hub-accent: #10b981;
+    --hub-dark: #0f172a;
+    --hub-bg: #f8fafc;
 }
 
-body { 
-    background: radial-gradient(circle at top right, #EEF2FF, #F8FAFC);
-    font-family: 'Plus Jakarta Sans', sans-serif; 
+body {
+    background-color: var(--hub-bg);
 }
 
-/* --- Layout Engine --- */
-.hub-wrapper { max-width: 1400px; margin: 0 auto; padding: 40px 24px; }
-.hub-grid { display: grid; grid-template-columns: 320px 1fr; gap: 32px; }
+.hub-container {
+    padding-top: 30px;
+    padding-bottom: 70px;
+}
 
-/* --- Bento Card Components --- */
-.bento-card {
-    background: var(--adm-glass);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--adm-border);
-    border-radius: var(--radius-figma);
+.hub-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    transition: all 0.3s ease;
+    height: auto;
+}
+
+.hub-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--hub-primary);
+    box-shadow: 0 15px 30px rgba(79, 70, 229, 0.08);
+}
+
+.xp-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    color: #ffffff;
+    border-radius: 20px;
     padding: 28px;
-    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
-    transition: all 0.4s var(--spring-easing);
-    height: 100%;
-}
-.bento-card:hover { transform: translateY(-5px); border-color: var(--adm-primary); box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.12); }
-
-/* --- XP Archon Node --- */
-.xp-node {
-    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-    color: white; border-radius: 24px; padding: 28px; position: relative; overflow: hidden;
     box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.3);
 }
-.xp-node .glow {
-    position: absolute; top: -50px; right: -50px; width: 150px; height: 150px;
-    background: var(--adm-primary); filter: blur(70px); opacity: 0.5;
-}
 
-/* --- Activity Matrix --- */
-.activity-matrix { display: flex; gap: 8px; margin-top: 15px; }
-.matrix-cell { flex: 1; height: 40px; border-radius: 12px; background: rgba(0,0,0,0.04); position: relative; transition: 0.3s; }
-.matrix-cell.active { background: var(--adm-secondary); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
-.matrix-cell::after { 
-    content: attr(data-day); position: absolute; bottom: -25px; left: 50%; 
-    transform: translateX(-50%); font-size: 9px; font-weight: 800; color: #94A3B8; 
-}
-
-/* --- Curriculum Node Rows --- */
 .track-row {
-    background: white; border-radius: 20px; padding: 20px; margin-bottom: 12px;
-    border: 1px solid transparent; transition: 0.3s var(--spring-easing); display: flex; align-items: center; justify-content: space-between;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
-.track-row:hover { border-color: var(--adm-primary); box-shadow: 0 10px 20px rgba(0,0,0,0.03); transform: scale(1.01); }
 
-/* --- Global Helpers --- */
-.extra-small { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-.fw-black { font-weight: 900; }
-.letter-spacing-1 { letter-spacing: 1.5px; }
+.track-row:hover {
+    border-color: var(--hub-primary);
+    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.08);
+    transform: translateX(4px);
+}
 
-/* --- Animations --- */
-.reveal { opacity: 0; transform: translateY(20px); transition: 0.6s ease-out; }
-.reveal.visible { opacity: 1; transform: translateY(0); }
+.heatmap-cell-sm {
+    flex: 1;
+    height: 36px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    position: relative;
+}
 
-@media (max-width: 992px) {
-    .hub-grid { grid-template-columns: 1fr; }
+.heatmap-cell-sm.active {
+    background: var(--hub-accent);
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+}
+
+.heatmap-cell-sm::after {
+    content: attr(data-day);
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
 }
 </style>
-{% endblock %}
+{% endblock extra_css %}
 
 {% block content %}
-<div class="hub-wrapper">
-    <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5 reveal">
-        <div class="mb-3 mb-md-0">
-            <h1 class="fw-black text-slate-900 mb-1" style="font-size: 36px; letter-spacing: -2px;">COMMAND_CENTER.</h1>
-            <p class="text-muted mb-0 fw-bold extra-small">
-                HANDSHAKE: <span class="text-success">SYNCHRONIZED</span> • ARCHON_NODE: {{ user.username|upper }}
-            </p>
+
+<div class="container hub-container">
+    
+    <!-- Hub Header -->
+    <header class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-1 rounded-pill small">STUDENT LEARNING HUB</span>
+                <span class="text-muted small">• Welcome back, {{ user.first_name|default:user.username }}</span>
+            </div>
+            <h2 class="fw-extrabold text-dark mb-0" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                Personal Learning Hub & Activity
+            </h2>
         </div>
         <div class="d-flex gap-2">
-            <button class="btn btn-dark rounded-pill px-4 fw-black shadow-sm extra-small" data-bs-toggle="modal" data-bs-target="#editProfileModal">IDENTITY_SYNC</button>
+            <a href="{% url 'update_profile' %}" class="btn btn-outline-dark rounded-pill px-4 fw-bold btn-sm">
+                Edit Profile Settings
+            </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill px-4 fw-bold btn-sm">
+                Student Dashboard
+            </a>
         </div>
     </header>
 
-    <div class="hub-grid">
-        <aside class="d-flex flex-column gap-4">
+    <div class="row g-4 mb-4">
+        
+        <!-- Sidebar Analytics -->
+        <div class="col-lg-4">
             
-            <div class="xp-node reveal">
-                <div class="glow"></div>
-                <span class="extra-small fw-black opacity-50 letter-spacing-1">CORE_XP_PROTOCOL</span>
-                <div class="d-flex align-items-baseline gap-2 mt-2">
-                    <h2 class="fw-black mb-0" style="font-size: 48px;">{{ total_xp|default:420 }}</h2>
-                    <span class="small fw-bold opacity-50">NODE_XP</span>
+            <!-- XP Progress Card -->
+            <div class="xp-card mb-4">
+                <span class="extra-small text-white-50 font-mono fw-bold text-uppercase">TOTAL LEARNING XP</span>
+                <div class="d-flex align-items-baseline gap-2 mt-2 mb-3">
+                    <h1 class="fw-extrabold text-white mb-0" style="font-family: 'Plus Jakarta Sans', sans-serif;">{{ total_xp|default:420 }}</h1>
+                    <span class="text-warning fw-bold small"><i class="bi bi-star-fill me-1"></i> XP</span>
                 </div>
-                <div class="mt-4">
-                    <div class="progress bg-white bg-opacity-10" style="height: 6px; border-radius: 10px;">
-                        <div class="progress-bar bg-primary shadow-glow" style="width: 72%;"></div>
-                    </div>
-                    <div class="d-flex justify-content-between mt-2">
-                        <small class="opacity-50 fw-bold extra-small">LVL_{{ xp_level|default:1 }}</small>
-                        <small class="opacity-50 fw-bold extra-small">LVL_{{ xp_level|add:1 }}</small>
-                    </div>
+
+                <div class="progress bg-white bg-opacity-10 mb-2" style="height: 8px; border-radius: 10px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 72%;"></div>
+                </div>
+
+                <div class="d-flex justify-content-between text-white-50 extra-small fw-bold">
+                    <span>Level {{ xp_level|default:1 }} Scholar</span>
+                    <span>Level {{ xp_level|default:1|add:1 }} Target</span>
                 </div>
             </div>
 
-            <div class="bento-card reveal">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="text-muted extra-small fw-black">CONSISTENCY_MATRIX</span>
-                    <span class="text-success extra-small fw-bold">🔥 5D_STREAK</span>
+            <!-- Weekly Activity Streak Card -->
+            <div class="hub-card mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-dark mb-0">Weekly Activity Streak</h6>
+                    <span class="text-success extra-small fw-bold"><i class="bi bi-fire me-1"></i> Active Streak</span>
                 </div>
-                <div class="activity-matrix pb-4">
+
+                <div class="d-flex gap-2 pb-4">
                     {% for day in heatmap %}
-                        <div class="matrix-cell {% if day.state == 'active' %}active{% endif %}" data-day="{{ day.day|slice:':3'|upper }}"></div>
+                    <div class="heatmap-cell-sm {% if day.state == 'active' %}active{% endif %}" data-day="{{ day.day|slice:':3' }}"></div>
                     {% endfor %}
                 </div>
             </div>
 
-            <div class="bento-card reveal">
-                <span class="text-muted extra-small fw-black d-block mb-4">CAPABILITY_SYNC</span>
+            <!-- Skill Proficiency Breakdown -->
+            <div class="hub-card">
+                <h6 class="fw-bold text-dark mb-3">Skill Competencies</h6>
                 {% for category, strength in skill_map.items %}
                 <div class="mb-3">
                     <div class="d-flex justify-content-between extra-small fw-bold mb-1">
-                        <span class="text-slate-700">{{ category }}</span>
+                        <span class="text-dark">{{ category }}</span>
                         <span class="text-primary">{{ strength }}%</span>
                     </div>
-                    <div class="progress" style="height: 4px; background: rgba(0,0,0,0.05); border-radius: 10px;">
-                        <div class="progress-bar bg-primary" style="width: {{ strength }}%;"></div>
+                    <div class="progress" style="height: 6px; background: #f1f5f9; border-radius: 10px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ strength }}%;"></div>
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-muted extra-small">Awaiting initial lab evaluation...</p>
+                <p class="text-muted extra-small mb-0">Complete course lessons to record skill competencies.</p>
                 {% endfor %}
             </div>
-        </aside>
 
-        <main class="d-flex flex-column gap-4">
+        </div>
+
+        <!-- Main Curriculum Tracks Column -->
+        <div class="col-lg-8">
             
-            <div class="bento-card reveal" style="background: linear-gradient(135deg, #6366F1, #4F46E5); color: white; border: none;">
-                <div class="row align-items-center">
+            <!-- Recommendation Banner -->
+            <div class="card border-0 rounded-4 p-4 text-white shadow-lg mb-4" style="background: linear-gradient(135deg, #4f46e5, #7c3aed);">
+                <div class="row align-items-center g-3">
                     <div class="col-md-8">
-                        <span class="badge bg-white bg-opacity-20 mb-2 extra-small">ADAPTIVE_PULSE</span>
-                        <h3 class="fw-black mb-2">Ready for the next node?</h3>
-                        <p class="opacity-75 mb-0 small">Based on your recent <strong>{{ user.username }}</strong> activity, we recommend initializing the <strong>Advanced System Design</strong> protocol.</p>
+                        <span class="badge bg-white bg-opacity-20 mb-2 extra-small text-white">RECOMMENDED NEXT TRACK</span>
+                        <h4 class="fw-bold mb-1">Ready to level up your engineering skills?</h4>
+                        <p class="text-white-50 mb-0 small">Based on your activity, we recommend enrolling in <strong>Full-Stack Architecture</strong>.</p>
                     </div>
-                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                        <button class="btn btn-light rounded-pill px-4 fw-black extra-small py-2">INITIALIZE_NODE</button>
+                    <div class="col-md-4 text-md-end">
+                        <a href="{% url 'courses' %}" class="btn btn-light rounded-pill px-4 fw-bold text-primary btn-sm">
+                            Explore Tracks
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <div class="bento-card reveal">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-                    <h5 class="fw-black mb-0">ENROLLED_PROTOCOLS</h5>
-                    <div class="input-group input-group-sm w-auto">
-                        <span class="input-group-text bg-light border-0 ps-3 rounded-start-pill"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" id="node-filter" class="form-control border-0 bg-light rounded-end-pill px-3" placeholder="Filter nodes...">
-                    </div>
+            <!-- Enrolled Course Tracks List -->
+            <div class="hub-card">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+                    <h5 class="fw-bold text-dark mb-0">My Enrolled Course Tracks</h5>
+                    <input type="text" id="node-filter" class="form-control rounded-pill border ps-3" placeholder="Filter tracks..." style="font-size: 13px; width: 200px;">
                 </div>
 
                 <div class="curriculum-feed">
                     {% for mc in courses %}
-                    <div class="track-row reveal">
+                    <div class="track-row">
                         <div style="flex: 2;">
-                            <h6 class="fw-bold mb-1 text-slate-900">{{ mc.course.name }}</h6>
-                            <span class="badge bg-primary-subtle text-primary extra-small fw-black px-2">{{ mc.course.category|upper }}</span>
+                            <h6 class="fw-bold mb-1 text-dark">{{ mc.course.name }}</h6>
+                            <span class="badge bg-primary-subtle text-primary extra-small fw-bold">{{ mc.course.category|default:"General" }}</span>
                         </div>
-                        <div class="d-none d-md-block" style="flex: 1; padding: 0 30px;">
+
+                        <div class="d-none d-md-block" style="flex: 1; padding: 0 20px;">
                             <div class="d-flex justify-content-between extra-small fw-bold mb-1">
-                                <span class="text-muted">SYNC_PROGRESS</span>
+                                <span class="text-muted">Progress</span>
                                 <span class="text-primary">{{ mc.progress }}%</span>
                             </div>
-                            <div class="progress" style="height: 6px; border-radius: 10px; background: #F1F5F9;">
-                                <div class="progress-bar bg-primary" style="width: {{ mc.progress }}%;"></div>
+                            <div class="progress" style="height: 6px; border-radius: 10px; background: #f1f5f9;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ mc.progress }}%;"></div>
                             </div>
                         </div>
+
                         <div class="text-end" style="flex: 0;">
-                            <a href="{% url 'course_detail' cid=mc.course.id %}" class="btn btn-dark btn-sm rounded-pill px-4 fw-black extra-small">RESUME</a>
+                            <a href="{% url 'course_detail' mc.course.id %}" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">
+                                Resume Track
+                            </a>
                         </div>
                     </div>
                     {% empty %}
-                    <div class="text-center py-5 opacity-25">
-                        <i class="bi bi-layers display-1"></i>
-                        <p class="fw-black mt-2 letter-spacing-1">NO_ACTIVE_TRACKS_DETECTED</p>
+                    <div class="text-center py-5">
+                        <i class="bi bi-journal-x fs-1 text-muted mb-2 d-block"></i>
+                        <h6 class="fw-bold text-dark">No enrolled course tracks found</h6>
+                        <p class="text-muted small mb-3">Explore our catalog and start learning today.</p>
+                        <a href="{% url 'courses' %}" class="btn btn-primary rounded-pill px-4 btn-sm fw-bold">Browse Courses</a>
                     </div>
                     {% endfor %}
                 </div>
             </div>
-        </main>
+
+        </div>
+
     </div>
 </div>
 
+{% endblock content %}
+
+{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Reveal Elements on Load
-    const revealItems = document.querySelectorAll('.reveal');
-    revealItems.forEach((item, index) => {
-        setTimeout(() => {
-            item.classList.add('visible');
-        }, index * 100);
-    });
-
-    // 2. Node Live Filter
     const filterInput = document.getElementById('node-filter');
-    if(filterInput) {
+    if (filterInput) {
         filterInput.addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
             document.querySelectorAll('.track-row').forEach(row => {
@@ -226,4 +254,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
-{% endblock %}
+{% endblock extra_js %}

@@ -104,14 +104,14 @@ body { background: radial-gradient(circle at top right, #eef2ff, #f1f5f9, #f0fdf
     
     <div class="header-node reveal">
         <div>
-            <div class="d-inline-flex align-items-center gap-3 bg-white px-3 py-1 rounded-pill border shadow-sm mb-2">
+            <div class="d-inline-flex align-items-center gap-2 bg-white px-3 py-1 rounded-pill border shadow-sm mb-2">
                 <div class="signal-led"></div>
-                <span class="extra-small-bold text-primary">System Notification Active</span>
+                <span class="extra-small-bold text-primary">Notification Center</span>
             </div>
-            <h1 class="fw-black text-dark m-0" style="letter-spacing: -3px; font-size: 3.2rem;">View <span class="text-primary">Notifications</span></h1>
+            <h1 class="fw-black text-dark m-0" style="letter-spacing: -2px; font-size: 2.8rem;">Your <span class="text-primary">Notifications</span></h1>
         </div>
-        <button id="flushAllBtn" class="btn btn-outline-danger rounded-pill px-4 extra-small-bold border-2 {% if not notifications %}d-none{% endif %}">
-            <i class="bi bi-trash3-fill me-2"></i> Flush Nodes
+        <button id="flushAllBtn" class="btn btn-outline-secondary rounded-pill px-4 extra-small-bold border-2 {% if not notifications %}d-none{% endif %}">
+            <i class="bi bi-check2-all me-1"></i> Mark All as Read
         </button>
     </div>
 
@@ -120,46 +120,43 @@ body { background: radial-gradient(circle at top right, #eef2ff, #f1f5f9, #f0fdf
         <div class="notify-item {% if not n.is_read %}unread{% else %}read{% endif %} type-{{ n.category|default:'general' }}" id="notif-{{ n.id }}">
             <div class="icon-node shadow-sm">
                 {% if not n.is_read %}
-                    <i class="bi bi-lightning-charge-fill"></i>
+                    <i class="bi bi-bell-fill"></i>
                 {% else %}
-                    <i class="bi bi-check-all"></i>
+                    <i class="bi bi-check-all text-muted"></i>
                 {% endif %}
             </div>
 
             <div class="flex-grow-1">
                 <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h5 class="notify-title">{{ n.title|upper }}</h5>
-                    <span class="extra-small-bold font-mono text-muted opacity-50">{{ n.created_at|timesince|upper }} AGO</span>
+                    <h5 class="notify-title mb-0" style="font-size: 1.05rem;">{{ n.title }}</h5>
+                    <span class="extra-small-bold text-muted opacity-75 ms-2 text-nowrap">{{ n.created_at|timesince }} ago</span>
                 </div>
-                <p class="notify-msg font-mono">{{ n.message }}</p>
+                <p class="notify-msg mb-3 text-secondary" style="font-size: 0.95rem;">{{ n.message }}</p>
 
-                <div class="d-flex gap-3">
+                <div class="d-flex gap-2">
                     {% if n.url %}
-                    <a href="{{ n.url }}" class="btn-protocol text-decoration-none shadow-sm">
-                        <i class="bi bi-terminal-fill text-primary"></i> EXECUTE ACTION
+                    <a href="{{ n.url }}" class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold extra-small text-decoration-none">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> View Details
                     </a>
                     {% endif %}
 
                     {% if not n.is_read %}
-                    <button class="btn-protocol btn-mark-handled mark-read-btn" data-id="{{ n.id }}">
-                        <i class="bi bi-shield-check"></i> VALIDATE HANDLED
+                    <button class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold extra-small mark-read-btn" data-id="{{ n.id }}">
+                        <i class="bi bi-check-lg me-1"></i> Mark Read
                     </button>
                     {% endif %}
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="p-5 text-center bg-white">
-            <div class="mb-4 position-relative d-inline-block">
-                <i class="bi bi-shield-check text-success opacity-10" style="font-size: 8rem;"></i>
-                <div class="position-absolute top-50 start-50 translate-middle">
-                    <i class="bi bi-patch-check-fill text-success fs-1"></i>
-                </div>
+        <div class="p-5 text-center bg-white rounded-4">
+            <div class="mb-3">
+                <i class="bi bi-bell-slash-fill text-muted opacity-25" style="font-size: 5rem;"></i>
             </div>
-            <h2 class="fw-black tracking-tighter">STATUS: NOMINAL</h2>
-            <p class="text-muted font-mono small mb-4">No active curriculum alerts detected in current session buffer.</p>
-            <a href="{% url 'courses' %}" class="btn btn-primary rounded-pill px-5 py-3 fw-black extra-small-bold shadow-lg">
-                EXPLORE COURSES
+            <h4 class="fw-bold text-dark">No Notifications</h4>
+            <p class="text-muted small mb-4">You are all caught up! Important course announcements and lab reviews will appear here.</p>
+            <a href="{% url 'courses' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold">
+                Browse Courses
             </a>
         </div>
         {% endfor %}

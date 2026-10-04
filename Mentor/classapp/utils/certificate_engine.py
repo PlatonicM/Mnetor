@@ -22,7 +22,7 @@ def generate_certificate_pdf_bytes(registration, name_text=None):
     # --- 2. System Watermark Handshake ---
     c.setFont("Helvetica-Bold", 80)
     c.setFillColor(colors.HexColor("#f1f5f9")) # Slate 100
-    c.drawCentredString(width / 2, height / 2 - 20, "MENTOR LMS")
+    c.drawCentredString(width / 2, height / 2 - 20, "MENTOR")
 
     # --- 3. Header Handshake ---
     c.setFillColor(colors.black)

@@ -1,293 +1,743 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Login | MentorLMS{% endblock %}
+{% block title %}Login | Mentor{% endblock %}
 
 {% block extra_css %}
 <style>
-/* --- 1. Global Sync Tokens (Updated Vivid Palette) --- */
-:root {
-  --clr-primary: #4F46E5; /* Deeper, more vibrant Indigo */
-  --clr-primary-glow: rgba(79, 70, 229, 0.4);
-  --clr-accent: #f43f5e;  /* Vivid Rose for sharp accents */
-  --clr-neon-purple: #a855f7;
-  --clr-bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-  --clr-slate-200: #e2e8f0;
-  --clr-slate-900: #0f172a;
-}
+  /* --- 1. Global Design Tokens --- */
+  :root {
+    --clr-primary: #4F46E5;
+    --clr-primary-glow: rgba(79, 70, 229, 0.35);
+    --clr-accent: #f43f5e;
+    --clr-neon-purple: #a855f7;
+    --clr-slate-100: #f1f5f9;
+    --clr-slate-200: #e2e8f0;
+    --clr-slate-800: #1e293b;
+    --clr-slate-900: #0f172a;
+  }
 
-/* --- 2. Full Page Reset --- */
-html, body { 
-    height: auto; 
-    min-height: 100%; 
+  /* Full Page Setup */
+  html,
+  body {
+    height: auto;
+    min-height: 100%;
     width: 100%;
-    margin: 0; 
-    padding: 0; 
-    overflow-x: hidden; 
-    overflow-y: auto;   
-}
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
 
-main, .container-fluid { 
-    padding: 0 !important; 
-    margin: 0 !important; 
-    max-width: 100% !important; 
-    min-height: 100vh !important; 
-}
+  body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--clr-slate-900);
+  }
 
-body { 
-    background-color: #ffffff; 
-    color: var(--clr-slate-900); 
-    font-family: 'Plus Jakarta Sans', sans-serif; 
-}
+  /* Main Container Fix for Footer Visibility */
+  main#main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    display: block !important;
+  }
 
-/* --- 3. Split Architecture --- */
-.split-container { 
-    min-height: 100vh; 
-    width: 100vw; 
-    display: flex; 
-    align-items: stretch;
-    flex-wrap: wrap; 
-}
+  /* --- Centered Midlevel Viewport --- */
+  .auth-viewport {
+    min-height: 85vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    position: relative;
+    overflow: hidden;
+  }
 
-.form-side { 
-    flex: 0 0 42%; 
-    min-width: 400px;
-    background: #ffffff; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: center; 
-    align-items: center;     
-    padding: 80px 40px; 
+  .nebula-bg {
+    position: absolute;
+    width: 160%;
+    height: 160%;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.25) 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(244, 63, 94, 0.2) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 50%);
+    animation: rotateNebula 30s infinite linear;
+    pointer-events: none;
+  }
+
+  @keyframes rotateNebula {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* --- Centered Midlevel Medium-Sized Card Box --- */
+  .auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 34px 28px;
+    box-shadow:
+      0 20px 50px -15px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.2),
+      0 0 35px rgba(99, 102, 241, 0.15);
     position: relative;
     z-index: 10;
-    border-right: 1px solid var(--clr-slate-200);
-}
-
-.image-side {
-  flex: 1 0 58%;
-  background: var(--clr-bg-gradient);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  padding: 60px;
-  min-height: 100vh;
-}
-
-/* --- 4. Component Calibration --- */
-.form-inner-container { 
-    width: 100%; 
-    max-width: 420px; 
-}
-
-.nebula-bg {
-    position: absolute;
-    width: 150%; height: 150%;
-    background: radial-gradient(circle at 30% 20%, rgba(79, 70, 229, 0.2) 0%, transparent 40%),
-                radial-gradient(circle at 70% 80%, rgba(244, 63, 94, 0.15) 0%, transparent 40%);
-    animation: rotateNebula 25s infinite linear;
-}
-@keyframes rotateNebula { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-.input-group-modern {
-  border: 2px solid var(--clr-slate-200);
-  border-radius: 16px;
-  background: #fdfdfd;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex; align-items: center; margin-bottom: 20px;
-}
-
-.input-group-modern:focus-within {
-  border-color: var(--clr-primary);
-  background: #fff;
-  transform: scale(1.02);
-  box-shadow: 0 15px 30px -10px var(--clr-primary-glow);
-}
-
-.input-group-modern input { 
-    border: none !important; 
-    box-shadow: none !important; 
-    height: 54px; 
-    width: 100%; 
-    padding: 0 20px; 
-    font-weight: 600; 
-    background: transparent; 
-}
-.input-group-text-icon { padding-left: 20px; color: var(--clr-primary); font-size: 1.2rem; }
-
-/* --- 5. Feature Card Grid --- */
-.feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; z-index: 2; width: 100%; max-width: 600px; }
-.feature-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 28px; border-radius: 28px;
-    text-align: left;
     transition: all 0.4s ease;
-}
-.feature-card:hover { 
-    background: rgba(255, 255, 255, 0.12); 
-    transform: translateY(-10px); 
-    border-color: var(--clr-neon-purple);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-}
-.feature-card i { 
-    background: linear-gradient(135deg, var(--clr-neon-purple), var(--clr-accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-size: 2rem; margin-bottom: 12px; display: block; 
-}
+    margin: auto;
+    text-align: center;
+  }
 
-/* --- 6. Typography & CTA --- */
-.text-gradient {
+  .auth-card:hover {
+    box-shadow:
+      0 30px 70px -15px rgba(0, 0, 0, 0.45),
+      0 0 0 1px rgba(255, 255, 255, 0.3),
+      0 0 50px rgba(168, 85, 247, 0.2);
+  }
+
+  .brand-logo-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+  }
+
+  .brand-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--clr-primary), var(--clr-neon-purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.35rem;
+    box-shadow: 0 8px 20px -3px var(--clr-primary-glow);
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  /* Modern Input Groups (Centered) */
+  .input-group-modern {
+    border: 2.5px solid var(--clr-slate-200);
+    border-radius: 16px;
+    background: #f8fafc;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .input-group-modern:focus-within {
+    border-color: var(--clr-primary);
+    background: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px -8px var(--clr-primary-glow);
+  }
+
+  .input-group-modern input {
+    border: none !important;
+    box-shadow: none !important;
+    height: 54px;
+    width: 100%;
+    padding: 0 18px;
+    font-weight: 600;
+    font-size: 1rem;
+    background: transparent;
+    color: var(--clr-slate-900);
+    text-align: center;
+    /* Centered text */
+  }
+
+  .input-group-text-icon {
+    padding-left: 18px;
+    color: var(--clr-primary);
+    font-size: 1.2rem;
+  }
+
+  /* 4-Digit Box Input Styles */
+  .otp-boxes-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin: 24px 0;
+  }
+
+  .otp-digit-box {
+    width: 58px;
+    height: 64px;
+    border: 2.5px solid var(--clr-slate-200);
+    border-radius: 14px;
+    font-size: 1.8rem;
+    font-weight: 900;
+    text-align: center;
+    background: #f8fafc;
+    color: var(--clr-slate-900);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+  }
+
+  .otp-digit-box:focus {
+    border-color: var(--clr-primary);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px var(--clr-primary-glow), 0 10px 20px -5px rgba(79, 70, 229, 0.3);
+    transform: translateY(-3px);
+    outline: none;
+  }
+
+  .otp-digit-box.filled {
+    border-color: var(--clr-neon-purple);
+    background: #faf5ff;
+    color: #581c87;
+  }
+
+  .text-gradient {
     background: linear-gradient(to right, #6366f1, #f43f5e);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-}
+  }
 
-.btn-login {
-  background: linear-gradient(90deg, var(--clr-primary), var(--clr-neon-purple));
-  color: #fff; border: none; padding: 18px;
-  border-radius: 16px; font-weight: 900; width: 100%;
-  text-transform: uppercase; letter-spacing: 2px;
-  transition: all 0.4s ease;
-  box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.6);
-}
-.btn-login:hover {
-    filter: brightness(1.2);
+  .btn-primary-gradient {
+    background: linear-gradient(90deg, var(--clr-primary), var(--clr-neon-purple));
+    color: #fff;
+    border: none;
+    padding: 16px;
+    border-radius: 16px;
+    font-weight: 800;
+    width: 100%;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    transition: all 0.35s ease;
+    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.5);
+  }
+
+  .btn-primary-gradient:hover {
+    filter: brightness(1.15);
     transform: translateY(-2px);
-    box-shadow: 0 15px 40px -5px rgba(79, 70, 229, 0.8);
-}
+    box-shadow: 0 15px 35px -5px rgba(79, 70, 229, 0.7);
+  }
 
-.extra-small-bold { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--clr-primary); }
+  .btn-google {
+    background: #ffffff;
+    color: #1f2937;
+    border: 2px solid var(--clr-slate-200);
+    padding: 13px;
+    border-radius: 16px;
+    font-weight: 700;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+  }
 
-@media (max-width: 992px) { 
-    .form-side { flex: 0 0 100%; border-right: none; padding: 60px 20px; } 
-    .image-side { flex: 0 0 100%; min-height: 500px; } 
-}
+  .btn-google:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+  }
+
+  .extra-small-bold {
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--clr-primary);
+  }
+
+  .spinner-border-sm {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  /* Main site footer matching */
+  #footer {
+    position: relative;
+    z-index: 10;
+  }
+
+  @media (max-width: 576px) {
+    .auth-card {
+      padding: 32px 22px;
+      max-width: 100%;
+      border-radius: 24px;
+    }
+
+    .otp-digit-box {
+      width: 60px;
+      height: 68px;
+      font-size: 1.75rem;
+    }
+  }
 </style>
+
+<!-- Google Identity SDK -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 {% endblock extra_css %}
 
 {% block content %}
-<div class="split-container">
-  
-  <div class="form-side">
-    <div class="form-inner-container">
-        
-        <div class="mb-5">
-          <a href="/" class="text-decoration-none d-flex align-items-center gap-2">
-              <div class="p-2 rounded-3 text-white shadow-lg" style="background: linear-gradient(135deg, var(--clr-primary), var(--clr-neon-purple)) !important;">
-                <i class="bi bi-rocket-takeoff-fill fs-4"></i>
-              </div>
-              <span class="fw-bold fs-4 text-dark" style="letter-spacing: -1.5px;">MentorLMS<span class="text-primary"></span></span>
-          </a>
+<div class="auth-viewport">
+  <div class="nebula-bg"></div>
+
+  <!-- CENTERED MIDLEVEL BOX CARD -->
+  <div class="auth-card">
+
+    <!-- CENTERED LOGO & BRAND HEADER (SINGLE LINE) -->
+    <div class="brand-logo-wrapper mb-3">
+      <a href="/" class="text-decoration-none d-flex flex-row align-items-center justify-content-center gap-2">
+        <div class="brand-icon-box mb-0">
+          <i class="bi bi-mortarboard-fill"></i>
         </div>
-
-        <div class="form-header mb-5">
-          <h2 class="fw-black display-6 mb-2" style="font-weight: 900; letter-spacing: -2px;">Welcome back<span class="text-gradient">!</span></h2>
-          <p class="text-muted fw-medium">Enter your account keys to login MentorLMS</p>
+        <div class="d-flex align-items-center gap-2">
+          <span class="fw-black fs-2 text-dark leading-none"
+            style="letter-spacing: -1.2px; background: linear-gradient(135deg, var(--clr-primary), #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Mentor</span>
+          <!-- <span class="badge bg-indigo-subtle text-primary extra-small-bold px-2 py-1 rounded-pill">Enterprise</span> -->
         </div>
-
-        <form method="POST">
-          {% csrf_token %}
-          
-          <label class="extra-small-bold mb-2 d-block">USERNAME</label>
-          <div class="input-group-modern">
-              <span class="input-group-text-icon"><i class="bi bi-fingerprint"></i></span>
-              <input type="text" name="username" placeholder="Enter your Username" required>
-          </div>
-
-          <label class="extra-small-bold mb-2 d-block">PASSWORD</label>
-          <div class="input-group-modern position-relative">
-              <span class="input-group-text-icon"><i class="bi bi-shield-lock-fill"></i></span>
-              <input type="password" name="password" id="password" placeholder="••••••••" required onkeyup="updateStrength(this.value)">
-              <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y text-muted px-3 border-0" onclick="togglePassword()">
-                  <i class="bi bi-eye-fill" id="toggleIcon"></i>
-              </button>
-          </div>
-          <div class="strength-bar" id="strengthBar" style="height: 6px; border-radius: 10px; margin-top: -10px; margin-bottom: 25px; transition: 0.4s ease; background: #e2e8f0;"></div>
-
-          <div class="d-flex justify-content-end mb-4">
-            <a href="{% url 'forgot_password' %}" class="text-decoration-none small fw-bold text-gradient">FORGET PASSWORD?</a>
-          </div>
-
-          <button type="submit" class="btn-login mb-4 shadow-lg">
-            LOGIN <i class="bi bi-arrow-right-short fs-4"></i>
-          </button>
-
-          <p class="text-center text-muted small fw-medium">
-            SIGN IN? <a href="{% url 'signup' %}" class="text-primary fw-bold text-decoration-none">Provision Academy ID</a>
-          </p>
-        </form>
-
-        <div class="mt-5 pt-4 border-top opacity-50">
-             <div class="d-flex justify-content-between align-items-center extra-small-bold text-muted">
-                <span>© 2026 MENTORLMS</span> 
-                <div class="d-flex gap-3">
-                    <a href="#" class="text-reset text-decoration-none">PRIVACY</a>
-                    <a href="#" class="text-reset text-decoration-none">TERMS</a>
-                </div>
-            </div> 
-        </div>
+      </a>
     </div>
-  </div>
 
-  <div class="image-side">
-    <div class="nebula-bg"></div>
-    <div class="visual-content text-center" style="z-index: 2;">
-        <h2 class="display-3 fw-black text-white mb-4" style="letter-spacing: -3px; font-weight: 900;">Engineering <span class="text-gradient">Autonomy</span></h2>
-        
-        <div class="feature-grid">
-            <div class="feature-card">
-                <i class="bi bi-terminal-fill"></i>
-                <h6 class="text-white fw-bold">Cloud Labs</h6>
-                <p class="text-white-50 small mb-0">Direct provisioning of on-demand curriculum nodes.</p>
-            </div>
-            <div class="feature-card">
-                <i class="bi bi-cpu-fill"></i>
-                <h6 class="text-white fw-bold">AI Mentorship</h6>
-                <p class="text-white-50 small mb-0">24/7 intelligent code reviews and assistance.</p>
-            </div>
-            <div class="feature-card">
-                <i class="bi bi-patch-check-fill"></i>
-                <h6 class="text-white fw-bold">Verified Credentials</h6>
-                <p class="text-white-50 small mb-0">Secure achievement logs for global firms.</p>
-            </div>
-            <div class="feature-card">
-                <i class="bi bi-people-fill"></i>
-                <h6 class="text-white fw-bold">Elite Sync</h6>
-                <p class="text-white-50 small mb-0">Direct handshake with 40+ industry leads.</p>
-            </div>
+    <!-- Alert Message Box -->
+    <div id="alertBox" class="alert d-none rounded-3 py-2 px-3 mb-3 small fw-semibold text-center"></div>
+
+    <!-- STEP 1: EMAIL ENTRY FORM (EDUCATION CENTERED) -->
+    <div id="stepEmail">
+      <div class="form-header mb-4 text-center">
+        <h2 class="fw-black fs-3 text-dark mb-1" style="font-weight: 900; letter-spacing: -1.5px;">Welcome Students
+          &amp; Mentors<span class="text-gradient">!</span></h2>
+        <p class="text-muted small fw-medium mb-0">Enter your email to receive a
+          verification code</p>
+      </div>
+
+      <form id="emailForm" onsubmit="handleSendOtp(event)">
+        {% csrf_token %}
+
+        <label class="extra-small-bold mb-2 d-block text-center">STUDENT | MENTOR EMAIL</label>
+        <div class="input-group-modern">
+          <span class="input-group-text-icon"><i class="bi bi-envelope-at-fill"></i></span>
+          <input type="email" id="emailInput" name="email" placeholder="student@mentor.edu" required
+            autocomplete="email">
         </div>
+
+        <button type="submit" id="btnSendOtp"
+          class="btn-primary-gradient mb-3 shadow-lg d-flex align-items-center justify-content-center gap-2">
+          <span>Acess Code</span>
+          <i class="bi bi-arrow-right fs-5"></i>
+        </button>
+      </form>
+
+      <div class="position-relative text-center my-3">
+        <hr class="text-muted opacity-25">
+        <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 extra-small-bold text-muted">OR
+          Continue with </span>
+      </div>
+
+      <!-- GOOGLE AUTH BUTTON -->
+      {% if google_client_id and google_client_id != 'YOUR_GOOGLE_CLIENT_ID' %}
+      <div id="g_id_onload" data-client_id="{{ google_client_id }}" data-context="signin" data-ux_mode="popup"
+        data-callback="handleGoogleCredentialResponse" data-auto_prompt="false">
+      </div>
+      {% endif %}
+
+      <button type="button" class="btn-google mb-3" onclick="triggerGoogleSignIn()">
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path fill="#4285F4"
+            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+          <path fill="#34A853"
+            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+          <path fill="#FBBC05"
+            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+          <path fill="#EA4335"
+            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+        </svg>
+        <span>Continue with Google</span>
+      </button>
+
+      <!-- Navigation Link -->
+      <!-- <div class="mt-3 text-center">
+        <a href="/" class="small text-muted text-decoration-none hover-primary"><i class="bi bi-house-door me-1"></i>
+          Return to Home</a>
+      </div> -->
     </div>
+
+    <!-- STEP 2: 4-DIGIT AUTO ENTER OTP VERIFICATION -->
+    <div id="stepOtp" class="d-none">
+      <div class="form-header mb-3 text-center">
+        <h2 class="fw-black fs-3 text-dark mb-1" style="font-weight: 900; letter-spacing: -1.5px;">Enter Verification
+          Code<span class="text-gradient">.</span></h2>
+        <p class="text-muted small fw-medium mb-1">Verification code dispatched to:</p>
+        <span id="displayEmail"
+          class="badge bg-indigo-subtle text-primary border px-3 py-1 fs-6 rounded-pill fw-bold"></span>
+      </div>
+
+      <!-- 4 Digit Input Boxes (Centered) -->
+      <div class="otp-boxes-wrapper">
+        <input type="text" maxlength="1" class="otp-digit-box" id="digit1" autocomplete="off" inputmode="numeric"
+          pattern="[0-9]*">
+        <input type="text" maxlength="1" class="otp-digit-box" id="digit2" autocomplete="off" inputmode="numeric"
+          pattern="[0-9]*">
+        <input type="text" maxlength="1" class="otp-digit-box" id="digit3" autocomplete="off" inputmode="numeric"
+          pattern="[0-9]*">
+        <input type="text" maxlength="1" class="otp-digit-box" id="digit4" autocomplete="off" inputmode="numeric"
+          pattern="[0-9]*">
+      </div>
+
+      <!-- 1-Minute Timer Countdown -->
+      <div class="text-center my-3">
+        <span class="badge bg-light text-dark border px-3 py-2 fs-6 rounded-pill">
+          <i class="bi bi-clock-history me-1 text-primary"></i>
+          Code expires in: <strong id="timerDisplay" class="text-primary fs-6">01:00</strong>
+        </span>
+      </div>
+
+      <div class="d-flex justify-content-center gap-3 align-items-center mb-3 px-1">
+        <button type="button" id="btnResend" class="btn btn-link text-decoration-none small text-muted p-0" disabled
+          onclick="handleResendOtp()">
+          <i class="bi bi-arrow-clockwise me-1"></i> Resend Code
+        </button>
+        <span class="text-muted opacity-50">|</span>
+        <button type="button" class="btn btn-link text-decoration-none small text-primary fw-bold p-0"
+          onclick="switchStep(1)">
+          ← Change Email
+        </button>
+      </div>
+
+      <div id="verifyingIndicator" class="d-none text-center my-2 text-primary fw-bold small">
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span> VERIFYING ACCESS CODE...
+      </div>
+      <button type="button" id="btnVerifyManual" class="d-none" onclick="verifyOtpCode()"></button>
+
+      <!-- <div class="mt-3 text-center">
+        <a href="/" class="small text-muted text-decoration-none hover-primary"><i class="bi bi-house-door me-1"></i>
+          Return to Main Campus</a>
+      </div> -->
+    </div>
+
+    <!-- Card Internal Footer -->
+    <!-- <div class="mt-4 pt-3 border-top opacity-50 text-center">
+      <div class="d-flex justify-content-between align-items-center extra-small-bold text-muted">
+        <span>© 2026 mentor</span>
+        <div class="d-flex gap-3">
+          <a href="#" class="text-reset text-decoration-none">Privacy</a>
+          <a href="#" class="text-reset text-decoration-none">Terms</a>
+        </div>
+      </div>
+    </div> -->
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-function togglePassword() {
-    const passInput = document.getElementById('password');
-    const icon = document.getElementById('toggleIcon');
-    if (passInput.type === 'password') {
-        passInput.type = 'text';
-        icon.classList.replace('bi-eye-fill', 'bi-eye-slash-fill');
-    } else {
-        passInput.type = 'password';
-        icon.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
-    }
-}
+  let currentEmail = "";
+  let timerInterval = null;
+  let secondsRemaining = 60;
 
-function updateStrength(val) {
-    const bar = document.getElementById('strengthBar');
-    let width = 0; let color = "#e2e8f0";
-    if(val.length > 0 && val.length < 5) { width = 33; color = "#f43f5e"; } 
-    else if (val.length >= 5 && val.length < 8) { width = 66; color = "#fbbf24"; } 
-    else if (val.length >= 8) { width = 100; color = "#10b981"; }
-    bar.style.width = width + "%";
-    bar.style.backgroundColor = color;
-    bar.style.boxShadow = width > 0 ? `0 0 15px ${color}66` : "none";
-}
+  const digitInputs = [
+    document.getElementById('digit1'),
+    document.getElementById('digit2'),
+    document.getElementById('digit3'),
+    document.getElementById('digit4')
+  ];
+
+  function showAlert(message, type = 'danger') {
+    const alertBox = document.getElementById('alertBox');
+    alertBox.className = `alert alert-${type} rounded-3 py-2 px-3 mb-3 small fw-semibold text-center`;
+    alertBox.innerText = message;
+    alertBox.classList.remove('d-none');
+  }
+
+  function hideAlert() {
+    document.getElementById('alertBox').classList.add('d-none');
+  }
+
+  function switchStep(step) {
+    hideAlert();
+    if (step === 1) {
+      document.getElementById('stepEmail').classList.remove('d-none');
+      document.getElementById('stepOtp').classList.add('d-none');
+      clearInterval(timerInterval);
+    } else {
+      document.getElementById('stepEmail').classList.add('d-none');
+      document.getElementById('stepOtp').classList.remove('d-none');
+      document.getElementById('displayEmail').innerText = currentEmail;
+      clearOtpBoxes();
+      digitInputs[0].focus();
+      start1MinTimer();
+    }
+  }
+
+  function clearOtpBoxes() {
+    digitInputs.forEach(input => {
+      input.value = '';
+      input.classList.remove('filled');
+    });
+  }
+
+  // 1-Minute Countdown Timer (60 seconds)
+  function start1MinTimer() {
+    clearInterval(timerInterval);
+    secondsRemaining = 60;
+    const timerDisplay = document.getElementById('timerDisplay');
+    const btnResend = document.getElementById('btnResend');
+    btnResend.disabled = true;
+
+    updateTimerUI();
+
+    timerInterval = setInterval(() => {
+      secondsRemaining--;
+      updateTimerUI();
+      if (secondsRemaining <= 0) {
+        clearInterval(timerInterval);
+        timerDisplay.innerText = "00:00 (Expired)";
+        btnResend.disabled = false;
+        btnResend.classList.remove('text-muted');
+        btnResend.classList.add('text-primary', 'fw-bold');
+      }
+    }, 1000);
+  }
+
+  function updateTimerUI() {
+    const timerDisplay = document.getElementById('timerDisplay');
+    const btnResend = document.getElementById('btnResend');
+    const mins = Math.floor(secondsRemaining / 60);
+    const secs = secondsRemaining % 60;
+    const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    timerDisplay.innerText = formatted;
+    if (secondsRemaining > 0) {
+      btnResend.innerHTML = `<i class="bi bi-arrow-clockwise me-1"></i> Resend (${secs}s)`;
+    } else {
+      btnResend.innerHTML = `<i class="bi bi-arrow-clockwise me-1"></i> Resend Code`;
+    }
+  }
+
+  // Step 1: Send OTP via AJAX
+  async function handleSendOtp(event) {
+    event.preventDefault();
+    hideAlert();
+
+    const email = document.getElementById('emailInput').value.trim();
+    if (!email) {
+      showAlert("Please enter a valid email address.");
+      return;
+    }
+
+    currentEmail = email;
+    const btn = document.getElementById('btnSendOtp');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> DISPATCHING CODE...`;
+
+    try {
+      const response = await fetch('/send-otp/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ email: email })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        showAlert(data.message, 'success');
+        switchStep(2);
+      } else {
+        showAlert(data.message || "Failed to send verification code.");
+      }
+    } catch (err) {
+      console.error("Error sending OTP:", err);
+      showAlert("Connection error. Please try again.");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<span>GET 4-DIGIT ACCESS CODE</span><i class="bi bi-arrow-right fs-5"></i>`;
+    }
+  }
+
+  async function handleResendOtp() {
+    if (!currentEmail) return;
+    hideAlert();
+    showAlert("Resending 4-digit verification code...", "info");
+
+    try {
+      const response = await fetch('/send-otp/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ email: currentEmail })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        showAlert(data.message, 'success');
+        clearOtpBoxes();
+        digitInputs[0].focus();
+        start1MinTimer();
+      } else {
+        showAlert(data.message);
+      }
+    } catch (err) {
+      showAlert("Connection error. Please try again.");
+    }
+  }
+
+  // 4-Digit Box Input Logic (Auto-Enter & Auto-Focus)
+  digitInputs.forEach((input, index) => {
+    // Handle digit typing
+    input.addEventListener('input', (e) => {
+      const val = e.target.value.replace(/[^0-9]/g, '');
+      e.target.value = val;
+
+      if (val) {
+        input.classList.add('filled');
+        if (index < 3) {
+          digitInputs[index + 1].focus();
+        }
+      } else {
+        input.classList.remove('filled');
+      }
+
+      // Auto-enter / auto-verify when all 4 digits typed!
+      checkAndAutoVerify();
+    });
+
+    // Handle Backspace
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && index > 0) {
+        digitInputs[index - 1].focus();
+      }
+    });
+
+    // Handle Paste
+    input.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '').slice(0, 4);
+      if (pasteData) {
+        for (let i = 0; i < pasteData.length; i++) {
+          if (digitInputs[i]) {
+            digitInputs[i].value = pasteData[i];
+            digitInputs[i].classList.add('filled');
+          }
+        }
+        if (pasteData.length === 4) {
+          digitInputs[3].focus();
+          checkAndAutoVerify();
+        } else if (digitInputs[pasteData.length]) {
+          digitInputs[pasteData.length].focus();
+        }
+      }
+    });
+  });
+
+  function getOtpCodeValue() {
+    return digitInputs.map(input => input.value).join('');
+  }
+
+  function checkAndAutoVerify() {
+    const code = getOtpCodeValue();
+    if (code.length === 4) {
+      verifyOtpCode();
+    }
+  }
+
+  // Step 2: Verify OTP via AJAX
+  async function verifyOtpCode() {
+    hideAlert();
+    const code = getOtpCodeValue();
+
+    if (code.length !== 4) {
+      return;
+    }
+
+    const indicator = document.getElementById('verifyingIndicator');
+    if (indicator) indicator.classList.remove('d-none');
+
+    try {
+      const response = await fetch('/verify-otp/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+          email: currentEmail,
+          otp_code: code
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        showAlert("Code verified! Redirecting to campus...", "success");
+        setTimeout(() => {
+          window.location.href = data.redirect_url || '/';
+        }, 400);
+      } else {
+        if (indicator) indicator.classList.add('d-none');
+        showAlert(data.message || "Invalid 4-digit code. Please check your email.");
+        clearOtpBoxes();
+        digitInputs[0].focus();
+      }
+    } catch (err) {
+      if (indicator) indicator.classList.add('d-none');
+      showAlert("Verification request failed. Please try again.");
+    }
+  }
+
+  // Google Sign In Handlers
+  function triggerGoogleSignIn() {
+    const gEmail = prompt("Enter your Google Account email for instant sign in:");
+    if (gEmail && gEmail.includes("@")) {
+      handleGoogleLoginBackend(gEmail, "Google User");
+    }
+  }
+
+  function handleGoogleCredentialResponse(response) {
+    try {
+      const base64Url = response.credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      const payload = JSON.parse(jsonPayload);
+      handleGoogleLoginBackend(payload.email, payload.name);
+    } catch (e) {
+      console.error("Google JWT decode error:", e);
+    }
+  }
+
+  async function handleGoogleLoginBackend(email, name) {
+    try {
+      const response = await fetch('/auth/google/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ email: email, name: name })
+      });
+      const data = await response.json();
+      if (data.success) {
+        window.location.href = data.redirect_url || '/';
+      } else {
+        showAlert(data.message);
+      }
+    } catch (e) {
+      showAlert("Google login failed.");
+    }
+  }
 </script>
 {% endblock %}

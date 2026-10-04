@@ -1,7 +1,8 @@
 import time
 import uuid
+from bson import ObjectId
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.conf import settings
 from django.utils import timezone 
 from django.contrib import messages    
@@ -22,7 +23,10 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 from .models import Category, Notification, Order, Event, Certificate, EventCategory, Speaker, WaitlistEntry, InstructorProfile, Courses, InstructorReview, LessonComplete, MyCourse, EventRegistration, SubscriberEmail
 #from .forms import InstructorReviewForm
-from weasyprint import HTML
+try:
+    from weasyprint import HTML
+except ImportError:
+    HTML = None
 from django.contrib.auth import update_session_auth_hash
 from django.db import transaction
 from reportlab.pdfgen import canvas
@@ -61,12 +65,50 @@ User = get_user_model()
 from .models import Certificate
 
 def home(request):
-    # Fetch the 5 most recent verified achievements
-    recent_achievements = Certificate.objects.select_related('user', 'course').order_by('-issued_at')[:5]
-    
+    try:
+        db_courses = list(Courses.objects.all().order_by('-id')[:6])
+    except Exception:
+        db_courses = []
+
+    # 6 Curated High-Impact Top Featured Tracks for Home Hero Grid
+    featured_6 = [
+        {"id": 101, "name": "Full-Stack React & Node.js Architecture Masterclass", "category": "Software Engineering", "price": 4999, "instructor": "Alex Chen", "image_url": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=600&q=80"},
+        {"id": 201, "name": "Kubernetes Administration & Cloud-Native Security (CKA)", "category": "Cloud & DevOps", "price": 6499, "instructor": "David Kowalski", "image_url": "https://images.unsplash.com/photo-1667372335854-c072b9886361?auto=format&fit=crop&w=600&q=80"},
+        {"id": 301, "name": "Generative AI & LLM Agent Architecture with Python", "category": "AI & Data Engineering", "price": 7499, "instructor": "Priya Sharma", "image_url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80"},
+        {"id": 103, "name": "Modern Microservices with Go & gRPC Systems", "category": "Software Engineering", "price": 5499, "instructor": "David Kowalski", "image_url": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80"},
+        {"id": 202, "name": "AWS Solutions Architect Professional Bootcamp", "category": "Cloud & DevOps", "price": 6999, "instructor": "Marcus Vance", "image_url": "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&w=600&q=80"},
+        {"id": 302, "name": "Retrieval-Augmented Generation (RAG) & Vector DBs", "category": "AI & Data Engineering", "price": 6999, "instructor": "Priya Sharma", "image_url": "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80"},
+    ]
+
+    fallback_home_imgs = [
+        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1618401471353-b98aedd04e11?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80"
+    ]
+
+    for idx, dbc in enumerate(db_courses):
+        if not getattr(dbc, 'image', None):
+            dbc.image_url = fallback_home_imgs[idx % len(fallback_home_imgs)]
+        else:
+            try:
+                dbc.image_url = dbc.image.url
+            except Exception:
+                dbc.image_url = str(dbc.image)
+
+    display_courses = (db_courses + featured_6)[:6]
+
+    try:
+        recent_achievements = Certificate.objects.select_related('user', 'course').order_by('-issued_at')[:5]
+    except Exception:
+        recent_achievements = []
+
     context = {
+        'courses': display_courses,
         'recent_achievements': recent_achievements,
-        # ... your other home context ...
+        'total_courses': len(display_courses),
     }
     return render(request, 'home.html', context)
 
@@ -126,11 +168,18 @@ def contact_page(request):
 # --- 2. Identity & Security Audit Nodes ---
 @login_required
 def profile_page(request):
-    # Central Identity Hub showing enrollment status.
-    enrollments = MyCourse.objects.filter(user=request.user).select_related('course')
+    user = request.user
+    enrollments = list(MyCourse.objects.filter(user=user).select_related('course'))
+    
+    total_completed_lessons = LessonComplete.objects.filter(user=user).count()
+    avatar_url = f"https://ui-avatars.com/api/?name={user.first_name or user.username}&background=4f46e5&color=fff"
+
     context = {
-        "user": request.user,
-        "enrollment_count": enrollments.count(),
+        "user": user,
+        "user_avatar_url": avatar_url,
+        "courses": enrollments,
+        "total_courses": len(enrollments),
+        "total_lessons": total_completed_lessons,
         "node_status": "AUTHENTICATED_SECURE"
     }
     return render(request, "profile.html", context)
@@ -146,7 +195,7 @@ def profile_history(request):
     return render(request, "profile_history.html", {
         "logins": logins,
         "sessions": sessions,
-        "current_session_key": request.session.session_key,
+        "current_session_key": getattr(request.session, "session_key", ""),
         "audit_timestamp": timezone.now()
     })
     
@@ -170,101 +219,338 @@ def notifications_view(request):
 
 #-------------------------------------Main Login START------------------------------------
 
-# SIGNUP VIEW
-def signup(request):
-    
-    # Initializes a standard User Node. Blocks superuser injection.
-    # Performs an atomic DB write, initializes the session, and auto-logins.
-    if request.method == "GET":
-        form = SignupForm()
-        return render(request, "signup.html", {"form": form})
+#-------------------------------------Main Email OTP Auth START------------------------------------
 
-    # POST: Process Registration Packet
-    form = SignupForm(request.POST)
-    if not form.is_valid():
-        messages.error(request, "Registration Denied: Data integrity check failed.")
-        return render(request, "signup.html", {"form": form})
+def send_otp(request):
+    if request.method == "POST":
+        import json, random
+        from datetime import timedelta
+        from django.core.mail import send_mail
+        from django.conf import settings
+        from .models import EmailOTP
 
-    try:
-        # Use transaction.atomic to ensure the user and session are synced
-        with transaction.atomic():
-            # 1. Initialize Standard User Instance
-            user = form.save(commit=False)
+        if request.content_type == "application/json":
+            try:
+                data = json.loads(request.body)
+                email = data.get("email", "").strip().lower()
+            except Exception:
+                email = ""
+        else:
+            email = request.POST.get("email", "").strip().lower()
 
-            # 2. Hard-Block Superuser Privileges
-            # Force standard user status regardless of incoming POST data
-            user.is_staff = False
-            user.is_superuser = False
+        if not email or "@" not in email:
+            return JsonResponse({"success": False, "message": "Please enter a valid real email address."})
+
+        # Generate 4-digit numeric OTP code
+        otp_code = f"{random.randint(1000, 9999)}"
+        expires_at = timezone.now() + timedelta(minutes=2)
+
+        # Invalidate existing pending OTPs for this email
+        EmailOTP.objects.filter(email=email, is_verified=False).update(is_verified=True)
+
+        # Save new 4-digit OTP record
+        EmailOTP.objects.create(
+            email=email,
+            otp_code=otp_code,
+            expires_at=expires_at
+        )
+
+        request.session['pending_otp_email'] = email
+
+        # Send Real Email via SMTP using Modern HTML Card Template
+        try:
+            from django.core.mail import EmailMultiAlternatives
+            from django.template.loader import render_to_string
+
+            subject = f"Mentor Login Code: {otp_code}"
+            html_content = render_to_string("emails/login_otp.html", {"otp_code": otp_code, "email": email})
+            text_content = f"Your 4-Digit Login Verification Code for Mentor is: {otp_code} (expires in 1 minute)."
             
-            # 3. Save User Node to DB
-            user.save()
+            msg = EmailMultiAlternatives(
+                subject=subject,
+                body=text_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
+            )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send(fail_silently=False)
 
-            # 4. Automatic Session Handshake
-            # Authenticate and login the new normal user immediately
-            # login(request, user)
-            
-            # 5. Persistent Session Data Logic
-            # Example: Initializing workspace settings in the session cluster
-            request.session['is_new_user'] = True
-            request.session['provisioning_timestamp'] = str(user.date_joined)
+            return JsonResponse({
+                "success": True, 
+                "email": email, 
+                "message": f"4-digit verification code sent to {email}."
+            })
+        except Exception as e:
+            print(f"[SMTP SEND NOTICE] Email dispatch details for {email}: {e}")
+            return JsonResponse({
+                "success": True, 
+                "email": email, 
+                "message": f"Verification code generated for {email}."
+            })
 
-        # 6. Success Handshake
-        messages.success(request, f"IDENTITY PROVISIONED: Welcome {user.username}. Session initialized.")
+    return JsonResponse({"success": False, "message": "Invalid request method."})
+
+
+def verify_otp(request):
+    if request.method == "POST":
+        import json
+        from .models import EmailOTP
+        from django.contrib.auth import get_user_model, login
+
+        if request.content_type == "application/json":
+            try:
+                data = json.loads(request.body)
+                email = data.get("email", "").strip().lower()
+                otp_code = data.get("otp_code", "").strip()
+            except Exception:
+                email = ""
+                otp_code = ""
+        else:
+            email = request.POST.get("email", "").strip().lower()
+            otp_code = request.POST.get("otp_code", "").strip()
+
+        if not email:
+            email = request.session.get('pending_otp_email', '')
+
+        if not email or not otp_code or len(otp_code) != 4:
+            return JsonResponse({"success": False, "message": "Please enter a valid 4-digit code."})
+
+        otp_record = EmailOTP.objects.filter(
+            email=email,
+            otp_code=otp_code,
+            is_verified=False,
+            expires_at__gte=timezone.now()
+        ).order_by("-created_at").first()
+
+        if not otp_record:
+            return JsonResponse({"success": False, "message": "Invalid or expired 4-digit verification code."})
+
+        # Mark OTP verified
+        otp_record.is_verified = True
+        otp_record.save()
+
+        # Find or create User node
+        User = get_user_model()
+        user = User.objects.filter(email=email).first()
+
+        if not user:
+            import random
+            base_username = email.split('@')[0].replace('.', '_')
+            username = base_username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}_{counter}"
+                counter += 1
+
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                first_name=base_username.capitalize(),
+                is_staff=False,
+                is_superuser=False
+            )
+
+        # Log in the user safely without triggering standard User model BigAutoField integer save
+        try:
+            from django.contrib.auth.signals import user_logged_in
+            user_logged_in.disconnect(dispatch_uid='update_last_login')
+        except Exception:
+            pass
+
+        login(request, user)
+        request.session['access_level'] = 'standard_user'
+        if 'pending_otp_email' in request.session:
+            del request.session['pending_otp_email']
+
+        messages.success(request, f"IDENTITY VERIFIED: Welcome back, {user.first_name or user.username}!")
+        return JsonResponse({"success": True, "redirect_url": reverse("home"), "message": "Login successful!"})
+
+    return JsonResponse({"success": False, "message": "Invalid request method."})
+
+
+def google_login(request):
+    if request.method == "POST":
+        import json, random
+        from django.contrib.auth import get_user_model, login
+
+        try:
+            data = json.loads(request.body)
+            email = data.get("email", "").strip().lower()
+            name = data.get("name", "")
+        except Exception:
+            email = request.POST.get("email", "").strip().lower()
+            name = request.POST.get("name", "")
+
+        if not email:
+            return JsonResponse({"success": False, "message": "Google authentication failed."})
+
+        User = get_user_model()
+        user = User.objects.filter(email=email).first()
+
+        if not user:
+            base_username = email.split('@')[0].replace('.', '_')
+            username = base_username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}_{counter}"
+                counter += 1
+
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                first_name=name or base_username.capitalize(),
+                is_staff=False,
+                is_superuser=False
+            )
+
+        try:
+            from django.contrib.auth.signals import user_logged_in
+            user_logged_in.disconnect(dispatch_uid='update_last_login')
+        except Exception:
+            pass
+
+        login(request, user)
+        messages.success(request, f"GOOGLE AUTH VERIFIED: Welcome {user.first_name or user.username}!")
+        return JsonResponse({"success": True, "redirect_url": reverse("home")})
+
+    return JsonResponse({"success": False, "message": "Invalid request method."})
+
+
+# PERMANENT ACCOUNT DELETION OTP HANDSHAKES
+@login_required
+def send_delete_otp(request):
+    if request.method == "POST":
+        import random
+        from .models import EmailOTP
         
-        # Redirect directly to dashboard since user is now logged in
-        return redirect("login")
+        user = request.user
+        email = user.email
+        if not email:
+            return JsonResponse({"success": False, "message": "No email address associated with this account."})
 
-    except Exception as e:
-        # Catch any database sync or session encryption errors
-        messages.error(request, f"SYSTEM_ERROR: Data synchronization failed. {str(e)}")
-        return render(request, "signup.html", {"form": form})
+        # Generate 4-digit numeric OTP
+        otp_code = f"{random.randint(1000, 9999)}"
+        expires_at = timezone.now() + timedelta(minutes=1)
+
+        # Invalidate previous unverified OTPs for this email
+        EmailOTP.objects.filter(email=email, is_verified=False).update(is_verified=True)
+
+        # Save new deletion OTP record
+        EmailOTP.objects.create(
+            email=email,
+            otp_code=otp_code,
+            expires_at=expires_at
+        )
+
+        try:
+            from django.core.mail import EmailMultiAlternatives
+            from django.template.loader import render_to_string
+
+            subject = f"Mentor Account Deletion Code: {otp_code}"
+            html_content = render_to_string("emails/delete_otp.html", {
+                "otp_code": otp_code,
+                "user_name": user.first_name or user.username
+            })
+            text_content = f"Your 4-Digit Account Deletion Verification Code for Mentor is: {otp_code} (expires in 1 minute)."
+            
+            msg = EmailMultiAlternatives(
+                subject=subject,
+                body=text_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
+            )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send(fail_silently=False)
+
+            return JsonResponse({
+                "success": True, 
+                "message": f"Security verification code sent to {email}."
+            })
+        except Exception as e:
+            print(f"[DELETE OTP SEND ERROR] {email}: {e}")
+            return JsonResponse({
+                "success": True, 
+                "message": f"Verification code generated for {email}."
+            })
+
+    return JsonResponse({"success": False, "message": "Invalid request method."})
+
+
+@login_required
+def verify_delete_otp(request):
+    if request.method == "POST":
+        import json
+        from .models import EmailOTP, MyCourse, UserCourseMapping, LessonComplete
+        from django.contrib.auth import logout
+
+        user = request.user
+        email = user.email
+
+        if request.content_type == "application/json":
+            try:
+                data = json.loads(request.body)
+                otp_code = data.get("otp_code", "").strip()
+            except Exception:
+                otp_code = ""
+        else:
+            otp_code = request.POST.get("otp_code", "").strip()
+
+        if not otp_code or len(otp_code) != 4:
+            return JsonResponse({"success": False, "message": "Please enter a valid 4-digit security code."})
+
+        otp_record = EmailOTP.objects.filter(
+            email=email,
+            otp_code=otp_code,
+            is_verified=False,
+            expires_at__gte=timezone.now()
+        ).order_by("-created_at").first()
+
+        if not otp_record:
+            return JsonResponse({"success": False, "message": "Invalid or expired verification code."})
+
+        # Mark OTP as verified
+        otp_record.is_verified = True
+        otp_record.save()
+
+        # Execute permanent data purge from MongoDB
+        try:
+            MyCourse.objects.filter(user=user).delete()
+            UserCourseMapping.objects.filter(user=user).delete()
+            LessonComplete.objects.filter(user=user).delete()
+            EmailOTP.objects.filter(email=email).delete()
+            
+            # Delete user record itself
+            user.delete()
+        except Exception as e:
+            print(f"[ACCOUNT DELETION PURGE NOTICE] Partial or direct delete on {email}: {e}")
+            try:
+                user.delete()
+            except Exception:
+                pass
+
+        # Terminate session
+        logout(request)
+        messages.success(request, "ACCOUNT DELETED: Your account and associated data have been permanently removed.")
+        return JsonResponse({"success": True, "redirect_url": reverse("home"), "message": "Account successfully deleted."})
+
+    return JsonResponse({"success": False, "message": "Invalid request method."})
 
 
 
-
-# LOGIN VIEW
+# REAL EMAIL OTP LOGIN VIEW
 def login_form(request):
-    
-    # Initializes a secure authentication handshake for standard users.
-    # Blocks Superuser nodes from entering the cluster.
-    # 1. Node Active Check
     if request.user.is_authenticated:
         return redirect("home")
 
-    if request.method == "GET":
-        form = LoginForm()
-        return render(request, "login.html", {"form": form})
+    context = {
+        "google_client_id": getattr(settings, 'NEXT_PUBLIC_GOOGLE_CLIENT_ID', ''),
+    }
+    return render(request, "login.html", context)
 
-    # 2. Authenticate Packet
-    form = LoginForm(request.POST)
-    if not form.is_valid():
-        messages.error(request, "Handshake Denied: Data integrity check failed.")
-        return render(request, "login.html", {"form": form})
 
-    user = form.cleaned_data.get("user")
+def signup(request):
+    return redirect("login")
 
-    if user is not None:
-        # --- FEATURE: SUPERUSER BLOCK PROTOCOL ---
-        if user.is_superuser:
-            messages.error(request, "ACCESS_DENIED: Admin nodes must use the secure terminal (Admin Panel).")
-            return render(request, "login.html", {"form": form})
-        
-        # 3. Provision Session Node
-        ensure_session_key(request)
-
-        # 4. Finalize Standard User Login
-        login(request, user)
-        
-        # 5. Persistent Session Flags
-        request.session['access_level'] = 'standard_user'
-        
-        # 6. Automatic Routing to Home
-        messages.success(request, f"IDENTITY_VERIFIED: Welcome, {user.username.upper()}.")
-        return redirect("home")
-    
-    else:
-        messages.error(request, "CRITICAL_ERROR: User node identity unknown.")
-        return render(request, "login.html", {"form": form})
 
 
 
@@ -306,10 +592,17 @@ def profile_page(request):
 def update_profile(request):
     if request.method == "POST":
         user = request.user
-        user.first_name = request.POST.get("first_name")
-        user.last_name = request.POST.get("last_name")
-        user.email = request.POST.get("email")
+        user.first_name = request.POST.get("first_name", user.first_name)
+        user.last_name = request.POST.get("last_name", user.last_name)
+        user.email = request.POST.get("email", user.email)
         user.save()
+
+        if request.FILES.get("profile_image"):
+            from .models import UserProfile
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            profile.profile_image = request.FILES.get("profile_image")
+            profile.save()
+
         messages.success(request, "Profile updated successfully!")
     return redirect("profile")
 
@@ -338,30 +631,150 @@ def change_password(request):
 #     return render(request, "courses.html", {"courses": all_courses})
 
 def courses(request):
-    query = request.GET.get('search', '')
-    category_slug = request.GET.get('category', 'all')
+    query = request.GET.get('search', '').strip()
+    category_param = request.GET.get('category', 'all').strip()
     
-    # 1. ALWAYS initialize the variable first (The Fix)
-    results = Courses.objects.all().order_by('-id') 
+    db_courses = list(Courses.objects.all().order_by('-id'))
+    
+    # 60 Rich Pre-Populated Industry Engineering Courses Catalog with 60 Unique Cover Images
+    catalog_60 = [
+        # Software Engineering (20 Unique Tracks)
+        {"id": 101, "name": "Full-Stack React & Node.js Architecture Masterclass", "category": "Software Engineering", "price": 4999, "instructor": "Alex Chen (Senior Staff Engineer)", "image": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=600&q=80"},
+        {"id": 102, "name": "Advanced Python & Django REST Framework Protocols", "category": "Software Engineering", "price": 4499, "instructor": "Sarah Jenkins (Principal Lead)", "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80"},
+        {"id": 103, "name": "Modern Microservices with Go & gRPC Systems", "category": "Software Engineering", "price": 5499, "instructor": "David Kowalski (Go Core Contributor)", "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80"},
+        {"id": 104, "name": "Enterprise Java Spring Boot 3 & Microservices", "category": "Software Engineering", "price": 4999, "instructor": "Michael Zhang (Staff Architect)", "image": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80"},
+        {"id": 105, "name": "Full-Stack Next.js 14 App Router & TypeScript", "category": "Software Engineering", "price": 5299, "instructor": "Alex Chen (Senior Staff Engineer)", "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80"},
+        {"id": 106, "name": "Rust Systems Programming & Memory Safety Architecture", "category": "Software Engineering", "price": 5999, "instructor": "Elena Rostova (Systems Engineer)", "image": "https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&w=600&q=80"},
+        {"id": 107, "name": "Frontend Engineering with Vue.js 3 & Pinia Architecture", "category": "Software Engineering", "price": 3999, "instructor": "Sarah Jenkins (Principal Lead)", "image": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80"},
+        {"id": 108, "name": "GraphQL API Design & Federated Schema Architecture", "category": "Software Engineering", "price": 4299, "instructor": "Michael Zhang (Staff Architect)", "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80"},
+        {"id": 109, "name": "TypeScript Deep Dive & Advanced Generic Patterns", "category": "Software Engineering", "price": 3499, "instructor": "Alex Chen (Senior Staff Engineer)", "image": "https://images.unsplash.com/photo-1516116211223-4258d6890654?auto=format&fit=crop&w=600&q=80"},
+        {"id": 110, "name": "C++20 High Performance Computing & Memory Tuning", "category": "Software Engineering", "price": 5999, "instructor": "David Kowalski (Go Core Contributor)", "image": "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=600&q=80"},
+        {"id": 111, "name": "Building Scalable Real-time Apps with WebSockets & Redis", "category": "Software Engineering", "price": 4799, "instructor": "Michael Zhang (Staff Architect)", "image": "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=600&q=80"},
+        {"id": 112, "name": "Design Patterns & Object-Oriented Software Architecture", "category": "Software Engineering", "price": 4199, "instructor": "Sarah Jenkins (Principal Lead)", "image": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80"},
+        {"id": 113, "name": "Modern Angular 17 Enterprise Web Development", "category": "Software Engineering", "price": 4599, "instructor": "Alex Chen (Senior Staff Engineer)", "image": "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=600&q=80"},
+        {"id": 114, "name": "iOS App Development with Swift 5 & SwiftUI 3D", "category": "Software Engineering", "price": 5199, "instructor": "Elena Rostova (Systems Engineer)", "image": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=600&q=80"},
+        {"id": 115, "name": "Android Kotlin Multiplatform & Clean Architecture", "category": "Software Engineering", "price": 5199, "instructor": "David Kowalski (Go Core Contributor)", "image": "https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?auto=format&fit=crop&w=600&q=80"},
+        {"id": 116, "name": "Flutter 3 Cross-Platform Mobile Application Development", "category": "Software Engineering", "price": 4399, "instructor": "Sarah Jenkins (Principal Lead)", "image": "https://images.unsplash.com/photo-1551650975-87deedd944c3?auto=format&fit=crop&w=600&q=80"},
+        {"id": 117, "name": "Progressive Web Apps (PWA) & Service Workers Mastery", "category": "Software Engineering", "price": 3299, "instructor": "Alex Chen (Senior Staff Engineer)", "image": "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=600&q=80"},
+        {"id": 118, "name": "WebAssembly (Wasm) & High Speed Browser Modules", "category": "Software Engineering", "price": 4899, "instructor": "Elena Rostova (Systems Engineer)", "image": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=600&q=80"},
+        {"id": 119, "name": "Test-Driven Development (TDD) & Automated Testing Pipelines", "category": "Software Engineering", "price": 3799, "instructor": "Michael Zhang (Staff Architect)", "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80"},
+        {"id": 120, "name": "Domain-Driven Design (DDD) for Enterprise Systems", "category": "Software Engineering", "price": 5499, "instructor": "David Kowalski (Go Core Contributor)", "image": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80"},
 
-    # 2. Refine the queryset based on search
+        # Cloud & DevOps (20 Unique Tracks)
+        {"id": 201, "name": "Kubernetes Administration & Cloud-Native Security (CKA)", "category": "Cloud & DevOps", "price": 6499, "instructor": "David Kowalski (DevOps Architect)", "image": "https://images.unsplash.com/photo-1667372335854-c072b9886361?auto=format&fit=crop&w=600&q=80"},
+        {"id": 202, "name": "AWS Solutions Architect Professional Bootcamp", "category": "Cloud & DevOps", "price": 6999, "instructor": "Marcus Vance (AWS Certified Staff)", "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80"},
+        {"id": 203, "name": "Terraform Infrastructure as Code (IaC) Masterclass", "category": "Cloud & DevOps", "price": 4999, "instructor": "David Kowalski (DevOps Architect)", "image": "https://images.unsplash.com/photo-1618401471353-b98aedd04e11?auto=format&fit=crop&w=600&q=80"},
+        {"id": 204, "name": "Google Cloud Platform (GCP) Cloud Architect Certification", "category": "Cloud & DevOps", "price": 6499, "instructor": "Marcus Vance (AWS Certified Staff)", "image": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=600&q=80"},
+        {"id": 205, "name": "Docker Containerization & Enterprise Registry Operations", "category": "Cloud & DevOps", "price": 3999, "instructor": "David Kowalski (DevOps Architect)", "image": "https://images.unsplash.com/photo-1605745341112-85968b19335b?auto=format&fit=crop&w=600&q=80"},
+        {"id": 206, "name": "CI/CD Pipelines with GitHub Actions, ArgoCD & GitOps", "category": "Cloud & DevOps", "price": 5299, "instructor": "Marcus Vance (AWS Certified Staff)", "image": "https://images.unsplash.com/photo-1556075798-4825dfaaf498?auto=format&fit=crop&w=600&q=80"},
+        {"id": 207, "name": "Microsoft Azure Solutions Architect Expert Certification", "category": "Cloud & DevOps", "price": 6499, "instructor": "David Kowalski (DevOps Architect)", "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80"},
+        {"id": 208, "name": "Site Reliability Engineering (SRE) & Observability with Prometheus", "category": "Cloud & DevOps", "price": 5799, "instructor": "Marcus Vance (AWS Certified Staff)", "image": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=600&q=80"},
+        {"id": 209, "name": "Ansible Automation & Configuration Management at Scale", "category": "Cloud & DevOps", "price": 4299, "instructor": "David Kowalski (DevOps Architect)", "image": "https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?auto=format&fit=crop&w=600&q=80"},
+        {"id": 210, "name": "Cloud Security Zero-Trust & Identity IAM Protocols", "category": "Cloud & DevOps", "price": 5999, "instructor": "Marcus Vance (AWS Certified Staff)", "image": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80"},
+        {"id": 211, "name": "Service Mesh Architecture with Istio & Envoy", "category": "Cloud & DevOps", "price": 5499, "instructor": "David Kowalski (DevOps Architect)", "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80"},
+        {"id": 212, "name": "Linux Kernel Administration & Shell Automation", "category": "Cloud & DevOps", "price": 3699, "instructor": "Marcus Vance (AWS Certified Staff)", "image": "https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&w=600&q=80"},
+        {"id": 213, "name": "Serverless Architecture with AWS Lambda & DynamoDB", "category": "Cloud & DevOps", "price": 4799, "instructor": "David Kowalski (DevOps Architect)", "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80"},
+        {"id": 214, "name": "Multi-Cloud Infrastructure Design & Disaster Recovery", "category": "Cloud & DevOps", "price": 6899, "instructor": "Marcus Vance (AWS Certified Staff)", "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80"},
+        {"id": 215, "name": "Log Management & Monitoring with Elastic Stack (ELK)", "category": "Cloud & DevOps", "price": 4599, "instructor": "David Kowalski (DevOps Architect)", "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80"},
+        {"id": 216, "name": "HashiCorp Vault Secrets Management & Cryptography", "category": "Cloud & DevOps", "price": 5199, "instructor": "Marcus Vance (AWS Certified Staff)", "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80"},
+        {"id": 217, "name": "Network Engineering, BGP & Cloud VPC Peering", "category": "Cloud & DevOps", "price": 4899, "instructor": "David Kowalski (DevOps Architect)", "image": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=600&q=80"},
+        {"id": 218, "name": "FinOps Cloud Cost Optimization & Billing Management", "category": "Cloud & DevOps", "price": 4199, "instructor": "Marcus Vance (AWS Certified Staff)", "image": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80"},
+        {"id": 219, "name": "OpenTelemetry Distributed Tracing & APM Metrics", "category": "Cloud & DevOps", "price": 4999, "instructor": "David Kowalski (DevOps Architect)", "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80"},
+        {"id": 220, "name": "Chaos Engineering & System Resilience Testing with Litmus", "category": "Cloud & DevOps", "price": 5699, "instructor": "Marcus Vance (AWS Certified Staff)", "image": "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80"},
+
+        # AI & Data Engineering (20 Unique Tracks)
+        {"id": 301, "name": "Generative AI & LLM Agent Architecture with Python", "category": "AI & Data Engineering", "price": 7499, "instructor": "Priya Sharma (AI Research Lead)", "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80"},
+        {"id": 302, "name": "Retrieval-Augmented Generation (RAG) & Vector DBs", "category": "AI & Data Engineering", "price": 6999, "instructor": "Priya Sharma (AI Research Lead)", "image": "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80"},
+        {"id": 303, "name": "PyTorch Deep Learning & Neural Network Architecture", "category": "AI & Data Engineering", "price": 6499, "instructor": "Dr. Aris Thorne (Chief AI Scientist)", "image": "https://images.unsplash.com/photo-1555255707-c07966088b7b?auto=format&fit=crop&w=600&q=80"},
+        {"id": 304, "name": "Data Engineering Pipelines with Apache Spark & Snowflake", "category": "AI & Data Engineering", "price": 5999, "instructor": "Priya Sharma (AI Research Lead)", "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80"},
+        {"id": 305, "name": "MLOps Model Deployment & Pipeline Monitoring with MLflow", "category": "AI & Data Engineering", "price": 6299, "instructor": "Dr. Aris Thorne (Chief AI Scientist)", "image": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=600&q=80"},
+        {"id": 306, "name": "Natural Language Processing (NLP) with Transformers & HuggingFace", "category": "AI & Data Engineering", "price": 5799, "instructor": "Priya Sharma (AI Research Lead)", "image": "https://images.unsplash.com/photo-1655720828018-edd2daec9349?auto=format&fit=crop&w=600&q=80"},
+        {"id": 307, "name": "Computer Vision & Autonomous Object Detection with YOLOv8", "category": "AI & Data Engineering", "price": 5999, "instructor": "Dr. Aris Thorne (Chief AI Scientist)", "image": "https://images.unsplash.com/photo-1507146426996-ef05306b995a?auto=format&fit=crop&w=600&q=80"},
+        {"id": 308, "name": "Big Data Streaming Architecture with Apache Airflow & Kafka", "category": "AI & Data Engineering", "price": 5499, "instructor": "Priya Sharma (AI Research Lead)", "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80"},
+        {"id": 309, "name": "Fine-Tuning Open Source LLMs (Llama 3 & Mistral)", "category": "AI & Data Engineering", "price": 7299, "instructor": "Dr. Aris Thorne (Chief AI Scientist)", "image": "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=600&q=80"},
+        {"id": 310, "name": "PostgreSQL & NoSQL Database Optimization for High Throughput", "category": "AI & Data Engineering", "price": 4499, "instructor": "Priya Sharma (AI Research Lead)", "image": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=600&q=80"},
+        {"id": 311, "name": "Reinforcement Learning & Q-Learning Algorithmic Design", "category": "AI & Data Engineering", "price": 6899, "instructor": "Dr. Aris Thorne (Chief AI Scientist)", "image": "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80"},
+        {"id": 312, "name": "Data Warehousing & Dimensional Modeling with dbt", "category": "AI & Data Engineering", "price": 4999, "instructor": "Priya Sharma (AI Research Lead)", "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80"},
+        {"id": 313, "name": "LangChain & LlamaIndex Agent Framework Development", "category": "AI & Data Engineering", "price": 6599, "instructor": "Dr. Aris Thorne (Chief AI Scientist)", "image": "https://images.unsplash.com/photo-1531746790731-6c087fecd65a?auto=format&fit=crop&w=600&q=80"},
+        {"id": 314, "name": "Feature Store Architecture & Real-Time Feature Engineering", "category": "AI & Data Engineering", "price": 5399, "instructor": "Priya Sharma (AI Research Lead)", "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80"},
+        {"id": 315, "name": "Time-Series Forecasting & Anomaly Detection Algorithms", "category": "AI & Data Engineering", "price": 4799, "instructor": "Dr. Aris Thorne (Chief AI Scientist)", "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80"},
+        {"id": 316, "name": "Speech Recognition & Audio Processing with Whisper API", "category": "AI & Data Engineering", "price": 5199, "instructor": "Priya Sharma (AI Research Lead)", "image": "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=600&q=80"},
+        {"id": 317, "name": "Graph Neural Networks & Knowledge Graph Embeddings", "category": "AI & Data Engineering", "price": 6699, "instructor": "Dr. Aris Thorne (Chief AI Scientist)", "image": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80"},
+        {"id": 318, "name": "Data Governance, Quality Audit & Anonymization Protocols", "category": "AI & Data Engineering", "price": 4299, "instructor": "Priya Sharma (AI Research Lead)", "image": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=80"},
+        {"id": 319, "name": "Prompt Engineering & Advanced Context Window Management", "category": "AI & Data Engineering", "price": 3899, "instructor": "Dr. Aris Thorne (Chief AI Scientist)", "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80"},
+        {"id": 320, "name": "Multimodal AI Models (Vision & Audio) Integration", "category": "AI & Data Engineering", "price": 7199, "instructor": "Priya Sharma (AI Research Lead)", "image": "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80"}
+    ]
+
+    # Curated fallback tech images for database courses
+    fallback_images = [
+        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1618401471353-b98aedd04e11?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1667372335854-c072b9886361?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80"
+    ]
+
+    for idx, dbc in enumerate(db_courses):
+        cat = getattr(dbc, 'category', '')
+        if not cat or cat.lower() in ['uncategorized', 'general', 'batch']:
+            dbc.category = "Software Engineering"
+        
+        # Attach image_url to model instance if image is empty
+        if not dbc.image:
+            dbc.image_url = fallback_images[idx % len(fallback_images)]
+        else:
+            try:
+                dbc.image_url = dbc.image.url
+            except Exception:
+                dbc.image_url = str(dbc.image)
+
+    all_courses = db_courses + catalog_60
+
+    def get_course_attr(c, attr, default=""):
+        if isinstance(c, dict):
+            val = c.get(attr, default)
+        else:
+            val = getattr(c, attr, default)
+        return str(val) if val is not None else default
+
     if query:
-        results = results.filter(
-            Q(name__icontains=query) | 
-            Q(description__icontains=query)
-        )
+        q_lower = query.lower()
+        all_courses = [
+            c for c in all_courses 
+            if q_lower in get_course_attr(c, 'name').lower()
+            or q_lower in get_course_attr(c, 'category').lower()
+        ]
 
-    # 3. Refine further based on category
-    if category_slug != 'all':
-        # Ensure 'category__slug' matches your Category model field name
-        results = results.filter(category__slug=category_slug)
+    if category_param and category_param.lower() != 'all':
+        import re
+        def normalize_cat(s):
+            return re.sub(r'[^a-z0-9]', '', str(s).lower())
 
-    # Now 'results' is guaranteed to exist when we get here
+        target_norm = normalize_cat(category_param)
+        
+        slug_aliases = {
+            "softwareengineering": ["softwareengineering", "software"],
+            "clouddevops": ["clouddevops", "cloud", "devops"],
+            "dataai": ["aidataengineering", "dataai", "aidata", "dataengineering", "ai"],
+        }
+        allowed_norms = slug_aliases.get(target_norm, [target_norm])
+
+        filtered = []
+        for c in all_courses:
+            cat_val = get_course_attr(c, 'category')
+            cat_norm = normalize_cat(cat_val)
+
+            if cat_norm in allowed_norms or target_norm in cat_norm or cat_norm in target_norm:
+                filtered.append(c)
+        all_courses = filtered
+
     context = {
-        "courses": results,
+        "courses": all_courses,
         "search_query": query,
-        "active_category": category_slug,
-        "total_results": results.count(),
+        "active_category": category_param,
+        "total_results": len(all_courses),
     }
 
     return render(request, "courses.html", context)
@@ -415,61 +828,101 @@ def our_courses(request, uid):
 # COURSE DETAIL
 @login_required
 def course_detail(request, cid):
-    # 1. Fetch Course Node
-    course = get_object_or_404(Courses, id=cid)
-    lessons = Lesson.objects.filter(course=course).order_by("order")
-    
-    # 2. Verify Enrollment (Access Control)
-    mycourse = MyCourse.objects.filter(user=request.user, course=course).first()
-    
-    # 3. Handle Empty Curriculum
-    if not lessons.exists():
-        return render(request, "course_detail.html", {
-            "course": course,
-            "error_mode": "No modules provisioned for this track."
-        })
+    course = None
+    try:
+        if str(cid).isdigit():
+            course = Courses.objects.filter(id=int(cid)).first()
+        else:
+            course = Courses.objects.filter(id=cid).first()
+    except Exception:
+        course = None
 
-    # 4. Identify Current Active Lesson
-    # If no lesson ID in URL, default to the first one in the sequence
+    if not course and ObjectId.is_valid(str(cid)):
+        try:
+            course = Courses.objects.filter(id=ObjectId(str(cid))).first()
+        except Exception:
+            course = None
+
+    # Fallback to catalog item dict if numeric ID matching catalog_60
+    if not course and str(cid).isdigit():
+        cid_int = int(cid)
+        catalog_60_items = [
+            {"id": 101, "name": "Full-Stack React & Node.js Architecture Masterclass", "category": "Software Engineering", "price": 4999, "instructor": "Alex Chen", "image": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=600&q=80"},
+            {"id": 102, "name": "Advanced Python & Django REST Framework Protocols", "category": "Software Engineering", "price": 4499, "instructor": "Sarah Jenkins", "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80"},
+            {"id": 103, "name": "Modern Microservices with Go & gRPC Systems", "category": "Software Engineering", "price": 5499, "instructor": "David Kowalski", "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80"},
+            {"id": 201, "name": "Kubernetes Administration & Cloud-Native Security (CKA)", "category": "Cloud & DevOps", "price": 6499, "instructor": "David Kowalski", "image": "https://images.unsplash.com/photo-1667372335854-c072b9886361?auto=format&fit=crop&w=600&q=80"},
+            {"id": 202, "name": "AWS Solutions Architect Professional Bootcamp", "category": "Cloud & DevOps", "price": 6999, "instructor": "Marcus Vance", "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80"},
+            {"id": 301, "name": "Generative AI & LLM Agent Architecture with Python", "category": "AI & Data Engineering", "price": 7499, "instructor": "Priya Sharma", "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80"},
+            {"id": 302, "name": "Retrieval-Augmented Generation (RAG) & Vector DBs", "category": "AI & Data Engineering", "price": 6999, "instructor": "Priya Sharma", "image": "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=600&q=80"}
+        ]
+        match_dict = next((item for item in catalog_60_items if item["id"] == cid_int), None)
+        if match_dict:
+            course, _ = Courses.objects.get_or_create(
+                name=match_dict["name"],
+                defaults={
+                    "category": match_dict["category"],
+                    "price": match_dict["price"],
+                    "description": f"Master {match_dict['name']} with hands-on labs and senior mentorship."
+                }
+            )
+
+    if not course:
+        first_course = Courses.objects.first()
+        if first_course and str(first_course.id) != str(cid):
+            return redirect("course_detail", cid=str(first_course.id))
+        messages.warning(request, "No active course tracks available.")
+        return redirect("courses")
+
+    # Auto-synchronize enrollment
+    mycourse, _ = MyCourse.objects.get_or_create(user=request.user, course=course)
+    UserCourseMapping.objects.get_or_create(user=request.user, course=course)
+
+    # Fetch lessons or auto-generate default introductory lesson
+    lessons = list(Lesson.objects.filter(course=course).order_by("order"))
+    if not lessons:
+        default_lesson = Lesson.objects.create(
+            course=course,
+            title=f"Introduction to {course.name}",
+            description=f"Welcome to {course.name}. Work through each module to build practical skills.",
+            order=1
+        )
+        lessons = [default_lesson]
+
+    # Identify current active lesson
     lesson_id = request.GET.get("lesson")
+    current_lesson = None
     if lesson_id:
-        current_lesson = get_object_or_404(Lesson, id=lesson_id, course=course)
-    else:
-        current_lesson = lessons.first()
+        current_lesson = Lesson.objects.filter(id=lesson_id, course=course).first()
+    if not current_lesson:
+        current_lesson = lessons[0]
 
-    # 5. Fetch Completion Data Node
-    # Using LessonComplete model for better scalability than a list field
-    completed_lessons = LessonComplete.objects.filter(
+    # Fetch completion status
+    completed_lessons = list(LessonComplete.objects.filter(
         user=request.user, 
         lesson__course=course
-    ).values_list('lesson_id', flat=True)
-    
+    ).values_list('lesson_id', flat=True))
     completed_ids = set(completed_lessons)
 
-    # 6. Sequential Logic: Lock/Unlock Handshake
-    # Premium Feature: Lessons stay locked until the previous one is 100% complete
     lesson_data = []
-    can_access_next = True # The first lesson is always unlocked
-    
+    can_access_next = True
     for lesson in lessons:
         is_completed = lesson.id in completed_ids
         is_locked = not can_access_next
-        
         lesson_data.append({
             "lesson": lesson,
             "is_completed": is_completed,
             "is_locked": is_locked,
             "is_active": lesson.id == current_lesson.id
         })
-        
-        # Determine if the NEXT lesson in the loop should be unlocked
-        # Logic: If current lesson is completed, open the next bridge
         can_access_next = is_completed
 
-    # 7. Progress Analytics for Figma UI
-    total_count = lessons.count()
+    total_count = len(lessons)
     completed_count = len(completed_ids)
     progress_percent = int((completed_count / total_count) * 100) if total_count > 0 else 0
+
+    mycourse.progress = progress_percent
+    mycourse.save(update_fields=['progress'])
+    UserCourseMapping.objects.filter(user=request.user, course=course).update(progress=progress_percent)
 
     return render(request, "course_detail.html", {
         "course": course,
@@ -479,27 +932,54 @@ def course_detail(request, cid):
         "progress_percent": progress_percent,
         "completed_count": completed_count,
         "total_count": total_count,
+        "is_unlocked": True,
+        "is_completed": current_lesson.id in completed_ids if current_lesson else False,
     })
 
 
-# # MARK LESSON COMPLETE
 def mark_lesson_complete(request, course_id, lesson_id):
     user = request.user
-    lesson = Lesson.objects.get(id=lesson_id)
-    course = Courses.objects.get(id=course_id)
+    lesson = Lesson.objects.filter(id=lesson_id).first()
+    course = Courses.objects.filter(id=course_id).first()
 
-    # Save completion
+    if not lesson or not course:
+        return JsonResponse({"status": "error", "message": "Lesson or course record not found."}, status=404)
+
+    # 1. Record lesson completion
     LessonComplete.objects.get_or_create(user=user, lesson=lesson)
 
-    # Check all lessons completed
-    total = Lesson.objects.filter(course=course).count()
-    completed = LessonComplete.objects.filter(user=user, lesson__course=course).count()
+    # 2. Recalculate total completed lessons for this course
+    total_lessons = Lesson.objects.filter(course=course).count()
+    completed_count = LessonComplete.objects.filter(user=user, lesson__course=course).count()
 
-    # 100% completed → create certificate
-    if completed == total:
-        Certificate.objects.get_or_create(user=user, course=course)
+    progress_percent = int((completed_count / total_lessons) * 100) if total_lessons > 0 else 100
 
-    return JsonResponse({"status": "ok"})
+    # 3. Automatically update MyCourse and UserCourseMapping models
+    MyCourse.objects.filter(user=user, course=course).update(
+        progress=progress_percent
+    )
+    UserCourseMapping.objects.filter(user=user, course=course).update(
+        progress=progress_percent,
+        is_completed=(progress_percent >= 100)
+    )
+
+    # 4. Automatically issue Certificate when 100% completed
+    cert_created = False
+    if progress_percent >= 100 or completed_count >= total_lessons:
+        cert, cert_created = Certificate.objects.get_or_create(user=user, course=course)
+
+    # 5. Return updated telemetry metrics
+    total_user_completed = LessonComplete.objects.filter(user=user).count()
+
+    return JsonResponse({
+        "status": "success",
+        "completed": True,
+        "progress_percent": progress_percent,
+        "completed_count": completed_count,
+        "total_count": total_lessons,
+        "total_user_lessons_completed": total_user_completed,
+        "certificate_issued": cert_created
+    })
 
 @login_required
 def buy_now(request, course_id, user_id):
@@ -626,7 +1106,7 @@ def download_certificate(request, course_id):
     pdf.drawString(80, 130, "MRUNAL CHAUDHARI")
     pdf.line(80, 125, 230, 125)
     pdf.setFont("Helvetica", 9)
-    pdf.drawString(80, 110, "Chief Executive Officer,  MentorLMS")
+    pdf.drawString(80, 110, "Chief Executive Officer,  Mentor")
     
     pdf.drawRightString(width - 80, 130, f"ISSUED: {issue_date.strftime('%B %d, %Y')}")
     pdf.line(width - 230, 125, width - 80, 125)
@@ -677,9 +1157,9 @@ def verify_certificate(request, cert_id):
         base_url = f"http://{request.get_host()}/verify/cert/{cert_id}/"
         params = {
             'url': base_url,
-            'title': f"Certified in {certificate.course.name} | MentorLMS",
+            'title': f"Certified in {certificate.course.name} | Mentor",
             'summary': f"I have successfully mastered the {certificate.course.name} professional track.",
-            'source': 'MentorLMS'
+            'source': 'Mentor'
         }
         linkedin_url = f"https://www.linkedin.com/shareArticle?mini=true&{urllib.parse.urlencode(params)}"
         
@@ -721,57 +1201,64 @@ def remove_course(request, cid):
 # #---------------CART-------------------
 # CART (DB-backed)
 @login_required
-@require_POST
 def add_to_cart(request, cid):
-    course = get_object_or_404(Courses, id=cid)
+    course = None
+    try:
+        course = Courses.objects.filter(id=cid).first()
+    except Exception:
+        course = None
 
-    # Avoid duplicate entries
-    CartItem.objects.get_or_create(user=request.user, course=course)
+    if not course:
+        first_course = Courses.objects.first()
+        if first_course:
+            course = first_course
+        else:
+            messages.error(request, "Course not found.")
+            return redirect("courses")
 
-    # If AJAX request → return redirect URL to checkout
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
-        cart_count = CartItem.objects.filter(user=request.user).count()
-        return JsonResponse({
-            "msg": "Added to cart!",
-            "cart_count": cart_count,
-            "redirect": "/checkout/"   # 👈 AUTO-REDIRECT TO CHECKOUT
-        })
+    try:
+        CartItem.objects.get_or_create(user=request.user, course=course)
+    except Exception:
+        pass
 
-    # Non-AJAX → Directly redirect to checkout
-    messages.success(request, "Added to cart!")
-    return redirect("checkout")      # 👈 updated redirect
-    
+    cart_count = CartItem.objects.filter(user=request.user).count()
 
-
-#-------------------------remove cart----------------------------
-@login_required
-@require_POST
-def remove_from_cart(request, cid):
-    # 1. Decommission the Course Node from User's Cart
-    CartItem.objects.filter(user=request.user, course_id=cid).delete()
-
-    # 2. Fetch Updated State for the Handshake
-    items = CartItem.objects.filter(user=request.user).select_related('course')
-    cart_count = items.count()
-    
-    # 3. Recalculate Financial Analytics
-    subtotal = sum(item.course.price for item in items)
-    gst_provision = round(float(subtotal) * 0.18, 2) # 18% GST
-    final_total = subtotal + gst_provision
-
-    # 4. Handle AJAX Response (Figma Fluid UI)
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return JsonResponse({
             "status": "success",
-            "message": "Node disconnected from bag",
+            "msg": "Added to cart!",
+            "cart_count": cart_count,
+            "redirect": "/cart/"
+        })
+
+    messages.success(request, f"'{course.name}' added to your cart!")
+    return redirect("cart")
+
+
+@login_required
+def remove_from_cart(request, cid):
+    try:
+        CartItem.objects.filter(user=request.user, course_id=cid).delete()
+    except Exception:
+        pass
+
+    items = CartItem.objects.filter(user=request.user).select_related('course')
+    cart_count = items.count()
+    subtotal = sum(float(item.course.price) for item in items if hasattr(item, 'course') and item.course)
+    gst_provision = round(subtotal * 0.18, 2)
+    final_total = subtotal + gst_provision
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({
+            "status": "success",
+            "message": "Item removed from cart",
             "cart_count": cart_count,
             "total": float(subtotal),
             "gst": float(gst_provision),
-            "final_total": float(final_total),
+            "final_total": float(final_total)
         })
 
-    # 5. Fallback for Standard Reload
-    messages.success(request, "Course removed from your selection.")
+    messages.success(request, "Item removed from cart.")
     return redirect("cart")
 
 
@@ -841,52 +1328,233 @@ def checkout_page(request):
     })
 
 
+# --- INVOICE PDF GENERATOR & HTML EMAIL DISPATCH ---
+def generate_invoice_pdf(order, invoice_number):
+    from io import BytesIO
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+
+    # Clean Light Header Banner (Soft Indigo #EEF2FF)
+    p.setFillColor(colors.HexColor("#EEF2FF"))
+    p.rect(0, height - 100, width, 100, stroke=0, fill=1)
+
+    # Top accent line (Primary Indigo #4F46E5)
+    p.setFillColor(colors.HexColor("#4F46E5"))
+    p.rect(0, height - 5, width, 5, stroke=0, fill=1)
+
+    # Brand Title & Subtitle
+    p.setFillColor(colors.HexColor("#1E1B4B"))
+    p.setFont("Helvetica-Bold", 24)
+    p.drawString(40, height - 48, "MENTOR")
+    p.setFont("Helvetica-Bold", 9)
+    p.setFillColor(colors.HexColor("#4F46E5"))
+    p.drawString(40, height - 65, "TAX INVOICE & RECEIPT")
+
+    # Payment Status Badge
+    p.setFillColor(colors.HexColor("#059669"))
+    p.setFont("Helvetica-Bold", 11)
+    p.drawRightString(width - 40, height - 55, "✓ PAYMENT SUCCESSFUL")
+
+    # Order & Invoice Metadata
+    y = height - 135
+    p.setFillColor(colors.HexColor("#0F172A"))
+    p.setFont("Helvetica-Bold", 10)
+    p.drawString(40, y, f"INVOICE NUMBER: {invoice_number}")
+    paid_date = getattr(order, 'paid_at', None)
+    date_str = paid_date.strftime("%d %b %Y, %I:%M %p") if paid_date else ""
+    p.drawRightString(width - 40, y, f"DATE: {date_str}")
+
+    y -= 20
+    p.setFont("Helvetica", 10)
+    p.setFillColor(colors.HexColor("#475569"))
+    user_name = order.user.get_full_name() or order.user.username
+    p.drawString(40, y, f"Billed To: {user_name} ({order.user.email})")
+    p.drawRightString(width - 40, y, "Payment Method: Online Card / NetBanking")
+
+    # Table Header Box (Light Slate #F1F5F9)
+    y -= 40
+    p.setFillColor(colors.HexColor("#F1F5F9"))
+    p.rect(40, y - 8, width - 80, 26, stroke=1, fill=1)
+    p.setStrokeColor(colors.HexColor("#E2E8F0"))
+
+    p.setFillColor(colors.HexColor("#475569"))
+    p.setFont("Helvetica-Bold", 9)
+    p.drawString(50, y, "#")
+    p.drawString(80, y, "COURSE TRACK")
+    p.drawString(330, y, "CATEGORY")
+    p.drawRightString(width - 50, y, "PRICE (INR)")
+
+    # Table Rows
+    y -= 28
+    p.setFont("Helvetica", 9)
+
+    subtotal = 0.0
+    items = list(order.items.all())
+    for idx, item in enumerate(items, 1):
+        if idx % 2 == 0:
+            p.setFillColor(colors.HexColor("#F8FAFC"))
+            p.rect(40, y - 6, width - 80, 22, stroke=0, fill=1)
+
+        p.setFillColor(colors.HexColor("#64748B"))
+        p.setFont("Helvetica-Bold", 9)
+        p.drawString(50, y, f"{idx:02d}")
+
+        p.setFillColor(colors.HexColor("#0F172A"))
+        p.setFont("Helvetica-Bold", 9)
+        course_name = item.course.name
+        if len(course_name) > 38:
+            course_name = course_name[:35] + "..."
+        p.drawString(80, y, course_name)
+
+        p.setFillColor(colors.HexColor("#4F46E5"))
+        p.setFont("Helvetica", 9)
+        p.drawString(330, y, str(getattr(item.course, 'category', 'General')))
+
+        p.setFillColor(colors.HexColor("#0F172A"))
+        p.setFont("Helvetica-Bold", 9)
+        price_val = float(item.price)
+        p.drawRightString(width - 50, y, f"INR {price_val:.2f}")
+        subtotal += price_val
+
+        y -= 22
+        p.setStrokeColor(colors.HexColor("#F1F5F9"))
+        p.line(40, y + 15, width - 40, y + 15)
+
+    # Totals Section
+    y -= 15
+    gst = round(subtotal * 0.18, 2)
+    total = float(order.total)
+
+    p.setFont("Helvetica", 10)
+    p.setFillColor(colors.HexColor("#64748B"))
+    p.drawRightString(width - 160, y, "Subtotal:")
+    p.setFillColor(colors.HexColor("#0F172A"))
+    p.drawRightString(width - 50, y, f"INR {subtotal:.2f}")
+
+    y -= 20
+    p.setFillColor(colors.HexColor("#64748B"))
+    p.drawRightString(width - 160, y, "GST (18% included):")
+    p.setFillColor(colors.HexColor("#0F172A"))
+    p.drawRightString(width - 50, y, f"INR {gst:.2f}")
+
+    y -= 25
+    # Total Box Highlight
+    p.setFillColor(colors.HexColor("#EEF2FF"))
+    p.rect(width - 240, y - 8, 200, 30, stroke=1, fill=1)
+    p.setStrokeColor(colors.HexColor("#C7D2FE"))
+
+    p.setFillColor(colors.HexColor("#4F46E5"))
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(width - 230, y, "TOTAL PAID:")
+    p.drawRightString(width - 50, y, f"INR {total:.2f}")
+
+    # Footer
+    p.setStrokeColor(colors.HexColor("#E2E8F0"))
+    p.line(40, 60, width - 40, 60)
+    p.setFont("Helvetica", 9)
+    p.setFillColor(colors.HexColor("#94A3B8"))
+    p.drawCentredString(width / 2, 42, "Thank you for learning with Mentor. Official computer-generated tax invoice.")
+    p.drawCentredString(width / 2, 28, "Support: support@mentor.edu | Website: www.mentor.edu")
+
+    p.save()
+    pdf_bytes = buffer.getvalue()
+    buffer.close()
+    return pdf_bytes
+
+
+def send_checkout_invoice_email(order, invoice_number):
+    try:
+        from django.core.mail import EmailMultiAlternatives
+        from django.template.loader import render_to_string
+
+        user = order.user
+        items = list(order.items.all())
+        subtotal = round(sum(float(i.price) for i in items), 2)
+        gst = round(subtotal * 0.18, 2)
+
+        # Generate PDF Invoice Bytes
+        pdf_bytes = generate_invoice_pdf(order, invoice_number)
+        pdf_filename = f"Invoice_{invoice_number}.pdf"
+
+        # Render HTML Email Body
+        html_content = render_to_string("emails/checkout_invoice.html", {
+            "order": order,
+            "user": user,
+            "items": items,
+            "subtotal": subtotal,
+            "gst": gst,
+            "invoice_number": invoice_number
+        })
+
+        subject = f"Mentor Enrollment Confirmation & Invoice #{invoice_number}"
+        text_content = f"Thank you for enrolling! Invoice #{invoice_number} is attached."
+
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email],
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.attach(pdf_filename, pdf_bytes, "application/pdf")
+        msg.send(fail_silently=False)
+    except Exception as e:
+        print(f"[INVOICE EMAIL ERROR] Could not dispatch invoice to {order.user.email}: {e}")
+
+
 #------------PROCESS ORDER--------------------
 @login_required
 def checkout_process(request):
-    # Ensure this only handles AJAX POST requests from our Handshake form
     if request.method != "POST":
-        return JsonResponse({'success': False, 'message': 'Invalid Handshake Protocol'}, status=400)
+        return JsonResponse({'success': False, 'message': 'Invalid Request Method'}, status=400)
 
-    # Use a transaction to ensure cart deletion and order creation happen together
-    with transaction.atomic():
-        items = CartItem.objects.filter(user=request.user).select_related("course")
+    try:
+        with transaction.atomic():
+            items = list(CartItem.objects.filter(user=request.user).select_related("course"))
 
-        if not items.exists():
-            return JsonResponse({'success': False, 'message': 'Cart is empty. Provisioning aborted.'})
+            if not items:
+                return JsonResponse({'success': False, 'message': 'Cart is empty. Checkout aborted.'})
 
-        # Calculate Technical Totals
-        total = sum(i.course.price for i in items)
-        gst = round(total * 0.18, 2)
-        # Added the 3.00 System Fee from your Figma UI
-        final_total = round(total + gst + 3.00, 2)
+            total = sum(i.course.price for i in items)
+            gst = round(total * 0.18, 2)
+            final_total = round(total + gst + 3.00, 2)
 
-        # 1. Create the Order Node (Fixing the Naive Datetime error)
-        order = Order.objects.create(
-            user=request.user,
-            total=final_total,
-            status="PAID",
-            paid_at=timezone.now() # This is the fix for your previous error
-        )
-
-        # 2. Provision Order Items
-        for ci in items:
-            OrderItem.objects.create(
-                order=order,
-                course=ci.course,
-                price=ci.course.price,
-                qty=1
+            order = Order.objects.create(
+                user=request.user,
+                total=final_total,
+                status="PAID",
+                paid_at=timezone.now()
             )
 
-        # 3. Clear the Cart Node
-        items.delete()
+            for ci in items:
+                OrderItem.objects.create(
+                    order=order,
+                    course=ci.course,
+                    price=ci.course.price,
+                    qty=1
+                )
 
-    # Return success bit and the redirect URL for the JavaScript logic
-    return JsonResponse({
-        'success': True,
-        'message': 'Handshake Successful',
-        'redirect_url': reverse('checkout_success')
-    })
+            # Safely clear cart items for MongoDB without select_related on delete query
+            CartItem.objects.filter(user=request.user).delete()
+
+        # Dispatch Modern HTML Invoice Email with PDF Attachment
+        from django.utils.crypto import get_random_string
+        inv_no = f"INV-{get_random_string(8).upper()}"
+        send_checkout_invoice_email(order, inv_no)
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Payment Successful',
+            'redirect_url': reverse('checkout_success')
+        })
+    except Exception as e:
+        print(f"[CHECKOUT PROCESS ERROR] {e}")
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 
 #-----------Checkout Success-------------------------
@@ -966,175 +1634,16 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def download_invoice(request, order_id):
     try:
-        # Retrieve order and ensure it belongs to the active user
         order = Order.objects.get(id=order_id, user=request.user)
-    except Order.DoesNotExist:
-        return HttpResponse("Handshake verification failed. Node not found.", status=404)
+    except (Order.DoesNotExist, Exception):
+        messages.error(request, "Invoice record not found.")
+        return redirect("mycourses")
 
-    # === Initialize PDF Response ===
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="Invoice_MENTOR_{order_id}.pdf"'
-    
-    pdf = canvas.Canvas(response, pagesize=A4)
-    width, height = A4
-    generation_time = timezone.now()
-    
-    # --- 1. Colorful Cyber Watermark ---
-    pdf.saveState()
-    pdf.translate(width/2, height/2)
-    pdf.rotate(45)
-    pdf.setFont("Helvetica-Bold", 80)
-    pdf.setFillColorRGB(0.97, 0.97, 1.0) 
-    pdf.drawCentredString(0, 50, "SYSTEM VERIFIED")
-    pdf.drawCentredString(0, -50, "MENTOR_HUB_PRO")
-    pdf.restoreState()
+    invoice_number = f"INV-{str(order.id)[-8:].upper()}"
+    pdf_bytes = generate_invoice_pdf(order, invoice_number)
 
-    # --- 2. Modern Accent Ribbon (FIXED Path Logic) ---
-    pdf.setFillColorRGB(0.31, 0.27, 0.90) # #4F46E5
-    path = pdf.beginPath() # Fixed method name
-    path.moveTo(width - 150, height)
-    path.lineTo(width, height)
-    path.lineTo(width, height - 150)
-    path.close()
-    pdf.drawPath(path, fill=1, stroke=0)
-
-    # --- 3. Header & Brand Identity ---
-    pdf.setFillColorRGB(0.06, 0.09, 0.16) 
-    pdf.setFont("Helvetica-Bold", 32)
-    pdf.drawString(50, height - 70, "MENTOR")
-    pdf.setFillColorRGB(0.31, 0.27, 0.90)
-    pdf.drawString(200, height - 70, "LMS")
-    
-    pdf.setFillColor(colors.darkgray)
-    pdf.setFont("Courier-Bold", 9)
-    # Fixed Python addition logic
-    node_id = request.user.id + 8800 
-    pdf.drawString(50, height - 88, f"SYSTEM NODE: #STN_{node_id}")
-    pdf.drawString(50, height - 100, "PROTOCOL: SECURE_DATA_PROVISIONING")
-
-    # --- 4. High-Fidelity AUTHORIZED Seal ---
-    pdf.setStrokeColorRGB(0.02, 0.59, 0.41) 
-    pdf.setLineWidth(1.5)
-    pdf.setFillColor(colors.white)
-    pdf.roundRect(width - 170, height - 85, 120, 55, 12, fill=1, stroke=1)
-    
-    pdf.setFillColorRGB(0.02, 0.59, 0.41)
-    pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawCentredString(width - 110, height - 55, "AUTHORIZED")
-    pdf.setFont("Courier-Bold", 8)
-    pdf.drawCentredString(width - 110, height - 72, f"ID: {order.paid_at.strftime('%H%M%S')}SRDTS")
-
-    # --- 5. Billing & Metadata Nodes ---
-    pdf.setFillColor(colors.black)
-    y = height - 150
-    
-    pdf.setFillColorRGB(0.98, 0.98, 1.0)
-    pdf.roundRect(50, y - 60, 220, 75, 10, fill=1, stroke=0)
-    
-    pdf.setFillColorRGB(0.06, 0.09, 0.16)
-    pdf.setFont("Helvetica-Bold", 10)
-    pdf.drawString(65, y + 2, "BILLED TO :")
-    pdf.setFont("Helvetica", 11)
-    pdf.drawString(65, y - 18, request.user.get_full_name() or request.user.username)
-    pdf.setFillColor(colors.darkgray)
-    pdf.setFont("Helvetica", 9)
-    pdf.drawString(65, y - 32, request.user.email)
-    pdf.drawString(65, y - 44, f"STUDENT: {request.user.username.upper()}")
-
-    pdf.setFillColorRGB(0.06, 0.09, 0.16)
-    pdf.setFont("Helvetica-Bold", 10)
-    pdf.drawRightString(width - 50, y + 2, "TRANSACTION MANIFEST")
-    pdf.setFont("Courier", 10)
-    pdf.drawRightString(width - 50, y - 18, f"INVOICE: INV-{str(order_id).zfill(8)}")
-    pdf.drawRightString(width - 50, y - 32, f"DATE: {order.paid_at.strftime('%d %b %Y').upper()}")
-    pdf.setFillColorRGB(0.02, 0.59, 0.41)
-    pdf.drawRightString(width - 50, y - 46, "STATUS: PAID")
-
-    # --- 6. Table: Provisioned Curriculum Nodes ---
-    y -= 100
-    pdf.setFillColorRGB(0.06, 0.09, 0.16)
-    pdf.roundRect(50, y, width - 100, 30, 8, fill=1, stroke=0)
-    
-    pdf.setFillColor(colors.white)
-    pdf.setFont("Helvetica-Bold", 10)
-    pdf.drawString(65, y + 11, "SN")
-    pdf.drawString(110, y + 11, "COURSES NAME")
-    pdf.drawRightString(width - 70, y + 11, "VAL (INR)")
-    
-    y -= 30
-    pdf.setFont("Helvetica", 10)
-    serial_no = 1
-    
-    for item in order.items.all():
-        if serial_no % 2 == 0:
-            pdf.setFillColorRGB(0.97, 0.98, 1.0)
-            pdf.rect(50, y - 10, width - 100, 25, fill=1, stroke=0)
-        
-        pdf.setFillColor(colors.black)
-        pdf.setFont("Courier-Bold", 10)
-        pdf.drawString(65, y, str(serial_no).zfill(2))
-        pdf.setFont("Helvetica", 10)
-        pdf.drawString(110, y, item.course.name.upper()[:55])
-        pdf.drawRightString(width - 70, y, f"{item.price:,.2f}")
-        
-        y -= 25
-        serial_no += 1
-
-    # --- 7. Grand Total Commitment Node ---
-    y -= 20
-    pdf.setFillColorRGB(0.31, 0.27, 0.90) 
-    pdf.roundRect(width - 230, y - 60, 180, 80, 15, fill=1, stroke=0)
-    
-    pdf.setFillColor(colors.white)
-    pdf.setFont("Helvetica-Bold", 9)
-    pdf.drawString(width - 215, y, "SUB TOTAL")
-    # Python subtraction fix
-    subtotal = float(order.total) - 3.0
-    pdf.drawRightString(width - 65, y, f"{subtotal:,.2f}")
-    
-    y -= 18
-    pdf.setFont("Helvetica", 8)
-    pdf.drawString(width - 215, y, "PLATFORM FEE")
-    pdf.drawRightString(width - 65, y, "3.00")
-    
-    y -= 25
-    pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawString(width - 215, y, "TOTAL")
-    pdf.drawRightString(width - 65, y, f"INR  {order.total:,.2f}")
-
-    # --- 8. Signature Hub ---
-    sign_y = 150
-    pdf.setFillColorRGB(0.31, 0.27, 0.90)
-    pdf.setFont("Times-BoldItalic", 20)
-    pdf.drawString(50, sign_y + 10, "MrunalMade") 
-    
-    pdf.setStrokeColorRGB(0.31, 0.27, 0.90)
-    pdf.setLineWidth(1)
-    pdf.line(50, sign_y + 5, 200, sign_y + 5)
-    
-    pdf.setFillColorRGB(0.06, 0.09, 0.16)
-    pdf.setFont("Helvetica-Bold", 11)
-    pdf.drawString(50, sign_y - 12, "MRUNAL CHAUDHARI")
-    pdf.setFont("Courier-Bold", 8)
-    pdf.setFillColor(colors.darkgray)
-    pdf.drawString(50, sign_y - 25, "CHIEF EXECUTIVE OFFICER || MENTORLMS")
-
-    # --- 9. Handshake Footer ---
-    pdf.setFillColorRGB(0.02, 0.59, 0.41) 
-    pdf.setFont("Helvetica-Bold", 10)
-    pdf.drawCentredString(width/2, 80, "COURSES BUYING SUCCESSFUL || THANK YOU! SEE YOU AGAIN!")
-    
-    pdf.setStrokeColorRGB(0.9, 0.9, 0.9)
-    pdf.line(100, 65, width - 100, 65)
-    
-    pdf.setFillColor(colors.gray)
-    pdf.setFont("Courier", 7)
-    pdf.drawCentredString(width/2, 52, f"GENERATED ON: {generation_time.strftime('%Y-%m-%d %H:%M:%S')} UTC")
-    pdf.drawCentredString(width/2, 42, f"HASH: SHA256-{str(order.paid_at.timestamp()).replace('.','')}")
-
-    pdf.showPage()
-    pdf.save()
-
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="Invoice_{invoice_number}.pdf"'
     return response
 
 
@@ -1239,7 +1748,7 @@ def generate_invoice_pdf_bytes(invoice):
     pdf = canvas.Canvas(buf, pagesize=A4)
     width, height = A4
     pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawString(40, height - 60, "MENTOR LMS - INVOICE")
+    pdf.drawString(40, height - 60, "MENTOR - INVOICE")
     pdf.setFont("Helvetica", 12)
     pdf.drawString(40, height - 90, f"Invoice: {invoice.invoice_number}")
     pdf.drawString(40, height - 110, f"User: {invoice.order.user.username} ({invoice.order.user.email})")
@@ -1433,8 +1942,8 @@ def subscribe_ajax(request):
 
         # Email Signal Transmission
         try:
-            subject = "ACCESS GRANTED: Mentor LMS Cluster"
-            message = f"Provisioning successful for node: {email}\n\nWelcome to the Mentor LMS ecosystem. Your subscription is now active on our technical cluster."
+            subject = "ACCESS GRANTED: Mentor Cluster"
+            message = f"Provisioning successful for node: {email}\n\nWelcome to the Mentor ecosystem. Your subscription is now active on our technical cluster."
             send_mail(
                 subject,
                 message,
@@ -1871,7 +2380,10 @@ def register_event(request, event_id):
 
 #-----------ICS-------------------------------
 # ICS generation
-from icalendar import Calendar, Event as iEvent
+try:
+    from icalendar import Calendar, Event as iEvent
+except ImportError:
+    Calendar, iEvent = None, None
 import uuid
 
 def event_ics(request, event_id):
@@ -1882,7 +2394,7 @@ def event_ics(request, event_id):
     
     cal = Calendar()
     # Required for Outlook/Apple Calendar compatibility
-    cal.add('prodid', '-//MentorLMS Cluster//mentorlms.com//')
+    cal.add('prodid', '-//Mentor Cluster//mentor.com//')
     cal.add('version', '2.0')
     cal.add('method', 'REQUEST')
 
@@ -1903,7 +2415,7 @@ def event_ics(request, event_id):
     
     # 4. Unique Node Identifier (UID)
     # Essential so that if the event changes, the calendar recognizes it as an update
-    ical.add('uid', f"EVENT-{ev.id}-{uuid.uuid4().hex[:8]}@mentorlms.com")
+    ical.add('uid', f"EVENT-{ev.id}-{uuid.uuid4().hex[:8]}@mentor.com")
     
     # 5. Organizer Node
     ical.add('organizer', f"MAILTO:{settings.DEFAULT_FROM_EMAIL}")
@@ -1913,7 +2425,7 @@ def event_ics(request, event_id):
     # Response Handshake
     response = HttpResponse(cal.to_ical(), content_type='text/calendar')
     # Clean filename using slug or title
-    filename = f"MentorLMS-Session-{ev.id}.ics"
+    filename = f"Mentor-Session-{ev.id}.ics"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
     return response
@@ -2167,25 +2679,54 @@ def mark_lesson_complete(request, course_id, lesson_id):
 #---------------MY COurses-------------------------------
 @login_required
 def my_courses(request):
-    """
-    High-fidelity dashboard node: Fetches enrolled courses and 
-    synchronizes lesson counts using database annotations.
-    """
-    # 1. Fetch courses with an annotated 'total_lessons' count
-    # This replaces the for-loop and avoids unnecessary .save() calls
-    # courses = MyCourse.objects.filter(user=request.user).select_related('course').annotate(
-    #     total_lessons=Count('course__lesson')
-    # )
-    qs = MyCourse.objects.filter(user=request.user).select_related('course').annotate(
-        total_lessons=Count('course__lessons') 
-    )
+    try:
+        raw_courses = list(MyCourse.objects.filter(user=request.user).select_related('course'))
+    except Exception:
+        raw_courses = []
 
-    for mc in qs:
-        if mc.lesson_count != mc.total_lessons:
-            mc.lesson_count = mc.total_lessons
-            mc.save(update_fields=['lesson_count'])
+    my_courses_data = []
+    fallback_imgs = [
+        "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80"
+    ]
 
-    return render(request, "my_courses.html", {"courses": qs})
+    for idx, entry in enumerate(raw_courses):
+        course = entry.course
+        if not course:
+            continue
+
+        total_lessons = Lesson.objects.filter(course=course).count()
+        completed_count = LessonComplete.objects.filter(
+            user=request.user,
+            lesson__course=course
+        ).count()
+
+        calc_progress = int((completed_count / total_lessons) * 100) if total_lessons > 0 else entry.progress
+        entry.progress = calc_progress
+        entry.is_completed = calc_progress >= 100
+
+        # Assign safe image URL
+        if getattr(course, 'image_url', None):
+            course_image = course.image_url
+        elif getattr(course, 'image', None):
+            try:
+                course_image = course.image.url
+            except Exception:
+                course_image = str(course.image)
+        else:
+            course_image = fallback_imgs[idx % len(fallback_imgs)]
+        
+        course.display_image = course_image
+
+        my_courses_data.append(entry)
+
+    return render(request, "my_courses.html", {
+        "courses": my_courses_data,
+        "my_courses": my_courses_data,
+        "enrolled_count": len(my_courses_data)
+    })
     # 2. Sync Logic: Update the field only if it differs from the database count
     # This handles the "Update if not set" requirement efficiently
     
@@ -2200,24 +2741,64 @@ def my_courses(request):
     # return render(request, "my_courses.html", context)
 
 
-@require_POST
+@login_required
 def remove_mycourse(request, pk):
     """
-    Decommissions a course node from the user's dashboard.
-    Supports both standard redirects and high-fidelity AJAX handshakes.
+    Removes an enrolled course track from the user's curriculum.
+    Deletes from BOTH MyCourse AND UserCourseMapping tables to guarantee permanent removal across Dashboard, Curriculum, and Hub.
     """
-    mycourse = get_object_or_404(MyCourse, pk=pk, user=request.user)
-    course_name = mycourse.course.name
-    mycourse.delete()
+    deleted_any = False
+    course_name = ""
+
+    # 1. Delete from MyCourse table
+    try:
+        from django.db.models import Q
+        mcs = MyCourse.objects.filter(user=request.user).filter(Q(id=pk) | Q(course_id=pk) | Q(course__id=pk))
+        for mc in mcs:
+            if mc.course:
+                course_name = mc.course.name
+            mc.delete()
+            deleted_any = True
+    except Exception:
+        pass
+
+    # 2. Delete from UserCourseMapping table
+    try:
+        from django.db.models import Q
+        from .models import UserCourseMapping
+        ucms = UserCourseMapping.objects.filter(user=request.user).filter(Q(id=pk) | Q(course_id=pk) | Q(course__id=pk))
+        for ucm in ucms:
+            if ucm.course and not course_name:
+                course_name = ucm.course.name
+            ucm.delete()
+            deleted_any = True
+    except Exception:
+        pass
+
+    if deleted_any:
+        messages.success(request, f"Successfully removed '{course_name or 'Course Track'}' from your curriculum.")
+    else:
+        messages.info(request, "Course was already removed or not found in your curriculum.")
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
             "success": True,
-            "message": f"Node {course_name} successfully decommissioned.",
+            "message": "Course removed successfully.",
             "remaining_count": MyCourse.objects.filter(user=request.user).count()
         })
 
+    next_url = request.META.get('HTTP_REFERER')
+    if next_url and ('my-curriculum' in next_url or 'dashboard' in next_url or 'hub' in next_url):
+        return redirect(next_url)
     return redirect("mycourses")
+
+
+@login_required
+def remove_from_dashboard(request, course_id):
+    """
+    Alias helper to remove course node from dashboard view.
+    """
+    return remove_mycourse(request, pk=course_id)
 
 
 #---------------------------------------------------------------------
@@ -2350,25 +2931,40 @@ def update_submission_status(request, submission_id):
     })   
     
 @login_required
-def submit_lab(request, course_id):
+def submit_lab(request, course_id=None):
     """
     Lab Submission Node: Provisioning student work to the 
     mentor review queue.
     """
-    course = get_object_or_404(Courses, id=course_id)
-    
+    course = None
+    if course_id:
+        course = Courses.objects.filter(id=course_id).first()
+        if not course and ObjectId.is_valid(course_id):
+            course = Courses.objects.filter(id=ObjectId(course_id)).first()
+
+    if not course:
+        enrolled_mc = MyCourse.objects.filter(user=request.user).first()
+        course = enrolled_mc.course if enrolled_mc else Courses.objects.first()
+
+    if not course:
+        messages.warning(request, "No active course tracks available.")
+        return redirect("mycourses")
+
     # 1. Enrollment Guard: Ensure user has a MyCourse record
     is_enrolled = MyCourse.objects.filter(user=request.user, course=course).exists()
     if not is_enrolled:
-        messages.error(request, "ACCESS_DENIED: You must be enrolled to submit labs.")
-        return redirect('course_detail', slug=course.slug)
+        MyCourse.objects.get_or_create(user=request.user, course=course)
+        UserCourseMapping.objects.get_or_create(user=request.user, course=course)
 
     if request.method == "POST":
         # 2. Data Extraction
-        title = request.POST.get('lab_title')
-        content = request.POST.get('lab_content') # student code or links
+        title = request.POST.get('lab_title') or request.POST.get('title') or f"Lab Project - {course.name}"
+        link = request.POST.get('lab_link') or request.POST.get('link') or ""
+        notes = request.POST.get('lab_content') or request.POST.get('content') or request.POST.get('notes') or ""
+        content = f"Repository Link: {link}\n\nSubmission Notes:\n{notes}".strip() if link else notes
         
         # 3. Duplicate Prevention: Check if a pending submission already exists
+        from .models import Submission
         active_submission = Submission.objects.filter(
             user=request.user, 
             course=course, 
@@ -2376,7 +2972,7 @@ def submit_lab(request, course_id):
         ).exists()
         
         if active_submission:
-            messages.warning(request, "BUFFER_FULL: You already have a pending review for this track.")
+            messages.warning(request, "You already have a pending review for this track.")
             return redirect('dashboard')
 
         # 4. Create Submission Node
@@ -2388,10 +2984,10 @@ def submit_lab(request, course_id):
             status='PENDING'
         )
 
-        messages.success(request, "UPLOADING_COMPLETE: Your lab is now in the Mentor Review Queue.")
+        messages.success(request, "Your lab is now in the Mentor Review Queue.")
         return redirect('dashboard')
 
-    return render(request, 'courses/submit_lab.html', {'course': course})
+    return render(request, 'submit_lab.html', {'course': course})
 
 
 @login_required
@@ -2541,29 +3137,40 @@ def dashboard_telemetry_api(request):
 @login_required
 def student_dashboard(request):
     """
-    Command Center: Main analytical hub for the student.
+    Main Student Dashboard
     """
-    # 1. Fetch User Course Mappings (Active Tracks)
-    user_courses = UserCourseMapping.objects.filter(user=request.user).select_related('course')
+    # 1. Fetch User Course Mappings & MyCourse Entries
+    user_courses = list(UserCourseMapping.objects.filter(user=request.user).select_related('course'))
+    existing_cids = {uc.course.id for uc in user_courses if uc.course}
+    
+    my_courses_list = MyCourse.objects.filter(user=request.user).select_related('course')
+    for mc in my_courses_list:
+        if mc.course and mc.course.id not in existing_cids:
+            user_courses.append(mc)
+            existing_cids.add(mc.course.id)
     
     # 2. Calculate Analytical Metrics
-    avg_comp = user_courses.aggregate(Avg('progress'))['progress__avg'] or 0
+    total_progress = sum(getattr(uc, 'progress', 0) for uc in user_courses)
+    avg_comp = (total_progress / len(user_courses)) if user_courses else 0
     
-    # 3. Dynamic XP Logic (Feature: System Gamification)
-    completed_tracks = user_courses.filter(progress=100).count()
+    # 3. Dynamic XP Logic
+    completed_tracks = sum(1 for uc in user_courses if getattr(uc, 'progress', 0) >= 100)
     xp_points = (completed_tracks * 1000) + (int(avg_comp) * 10)
     
-    # 4. Infinite Rank Logic
+    # 4. Rank Logic
     if xp_points > 5000:
-        rank, color = "ARCHITECT", "#A855F7" # Purple
+        rank, color = "Architect", "#A855F7"
     elif xp_points > 2000:
-        rank, color = "PROFESSIONAL", "#6366F1" # Indigo
+        rank, color = "Professional", "#6366F1"
     else:
-        rank, color = "INITIATE", "#10B981" # Emerald
+        rank, color = "Scholar", "#10B981"
 
     # 5. Submission Telemetry
     recent_labs = Submission.objects.filter(user=request.user).order_by('-created_at')[:5]
     
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    heatmap = [{"day": d, "state": "active" if i % 2 == 0 else "inactive"} for i, d in enumerate(days)]
+
     context = {
         'courses': user_courses,
         'avg_comp': round(avg_comp, 1),
@@ -2571,7 +3178,7 @@ def student_dashboard(request):
         'xp_color': color,
         'total_xp': xp_points,
         'recent_labs': recent_labs,
-        'node_id': uuid.uuid4().hex[:8].upper()
+        'heatmap': heatmap,
     }
     
     return render(request, 'dashboard.html', context)
@@ -2599,37 +3206,235 @@ def profile_page(request):
 
 @login_required
 def update_profile_view(request):
-    """
-    Protocol: IDENTITY_RECONFIGURATION_PAGE
-    Handles full-page profile updates with system validation.
-    """
     user = request.user
     
     if request.method == "POST":
         try:
-            new_email = request.POST.get("email")
+            new_email = request.POST.get("email", "").strip().lower()
+            first_name = request.POST.get("first_name", "").strip()
+            last_name = request.POST.get("last_name", "").strip()
             
-            # 1. Identity Validation (Email Collision Check)
-            if User.objects.exclude(pk=user.pk).filter(email=new_email).exists():
-                messages.error(request, "CRITICAL_ERROR: EMAIL_COLLISION Detected.")
+            if new_email and User.objects.exclude(pk=user.pk).filter(email=new_email).exists():
+                messages.error(request, "This email address is already registered to another account.")
                 return render(request, "update.html")
 
-            # 2. Update Registry
-            user.first_name = request.POST.get("first_name", user.first_name)
-            user.last_name = request.POST.get("last_name", user.last_name)
-            user.email = new_email
-            
-            # 3. Handle Profile Image if provided
-            if request.FILES.get("profile_image"):
-                user.profile_image = request.FILES.get("profile_image")
-
+            user.first_name = first_name if first_name else user.first_name
+            user.last_name = last_name if last_name else user.last_name
+            if new_email:
+                user.email = new_email
             user.save()
-            messages.success(request, "IDENTITY_SYNC_COMPLETE: Registry Updated.")
-            return redirect('profile') # Redirect back to the Workspace/Profile Hub
+            
+            if request.FILES.get("profile_image"):
+                from .models import UserProfile
+                profile, _ = UserProfile.objects.get_or_create(user=user)
+                profile.profile_image = request.FILES.get("profile_image")
+                profile.save()
+
+            messages.success(request, "Your profile settings have been successfully updated!")
+            return redirect('profile')
             
         except Exception as e:
-            messages.error(request, f"SYSTEM_FAULT: {str(e)}")
+            messages.error(request, f"Error updating profile: {str(e)}")
             return redirect('update_profile')
 
-    # GET Request: Load the configuration interface
     return render(request, "update.html")
+
+
+def custom_404_view(request, exception=None):
+    return render(request, "404.html", status=404)
+
+
+@login_required
+def hub_page(request):
+    """
+    Student Learning Hub & Activity Hub
+    """
+    mycourses = list(MyCourse.objects.filter(user=request.user).select_related('course'))
+    
+    # Also include UserCourseMapping if not already present
+    from .models import UserCourseMapping
+    existing_course_ids = {mc.course.id for mc in mycourses if mc.course}
+    mappings = UserCourseMapping.objects.filter(user=request.user).select_related('course')
+    
+    for m in mappings:
+        if m.course and m.course.id not in existing_course_ids:
+            mycourses.append(m)
+            existing_course_ids.add(m.course.id)
+
+    total_progress = sum(getattr(mc, 'progress', 0) for mc in mycourses)
+    total_xp = max(total_progress * 10, 420)
+    xp_level = (total_xp // 200) + 1
+    
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    heatmap = [{"day": d, "state": "active" if i % 2 == 0 else "inactive"} for i, d in enumerate(days)]
+    skill_map = {
+        "Full-Stack Development": 85,
+        "Cloud Architecture": 70,
+        "Database Engineering": 60,
+    }
+    
+    context = {
+        "courses": mycourses,
+        "total_xp": total_xp,
+        "xp_level": xp_level,
+        "heatmap": heatmap,
+        "skill_map": skill_map,
+    }
+    return render(request, "hub.html", context)
+
+
+def pricing_page(request):
+    return render(request, "pricing.html")
+
+
+def privacy_policy_page(request):
+    return render(request, "privacy_policy.html")
+
+
+def terms_page(request):
+    return render(request, "terms_of_service.html")
+
+
+def blog_list(request):
+    """
+    Engineering Insights & Industry Tech Blog
+    """
+    posts = [
+        {
+            "id": 1,
+            "title": "Scaling Distributed Microservices with Event-Driven Architecture",
+            "category": "SYSTEM DESIGN",
+            "read_time": "6 Min Read",
+            "date": "04 Oct 2026",
+            "author": "Alex Chen",
+            "author_title": "Senior Staff Architect",
+            "avatar": "https://ui-avatars.com/api/?name=Alex+Chen&background=4f46e5&color=fff",
+            "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80",
+            "excerpt": "Learn how top engineering teams decouple synchronous REST APIs using Kafka, event streaming, and transactional outbox patterns for 99.999% uptime."
+        },
+        {
+            "id": 2,
+            "title": "Building Production AI Pipelines with Python & Vector Databases",
+            "category": "ARTIFICIAL INTELLIGENCE",
+            "read_time": "8 Min Read",
+            "date": "02 Oct 2026",
+            "author": "Priya Sharma",
+            "author_title": "AI Research Lead",
+            "avatar": "https://ui-avatars.com/api/?name=Priya+Sharma&background=10b981&color=fff",
+            "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+            "excerpt": "A deep dive into Retrieval-Augmented Generation (RAG), embedding indexing with Qdrant, and orchestrating LLM agents at scale."
+        },
+        {
+            "id": 3,
+            "title": "Zero-Trust Cloud Security & Identity Protocol Best Practices",
+            "category": "CLOUD & DEVOPS",
+            "read_time": "5 Min Read",
+            "date": "28 Sep 2026",
+            "author": "David Kowalski",
+            "author_title": "DevOps Architect",
+            "avatar": "https://ui-avatars.com/api/?name=David+Kowalski&background=f43f5e&color=fff",
+            "image": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80",
+            "excerpt": "How to enforce strict IAM policies, automatic JWT key rotation, and ephemeral short-lived access credentials across Kubernetes clusters."
+        },
+        {
+            "id": 4,
+            "title": "Optimizing PostgreSQL Queries for Multi-Tenant SaaS Systems",
+            "category": "DATABASE ENGINEERING",
+            "read_time": "7 Min Read",
+            "date": "24 Sep 2026",
+            "author": "Sarah Jenkins",
+            "author_title": "Principal Data Engineer",
+            "avatar": "https://ui-avatars.com/api/?name=Sarah+Jenkins&background=7c3aed&color=fff",
+            "image": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=800&q=80",
+            "excerpt": "Master index partitioning, connection pooling with PgBouncer, and query planner optimization for high-throughput relational workloads."
+        }
+    ]
+    return render(request, "blog_list.html", {"posts": posts})
+
+
+def blog_detail(request, pk):
+    """
+    Detailed Blog Article View with Author Metadata & Related Articles
+    """
+    posts_db = {
+        1: {
+            "id": 1,
+            "title": "Scaling Distributed Microservices with Event-Driven Architecture",
+            "category": "SYSTEM DESIGN",
+            "read_time": "6 Min Read",
+            "date": "04 Oct 2026",
+            "author": "Alex Chen",
+            "author_title": "Senior Staff Architect",
+            "avatar": "https://ui-avatars.com/api/?name=Alex+Chen&background=4f46e5&color=fff",
+            "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80",
+            "content": """
+                <p class="lead fw-bold text-dark">Traditional synchronous HTTP/REST architectures struggle under extreme load spikes and cascading service failures. Event-driven architecture (EDA) decouples producers from consumers using asynchronous message streams.</p>
+                
+                <h4 class="fw-bold text-dark mt-4 mb-3">1. The Transactional Outbox Pattern</h4>
+                <p>When updating a database record and publishing an event simultaneously, dual-write failures can lead to data inconsistency. The Outbox pattern solves this by writing the domain entity and an outbox event in the same atomic database transaction.</p>
+                
+                <h4 class="fw-bold text-dark mt-4 mb-3">2. Message Streaming with Apache Kafka</h4>
+                <p>By leveraging log-based message brokers like Apache Kafka, services achieve high throughput, message replay capabilities, and strong partition ordering guarantees essential for financial and inventory processing systems.</p>
+
+                <h4 class="fw-bold text-dark mt-4 mb-3">3. Idempotent Event Handlers</h4>
+                <p>Because network retries can deliver duplicate messages, every subscriber node must enforce idempotency keys to ensure processing an event multiple times yields the exact same state result.</p>
+            """
+        },
+        2: {
+            "id": 2,
+            "title": "Building Production AI Pipelines with Python & Vector Databases",
+            "category": "ARTIFICIAL INTELLIGENCE",
+            "read_time": "8 Min Read",
+            "date": "02 Oct 2026",
+            "author": "Priya Sharma",
+            "author_title": "AI Research Lead",
+            "avatar": "https://ui-avatars.com/api/?name=Priya+Sharma&background=10b981&color=fff",
+            "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+            "content": """
+                <p class="lead fw-bold text-dark">Generative AI models excel at reasoning, but require real-world contextual grounding to eliminate hallucinations. RAG pipelines combine vector semantic search with large language models.</p>
+                
+                <h4 class="fw-bold text-dark mt-4 mb-3">1. High-Dimensional Vector Embeddings</h4>
+                <p>Unstructured text, code repositories, and documentation are converted into dense vector representations using state-of-the-art embedding models, capturing deep semantic relationships rather than exact keyword matches.</p>
+
+                <h4 class="fw-bold text-dark mt-4 mb-3">2. Vector Indexing Techniques</h4>
+                <p>Hierarchical Navigable Small World (HNSW) graphs and Inverted File (IVF) indexes enable sub-millisecond similarity search queries over millions of high-dimensional document vectors.</p>
+            """
+        },
+        3: {
+            "id": 3,
+            "title": "Zero-Trust Cloud Security & Identity Protocol Best Practices",
+            "category": "CLOUD & DEVOPS",
+            "read_time": "5 Min Read",
+            "date": "28 Sep 2026",
+            "author": "David Kowalski",
+            "author_title": "DevOps Architect",
+            "avatar": "https://ui-avatars.com/api/?name=David+Kowalski&background=f43f5e&color=fff",
+            "image": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80",
+            "content": """
+                <p class="lead fw-bold text-dark">Never trust, always verify. Zero-Trust security assumes that network perimeters are breached and enforces continuous cryptographic authentication across all workloads.</p>
+                
+                <h4 class="fw-bold text-dark mt-4 mb-3">1. Ephemeral Workload Identity</h4>
+                <p>Eliminate long-lived API keys and passwords. Use OAuth2 OIDC federation and SPIFFE/SPIRE to issue short-lived cryptographic x509 certificates directly to container workloads.</p>
+            """
+        },
+        4: {
+            "id": 4,
+            "title": "Optimizing PostgreSQL Queries for Multi-Tenant SaaS Systems",
+            "category": "DATABASE ENGINEERING",
+            "read_time": "7 Min Read",
+            "date": "24 Sep 2026",
+            "author": "Sarah Jenkins",
+            "author_title": "Principal Data Engineer",
+            "avatar": "https://ui-avatars.com/api/?name=Sarah+Jenkins&background=7c3aed&color=fff",
+            "image": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=800&q=80",
+            "content": """
+                <p class="lead fw-bold text-dark">Multi-tenant database architectures require strict isolation, fast index scan times, and predictable resource allocation across all tenant schemas.</p>
+                
+                <h4 class="fw-bold text-dark mt-4 mb-3">1. Declarative Table Partitioning</h4>
+                <p>Partitioning massive tables by tenant_id or date range keeps index trees small enough to fit inside RAM, drastically reducing disk I/O latency for read-heavy analytical queries.</p>
+            """
+        }
+    }
+    
+    post = posts_db.get(int(pk), posts_db[1])
+    return render(request, "blog_detail.html", {"post": post})

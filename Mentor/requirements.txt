@@ -113,6 +113,7 @@ pyee>=13.0.0
 Pygments>=2.19.2
 PyJWT>=2.10.1
 pymongo>=4.15.3
+django-mongodb-backend>=6.1.0
 pyparsing>=3.2.5
 pyphen>=0.17.2
 python-barcode>=0.16.1
@@ -159,6 +160,6 @@ zopfli>=0.4.0
 
 
 
-# mentor lms - superuser- mentor, pass - Pass@123
+# mentor - superuser- mentor, pass - Pass@123  and agentforge29@gmail.com
 # ..\env\Scripts\python.exe manage.py runserver
 # username - rutika, pass - Pass@123
