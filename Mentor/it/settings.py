@@ -157,8 +157,11 @@ CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", DEFAULT_FROM_EMAIL)
 
 
 # Misc
-DEFAULT_AUTO_FIELD = 'django_mongodb_backend.fields.ObjectIdAutoField'
-SILENCED_SYSTEM_CHECKS = ['mongodb.fields.auto.E001']
+if DB_ENGINE == 'django_mongodb_backend':
+    DEFAULT_AUTO_FIELD = 'django_mongodb_backend.fields.ObjectIdAutoField'
+    SILENCED_SYSTEM_CHECKS = ['mongodb.fields.auto.E001']
+else:
+    DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
 
 ADMINS = [
